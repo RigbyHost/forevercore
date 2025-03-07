@@ -1,121 +1,232 @@
 'package net.fimastgd.forevercore.panel.main';
 
-const db = require("../serverconf/db");
-const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
-const ApiLib = require("../api/lib/apiLib");
-const FixIp = require("../api/lib/fixIp");
-const c = require("ansi-colors");
-const ConsoleApi = require("../modules/console-api");
-const { networkInterfaces } = require("os");
+import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import { Request } from 'express';
+import db from '../serverconf/db';
+import ApiLib from '../api/lib/apiLib';
+import FixIp from '../api/lib/fixIp';
+import ConsoleApi from '../modules/console-api';
+import { networkInterfaces } from 'os';
 
+/**
+ * Interface for MapPack data
+ */
+interface MapPackData {
+    packName: string | undefined;
+    levels: string | undefined;
+    stars: number | undefined;
+    coins: number | undefined;
+    difficulty: number | undefined;
+    rgbcolors: string | undefined;
+}
+
+/**
+ * Interface for Gauntlet data
+ */
+interface GauntletData {
+    level1: number | undefined;
+    level2: number | undefined;
+    level3: number | undefined;
+    level4: number | undefined;
+    level5: number | undefined;
+}
+
+/**
+ * Main panel functionality class
+ */
 class Panel {
-	static async account(action, username) {
-		if (action == "activate") {
-			const query = `
-			UPDATE accounts 
-			SET isActive = 1 
-			WHERE LOWER(userName) = LOWER(?)
-			AND isActive = 0
-			`;
-			await db.execute(query, [username]);
-			return;
-		} else if (action == "getID") {
-			const [rows] = await db.query('SELECT accountID FROM accounts WHERE LOWER(userName) = LOWER(?)', [username]);
-			const accountID = rows.length > 0 ? rows[0].accountID : null;
-			return accountID;
-		} else {
-			throw new Error(c.red("Incorrect value", "'" + action + "'" + "!"));
-		}
-	}
-	
-	static GJP2fromPassword(pass, req = '') {
+    /**
+     * Account management actions
+     * @param action - Action to perform
+     * @param username - Username to perform action on
+     * @returns Account ID or undefined
+     */
+    static async account(action: string, username: string): Promise<number | undefined> {
+        if (action === "activate") {
+            const query = `
+            UPDATE accounts 
+            SET isActive = 1 
+            WHERE LOWER(userName) = LOWER(?)
+            AND isActive = 0
+            `;
+            await db.execute(query, [username]);
+            return;
+        } else if (action === "getID") {
+            const [rows] = await db.query<RowDataPacket[]>(
+                'SELECT accountID FROM accounts WHERE LOWER(userName) = LOWER(?)',
+                [username]
+            );
+            const accountID = rows.length > 0 ? rows[0].accountID : null;
+            return accountID;
+        } else {
+            throw new Error(`Incorrect value '${action}'!`);
+        }
+    }
+
+    /**
+     * Generate GJP2 hash from password
+     * @param pass - Password to hash
+     * @param req - Express request (optional)
+     * @returns GJP2 hash
+     */
+    static GJP2fromPassword(pass: string, req: Request = {} as Request): string {
         return crypto.createHash('sha1').update(pass + "mI29fmAnxgTs").digest('hex');
-	}
-    static GJP2hash(pass, req = '') {
+    }
+
+    /**
+     * Generate bcrypt hash from GJP2 hash
+     * @param pass - Password to hash
+     * @param req - Express request (optional)
+     * @returns Bcrypt hash
+     */
+    static GJP2hash(pass: string, req: Request = {} as Request): string {
         const hash = this.GJP2fromPassword(pass, req);
         return bcrypt.hashSync(hash, 10);
     }
-    static async attemptsFromIP(req) {
-        //const ip = getIP(req);
-        // debug
-        //console.log(`attemptsFromIP req: ${req}`);
+
+    /**
+     * Count login attempts from IP
+     * @param req - Express request
+     * @returns Number of attempts
+     */
+    static async attemptsFromIP(req: Request): Promise<number> {
         const ip = await FixIp.getIP(req);
         const newtime = Math.floor(Date.now() / 1000) - (60 * 60);
-        const [rows] = await db.execute(
+
+        const [rows] = await db.execute<RowDataPacket[]>(
             "SELECT count(*) as count FROM actions WHERE type = '6' AND timestamp > ? AND value2 = ?",
             [newtime, ip]
         );
-      //  await db.end();
+
         return rows[0].count;
     }
-    static async tooManyAttemptsFromIP(req) {
-        //console.log(`tooManyAttemptsFromIP req: ${req}`);
-        return this.attemptsFromIP(req) > 7;
+
+    /**
+     * Check if IP has too many login attempts
+     * @param req - Express request
+     * @returns True if too many attempts
+     */
+    static async tooManyAttemptsFromIP(req: Request): Promise<boolean> {
+        return (await this.attemptsFromIP(req)) > 7;
     }
-    static async assignModIPs(accountID, ip, req) {
-        //console.log(`assignModIPs req: ${req}`);
+
+    /**
+     * Assign mod IPs to account
+     * @param accountID - Account ID
+     * @param ip - IP address
+     * @param req - Express request (optional)
+     */
+    static async assignModIPs(accountID: number | string, ip: string, req?: Request): Promise<void> {
         const modipCategory = await ApiLib.getMaxValuePermission(accountID, "modipCategory");
+
         if (modipCategory > 0) {
-            const [rows] = await db.execute("SELECT count(*) as count FROM modips WHERE accountID = ?", [accountID]);
+            const [rows] = await db.execute<RowDataPacket[]>(
+                "SELECT count(*) as count FROM modips WHERE accountID = ?",
+                [accountID]
+            );
+
             if (rows[0].count > 0) {
-                await db.execute("UPDATE modips SET IP = ?, modipCategory = ? WHERE accountID = ?", [ip, modipCategory, accountID]);
+                await db.execute(
+                    "UPDATE modips SET IP = ?, modipCategory = ? WHERE accountID = ?",
+                    [ip, modipCategory, accountID]
+                );
             } else {
-                await db.execute("INSERT INTO modips (IP, accountID, isMod, modipCategory) VALUES (?, ?, '1', ?)", [ip, accountID, modipCategory]);
+                await db.execute(
+                    "INSERT INTO modips (IP, accountID, isMod, modipCategory) VALUES (?, ?, '1', ?)",
+                    [ip, accountID, modipCategory]
+                );
             }
         }
     }
 
-    static async logInvalidAttemptFromIP(accid, req) {
-        //debug
-        //console.log(`logInvalidAttemptFromIP req: ${req}`);
+    /**
+     * Log invalid login attempt from IP
+     * @param accid - Account ID
+     * @param req - Express request
+     */
+    static async logInvalidAttemptFromIP(accid: number | string, req: Request): Promise<void> {
         const ip = await FixIp.getIP(req);
         const time = Math.floor(Date.now() / 1000);
+
         await db.execute(
             "INSERT INTO actions (type, value, timestamp, value2) VALUES ('6', ?, ?, ?)",
             [accid, time, ip]
         );
     }
-    static async isGJP2Valid(accid, gjp2, req) {
-        //console.log(`isGJP2Valid req: ${req}`);
-        if (await this.tooManyAttemptsFromIP(req)) { 
-            //console.log('tooManyAttemptsFromIP');
+
+    /**
+     * Validate GJP2 hash against account ID
+     * @param accid - Account ID
+     * @param gjp2 - GJP2 hash
+     * @param req - Express request
+     * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
+     */
+    static async isGJP2Valid(accid: number | string, gjp2: string, req: Request): Promise<number> {
+        if (await this.tooManyAttemptsFromIP(req)) {
             return -1;
-        } 
-        const [rows] = await db.execute("SELECT gjp2, isActive FROM accounts WHERE accountID = ?", [accid]);
+        }
+
+        const [rows] = await db.execute<RowDataPacket[]>(
+            "SELECT gjp2, isActive FROM accounts WHERE accountID = ?",
+            [accid]
+        );
+
         if (rows.length === 0) return 0;
 
         const userInfo = rows[0];
         if (!userInfo.gjp2) return -2;
 
         const isPasswordValid = await bcrypt.compare(gjp2, userInfo.gjp2);
+
         if (isPasswordValid) {
             await this.assignModIPs(accid, FixIp.getIP(req), req);
-            return userInfo.isActive ? 1: -2;
+            return userInfo.isActive ? 1 : -2;
         } else {
             await this.logInvalidAttemptFromIP(accid, req);
             return 0;
         }
     }
-    static async assignGJP2(accid, pass, req) {
-        //console.log(`assignGJP2 req: ${req}`);
+
+    /**
+     * Assign GJP2 hash to account
+     * @param accid - Account ID
+     * @param pass - Password
+     * @param req - Express request (optional)
+     * @returns Database result
+     */
+    static async assignGJP2(accid: number | string, pass: string, req: Request = {} as Request): Promise<any> {
         const query = "UPDATE accounts SET gjp2 = ? WHERE accountID = ?";
         const gjp2 = await this.GJP2hash(pass, req);
+
         try {
-            const [results] = await db.execute(query, [gjp2, accid]);
+            const [results] = await db.execute<ResultSetHeader>(query, [gjp2, accid]);
             return results;
         } catch (error) {
-			ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.panel.main`);
+            ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.panel.main`);
             return "-1";
         }
     }
-    static async isGJP2ValidUsrname(userName, gjp2, req) {
-        //console.log(`isGJP2ValidUsrname req: ${req}`);
+
+    /**
+     * Validate GJP2 hash against username
+     * @param userName - Username
+     * @param gjp2 - GJP2 hash
+     * @param req - Express request
+     * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
+     */
+    static async isGJP2ValidUsrname(userName: string, gjp2: string, req: Request): Promise<number> {
         try {
-            const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName LIKE ?", [userName]);
+            const [rows] = await db.execute<RowDataPacket[]>(
+                "SELECT accountID FROM accounts WHERE userName LIKE ?",
+                [userName]
+            );
+
             if (rows.length === 0) {
                 return 0;
             }
+
             const accID = rows[0].accountID;
             return await this.isGJP2Valid(accID, gjp2, req);
         } catch (error) {
@@ -124,130 +235,193 @@ class Panel {
         }
     }
 
-    static async isValid(accid, pass, req) {
-        const [rows] = await db.execute("SELECT accountID, salt, password, isActive, gjp2 FROM accounts WHERE accountID = ?", [accid]);
+    /**
+     * Validate password against account ID
+     * @param accid - Account ID
+     * @param pass - Password
+     * @param req - Express request
+     * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
+     */
+    static async isValid(accid: number | string, pass: string, req: Request): Promise<number> {
+        const [rows] = await db.execute<RowDataPacket[]>(
+            "SELECT accountID, salt, password, isActive, gjp2 FROM accounts WHERE accountID = ?",
+            [accid]
+        );
+
         if (rows.length === 0) return 0;
 
         const result = rows[0];
         const isPasswordValid = await bcrypt.compare(pass, result.password);
+
         if (isPasswordValid) {
             if (!result.gjp2) await this.assignGJP2(accid, pass, req);
             await this.assignModIPs(accid, FixIp.getIP(req), req);
-            return result.isActive ? 1: -2;
+            return result.isActive ? 1 : -2;
         } else {
             return 0;
         }
     }
 
-    static async isValidUsrname(userName, pass, req) {
-        //console.log(`isValidUsrname req: ${req}`);
-        const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName LIKE ?", [userName]);
+    /**
+     * Validate password against username
+     * @param userName - Username
+     * @param pass - Password
+     * @param req - Express request
+     * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
+     */
+    static async isValidUsrname(userName: string, pass: string, req: Request): Promise<number> {
+        const [rows] = await db.execute<RowDataPacket[]>(
+            "SELECT accountID FROM accounts WHERE userName LIKE ?",
+            [userName]
+        );
+
         if (rows.length === 0) return 0;
 
         const accID = rows[0].accountID;
         return await this.isValid(accID, pass, req);
     }
-    
-    static async songReupNG(result) {
-        try {
-        const resultarray = result.split('~|~');
-        const uploadDate = Math.floor(Date.now() / 1000);
-        
-        async function checkSong(resultarray) {
-            const [rows] = await db.query('SELECT * FROM songs WHERE download = ?', [resultarray[13]]);
-            if (rows.length > 0) {
-                return rows[0].ID;
-            } else {
-                return -1;
-            }
-        }
-        
-        if (await checkSong(resultarray) == -1) {
-        
-        const query = `INSERT INTO songs (ID, name, authorID, authorName, size, download)
-                 VALUES (?, ?, ?, ?, ?, ?)`;
 
-        const [rows] = await db.execute(query, [
-              null,
-              resultarray[3],
-              resultarray[5],
-              resultarray[7],
-              resultarray[9],
-              resultarray[13]
-            ]);
-        let lastID = rows.insertId;
-        lastID = lastID.toString();
-        return "Success" + ":" + lastID;
-        } else {
-            return "DublicateSongException" + ":" + await checkSong(resultarray);
-        }
+    /**
+     * Process song reupload from Newgrounds
+     * @param result - Song data from API
+     * @returns Success status and song ID
+     */
+    static async songReupNG(result: string): Promise<string> {
+        try {
+            const resultarray = result.split('~|~');
+            const uploadDate = Math.floor(Date.now() / 1000);
+
+            // Check if song already exists
+            const checkSong = async (resultarray: string[]): Promise<number> => {
+                const [rows] = await db.query<RowDataPacket[]>(
+                    'SELECT * FROM songs WHERE download = ?',
+                    [resultarray[13]]
+                );
+
+                if (rows.length > 0) {
+                    return rows[0].ID;
+                } else {
+                    return -1;
+                }
+            };
+
+            if (await checkSong(resultarray) === -1) {
+                const query = `INSERT INTO songs (ID, name, authorID, authorName, size, download)
+                         VALUES (?, ?, ?, ?, ?, ?)`;
+
+                const [rows] = await db.execute<ResultSetHeader>(
+                    query,
+                    [null, resultarray[3], resultarray[5], resultarray[7], resultarray[9], resultarray[13]]
+                );
+
+                const lastID = rows.insertId.toString();
+                return `Success:${lastID}`;
+            } else {
+                return `DublicateSongException:${await checkSong(resultarray)}`;
+            }
         } catch (error) {
             return "UnknownSongException:0";
         }
     }
-    static async songReupZM(result) {
-        async function checkSong(resultarray) {
-            const [rows] = await db.query('SELECT * FROM songs WHERE download = ?', [resultarray[5]]);
+
+    /**
+     * Process song reupload from ZeMu
+     * @param result - Song data from API
+     * @returns Success status and song ID
+     */
+    static async songReupZM(result: string): Promise<string> {
+        // Helper to check if song already exists
+        const checkSong = async (resultarray: string[]): Promise<number> => {
+            const [rows] = await db.query<RowDataPacket[]>(
+                'SELECT * FROM songs WHERE download = ?',
+                [resultarray[5]]
+            );
+
             if (rows.length > 0) {
                 return rows[0].ID;
             } else {
                 return -1;
             }
-        }
+        };
+
         try {
-        if (result == "Error") {
-            return "UnknownSongException:0";
-        }
-        const resultarray = result.split('~|~');
-        if (resultarray[0] == "0") {
-            return "UnverifiedSongException:0";
-        }
-        // 0 - is verified
-        // 1 - song name
-        // 2 - author
-        // 3 - author id
-        // 4 - size
-        // 5 - url
-        const uploadDate = Math.floor(Date.now() / 1000);
-        if (await checkSong(resultarray) == -1) {
-        
-        const query = `INSERT INTO songs (ID, name, authorID, authorName, size, download)
-                 VALUES (?, ?, ?, ?, ?, ?)`;
-        
-        const finalSongName = "[ZEMU] " + resultarray[1];
-        const [rows] = await db.execute(query, [
-              null,
-              finalSongName,
-              resultarray[3],
-              resultarray[2],
-              resultarray[4],
-              resultarray[5]
-            ]);
-        let lastID = rows.insertId;
-        lastID = lastID.toString();
-        return "Success" + ":" + lastID;
-        } else {
-            return "DublicateSongException" + ":" + await checkSong(resultarray);
-        }
+            if (result === "Error") {
+                return "UnknownSongException:0";
+            }
+
+            const resultarray = result.split('~|~');
+
+            if (resultarray[0] === "0") {
+                return "UnverifiedSongException:0";
+            }
+
+            // Handle ZeMu song structure:
+            // 0 - is verified
+            // 1 - song name
+            // 2 - author
+            // 3 - author id
+            // 4 - size
+            // 5 - url
+            const uploadDate = Math.floor(Date.now() / 1000);
+
+            if (await checkSong(resultarray) === -1) {
+                const query = `INSERT INTO songs (ID, name, authorID, authorName, size, download)
+                         VALUES (?, ?, ?, ?, ?, ?)`;
+
+                const finalSongName = "[ZEMU] " + resultarray[1];
+
+                const [rows] = await db.execute<ResultSetHeader>(
+                    query,
+                    [null, finalSongName, resultarray[3], resultarray[2], resultarray[4], resultarray[5]]
+                );
+
+                const lastID = rows.insertId.toString();
+                return `Success:${lastID}`;
+            } else {
+                return `DublicateSongException:${await checkSong(resultarray)}`;
+            }
         } catch (error) {
             return "UnknownSongException:0";
         }
     }
-    static async getLevelName(levelID) { // Promise<string>
+
+    /**
+     * Get level name by ID
+     * @param levelID - Level ID
+     * @returns Level name or "Unknown"
+     */
+    static async getLevelName(levelID: number | string): Promise<string> {
         try {
-            const [rows] = await db.query("SELECT levelName FROM levels WHERE levelID = ?", [levelID]);
-            const levelName = rows[0].levelName;
-            return levelName;
+            const [rows] = await db.query<RowDataPacket[]>(
+                "SELECT levelName FROM levels WHERE levelID = ?",
+                [levelID]
+            );
+
+            if (rows.length > 0) {
+                return rows[0].levelName;
+            } else {
+                throw new Error(`Level ID ${levelID} not found`);
+            }
         } catch (error) {
             ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.panel.main`);
             return "Unknown";
         }
     }
-    static async getMappackData(packID) { // Promise<object>
+
+    /**
+     * Get map pack data by ID
+     * @param packID - Map pack ID
+     * @returns Map pack data
+     */
+    static async getMappackData(packID: number | string): Promise<MapPackData> {
         try {
-            const [rows] = await db.query("SELECT name, levels, stars, coins, difficulty, rgbcolors FROM mappacks WHERE ID = ?", [packID]);
+            const [rows] = await db.query<RowDataPacket[]>(
+                "SELECT name, levels, stars, coins, difficulty, rgbcolors FROM mappacks WHERE ID = ?",
+                [packID]
+            );
+
             if (rows.length === 0) {
-                return { 
+                return {
                     packName: undefined,
                     levels: undefined,
                     stars: undefined,
@@ -256,8 +430,8 @@ class Panel {
                     rgbcolors: undefined
                 };
             }
-            const packName = rows[0].name;
-            return { 
+
+            return {
                 packName: rows[0].name,
                 levels: rows[0].levels,
                 stars: parseInt(rows[0].stars, 10),
@@ -267,7 +441,7 @@ class Panel {
             };
         } catch (error) {
             ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.panel.main`);
-            return { 
+            return {
                 packName: undefined,
                 levels: undefined,
                 stars: undefined,
@@ -277,11 +451,21 @@ class Panel {
             };
         }
     }
-    static async getGauntletData(packID) {
+
+    /**
+     * Get gauntlet data by ID
+     * @param packID - Gauntlet ID
+     * @returns Gauntlet data
+     */
+    static async getGauntletData(packID: number | string): Promise<GauntletData> {
         try {
-            const [rows] = await db.query("SELECT level1, level2, level3, level4, level5 FROM gauntlets WHERE ID = ?", [packID]);
+            const [rows] = await db.query<RowDataPacket[]>(
+                "SELECT level1, level2, level3, level4, level5 FROM gauntlets WHERE ID = ?",
+                [packID]
+            );
+
             if (rows.length === 0) {
-                return { 
+                return {
                     level1: undefined,
                     level2: undefined,
                     level3: undefined,
@@ -289,8 +473,8 @@ class Panel {
                     level5: undefined
                 };
             }
-            const packName = rows[0].name;
-            return { 
+
+            return {
                 level1: parseInt(rows[0].level1, 10),
                 level2: parseInt(rows[0].level2, 10),
                 level3: parseInt(rows[0].level3, 10),
@@ -299,7 +483,7 @@ class Panel {
             };
         } catch (error) {
             ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.panel.main`);
-            return { 
+            return {
                 level1: undefined,
                 level2: undefined,
                 level3: undefined,
@@ -308,9 +492,19 @@ class Panel {
             };
         }
     }
-    static async getUsernameByID(accountID) {
+
+    /**
+     * Get username by account ID
+     * @param accountID - Account ID
+     * @returns Username or undefined
+     */
+    static async getUsernameByID(accountID: number | string): Promise<string | undefined> {
         try {
-            const [rows] = await db.execute('SELECT userName FROM accounts WHERE accountID = ?', [accountID]);
+            const [rows] = await db.execute<RowDataPacket[]>(
+                'SELECT userName FROM accounts WHERE accountID = ?',
+                [accountID]
+            );
+
             if (rows.length > 0) {
                 return rows[0].userName;
             } else {
@@ -318,23 +512,45 @@ class Panel {
             }
         } catch (error) {
             ConsoleApi.Error('main', `${error.message} at net.fimastgd.forevercore.panel.main`);
+            return undefined;
         }
     }
-    static async getIDbyUsername(userName) {
+
+    /**
+     * Get account ID by username
+     * @param userName - Username
+     * @returns Account ID or undefined
+     */
+    static async getIDbyUsername(userName: string): Promise<number | undefined> {
         try {
-            const [rows] = await db.execute('SELECT accountID FROM accounts WHERE LOWER(userName) = LOWER(?)', [userName]);
+            const [rows] = await db.execute<RowDataPacket[]>(
+                'SELECT accountID FROM accounts WHERE LOWER(userName) = LOWER(?)',
+                [userName]
+            );
+
             if (rows.length > 0) {
                 return rows[0].accountID;
             } else {
-                throw new Error(`Account with username "${username}" not found`);
+                throw new Error(`Account with username "${userName}" not found`);
             }
         } catch (error) {
             ConsoleApi.Error('main', `${error.message} at net.fimastgd.forevercore.panel.main`);
+            return undefined;
         }
     }
-    static async checkAccountLegit(username) /*: Promise<boolean> */ { 
+
+    /**
+     * Check if account exists
+     * @param username - Username to check
+     * @returns True if account exists
+     */
+    static async checkAccountLegit(username: string): Promise<boolean> {
         try {
-            const [rows] = await db.execute('SELECT LOWER(userName) FROM accounts WHERE LOWER(userName) = ?', [username]);
+            const [rows] = await db.execute<RowDataPacket[]>(
+                'SELECT LOWER(userName) FROM accounts WHERE LOWER(userName) = ?',
+                [username.toLowerCase()]
+            );
+
             return rows.length > 0;
         } catch (error) {
             ConsoleApi.Error("main", `Error while checking account existence: ${error.message} at net.fimastgd.forevercore.panel.main`);
@@ -343,4 +559,4 @@ class Panel {
     }
 }
 
-module.exports = Panel;
+export default Panel;

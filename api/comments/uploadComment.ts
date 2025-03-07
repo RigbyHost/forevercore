@@ -1,66 +1,125 @@
 'package net.fimastgd.forevercore.api.comments.uploadComments';
 
-const ApiLib = require("../lib/apiLib");
-const ExploitPatch = require("../lib/exploitPatch");
-const CommandLib = require("../lib/commandLib");
-const db = require("../../serverconf/db");
-const c = require("ansi-colors");
+import { Request } from 'express';
+import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import ApiLib from '../lib/apiLib';
+import ExploitPatch from '../lib/exploitPatch';
+import CommandLib from '../lib/commandLib';
+import db from '../../serverconf/db';
+import ConsoleApi from '../../modules/console-api';
 
-const ConsoleApi = require("../../modules/console-api");
-
-const uploadComment = async (userNameStr, gameVersionStr, commentStr, levelIDStr, percentStr, udidStr, accountIDStr, gjp2Str, gjpStr, req) => {
-    function dateNow() {
-        const currentDate = new Date();
-        const fDate = `${currentDate.getDate().toString().padStart(2, "0")}/${(currentDate.getMonth() + 1).toString().padStart(2, "0")}/${currentDate.getFullYear()} ${currentDate.getHours().toString().padStart(2, "0")}:${currentDate.getMinutes().toString().padStart(2, "0")}`;
-        return fDate;
-    }
+/**
+ * Upload a comment to a level
+ * @param userNameStr - Username
+ * @param gameVersionStr - Game version
+ * @param commentStr - Comment content
+ * @param levelIDStr - Level ID
+ * @param percentStr - Completion percentage
+ * @param udidStr - Device ID
+ * @param accountIDStr - Account ID
+ * @param gjp2Str - GJP2 hash
+ * @param gjpStr - GJP hash
+ * @param req - Express request
+ * @returns Status (1 = success, -1 = failure)
+ */
+const uploadComment = async (
+    userNameStr?: string,
+    gameVersionStr?: string,
+    commentStr?: string,
+    levelIDStr?: string,
+    percentStr?: string,
+    udidStr?: string,
+    accountIDStr?: string,
+    gjp2Str?: string,
+    gjpStr?: string,
+    req?: Request
+): Promise<string> => {
     try {
+        // Process input params
         const userName = userNameStr ? await ExploitPatch.remove(userNameStr) : "";
         const gameVersion = gameVersionStr ? await ExploitPatch.number(gameVersionStr) : 0;
+
+        // Handle comment encoding based on game version
         let comment = await ExploitPatch.remove(commentStr);
-        comment = gameVersion < 20 ? Buffer.from(comment).toString("base64") : comment;
+        comment = parseInt(gameVersion.toString()) < 20 ?
+            Buffer.from(comment).toString("base64") :
+            comment;
+
+        // Process level ID - handling negative levels with special prefix
         const levelID = (levelIDStr < 0 ? "-" : "") + (await ExploitPatch.number(levelIDStr));
         const percent = percentStr ? await ExploitPatch.remove(percentStr) : 0;
 
+        // Get user ID from credentials
         let id = await ApiLib.getIDFromPost(udidStr, gameVersionStr, accountIDStr, gjp2Str, gjpStr, req);
         id = parseInt(id);
         const register = !isNaN(id);
         const userID = await ApiLib.getUserID(id, userName);
         const uploadDate = Math.floor(Date.now() / 1000);
+
+        // Decode comment for command processing
         const decodecomment = Buffer.from(comment, "base64").toString("utf-8");
 
-        if ((await CommandLib.doCommands(id, decodecomment, levelID)) == true) {
-            const reslt = gameVersion > 20 ? "temp_0_<cg>Command completed successfully!</c>" : "-1";
+        // Check for special commands
+        const commandResult = await CommandLib.doCommands(id, decodecomment, levelID);
+
+        if (commandResult === true) {
+            // Command executed successfully
+            const reslt = parseInt(gameVersion.toString()) > 20 ?
+                "temp_0_<cg>Command completed successfully!</c>" :
+                "-1";
             return reslt;
-        } else if ((await CommandLib.doCommands(id, decodecomment, levelID)) == "NO") {
-            const resltNO = gameVersion > 20 ? "temp_0_<cr>No permissions</c>" : "-1";
+        } else if (commandResult === "NO") {
+            // No permission for command
+            const resltNO = parseInt(gameVersion.toString()) > 20 ?
+                "temp_0_<cr>No permissions</c>" :
+                "-1";
             return resltNO;
         }
-        if (id != "" && comment != "") {
-            const [result] = await db.execute("INSERT INTO comments (userName, comment, levelID, userID, timeStamp, percent) VALUES (?, ?, ?, ?, ?, ?)", [userName, comment, levelID, userID, uploadDate, percent]);
-            //res.send("1");
-            if (register && percent != 0) {
-                const [rows] = await db.execute("SELECT percent FROM levelscores WHERE accountID = ? AND levelID = ?", [id, levelID]);
 
-                if (rows.length == 0) {
-                    await db.execute("INSERT INTO levelscores (accountID, levelID, percent, uploadDate) VALUES (?, ?, ?, ?)", [id, levelID, percent, uploadDate]);
+        // No command found, process as regular comment
+        if (id !== "" && comment !== "") {
+            // Insert comment
+            const [result] = await db.execute<ResultSetHeader>(
+                "INSERT INTO comments (userName, comment, levelID, userID, timeStamp, percent) VALUES (?, ?, ?, ?, ?, ?)",
+                [userName, comment, levelID, userID, uploadDate, percent]
+            );
+
+            // If registered user with completion percentage
+            if (register && parseInt(percent.toString()) !== 0) {
+                // Check for existing score
+                const [rows] = await db.execute<RowDataPacket[]>(
+                    "SELECT percent FROM levelscores WHERE accountID = ? AND levelID = ?",
+                    [id, levelID]
+                );
+
+                if (rows.length === 0) {
+                    // Create new score record
+                    await db.execute(
+                        "INSERT INTO levelscores (accountID, levelID, percent, uploadDate) VALUES (?, ?, ?, ?)",
+                        [id, levelID, percent, uploadDate]
+                    );
                 } else if (rows[0].percent < percent) {
-                    await db.execute("UPDATE levelscores SET percent = ?, uploadDate = ? WHERE accountID = ? AND levelID = ?", [percent, uploadDate, id, levelID]);
+                    // Update score if better than previous
+                    await db.execute(
+                        "UPDATE levelscores SET percent = ?, uploadDate = ? WHERE accountID = ? AND levelID = ?",
+                        [percent, uploadDate, id, levelID]
+                    );
                 }
+
                 ConsoleApi.Log("main", `Uploaded comment to level ${levelID} by ${userName}: ${comment}`);
                 return "1";
             } else {
-				ConsoleApi.Log("main", `Uploaded comment to level ${levelID} by ${userName}: ${comment}`);
+                ConsoleApi.Log("main", `Uploaded comment to level ${levelID} by ${userName}: ${comment}`);
                 return "1";
             }
         } else {
-			ConsoleApi.Warn("main", `Failed upload comment to level ${levelID} by ${userName}: ${comment}`);
+            ConsoleApi.Warn("main", `Failed upload comment to level ${levelID} by ${userName}: ${comment}`);
             return "-1";
         }
     } catch (error) {
-		ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.api.comments.uploadComment`);
+        ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.api.comments.uploadComment`);
         return "-1";
     }
 };
 
-module.exports = uploadComment;
+export default uploadComment;

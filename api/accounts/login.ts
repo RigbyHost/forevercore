@@ -1,13 +1,16 @@
 'package net.fimastgd.forevercore.api.accounts.login';
 
-import { Connection, RowDataPacket } from 'mysql2/promise';
+import { Request } from 'express';
+import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import GeneratePass from '../lib/generatePass';
 import ApiLib from '../lib/apiLib';
 import ExploitPatch from '../lib/exploitPatch';
 import ConsoleApi from '../../modules/console-api';
 import db from '../../serverconf/db';
-import { Request } from 'express';
 
+/**
+ * Login result interface
+ */
 interface LoginResult {
     success: boolean;
     accountID?: number;
@@ -25,14 +28,17 @@ interface LoginResult {
  * @returns Promise resolving to login result string
  */
 const loginAccount = async (
-    userNameOr: string | undefined,
-    udidOr: string | undefined,
-    passwordOr: string | undefined,
-    gjp2Or: string | undefined,
-    req: Request
+    userNameOr?: string,
+    udidOr?: string,
+    passwordOr?: string,
+    gjp2Or?: string,
+    req?: Request
 ): Promise<string> => {
     try {
+        // Get client IP
         const ip = await ApiLib.getIP(req);
+
+        // Process input parameters
         const udid = udidOr ? await ExploitPatch.remove(udidOr) : '';
         const userName = userNameOr ? await ExploitPatch.remove(userNameOr) : '';
 
@@ -68,11 +74,12 @@ const loginAccount = async (
             if (userRows.length > 0) {
                 userID = userRows[0].userID;
             } else {
-                const [result] = await db.execute<RowDataPacket[]>(
+                // Create new user entry
+                const [result] = await db.execute<ResultSetHeader>(
                     "INSERT INTO users (isRegistered, extID, userName) VALUES (1, ?, ?)",
                     [id, userName]
                 );
-                userID = (result as any).insertId;
+                userID = result.insertId;
             }
 
             // Log the login action
@@ -93,6 +100,8 @@ const loginAccount = async (
 
                     if (oldUserRows.length > 0) {
                         const oldUserID = oldUserRows[0].userID;
+
+                        // Transfer levels to new account
                         await db.execute(
                             "UPDATE levels SET userID = ?, extID = ? WHERE userID = ?",
                             [userID, id, oldUserID]
@@ -113,7 +122,7 @@ const loginAccount = async (
         }
     } catch (error) {
         ConsoleApi.Warn("main", "Enabled emergency protection against account hacking at net.fimastgd.forevercore.api.accounts.login");
-        ConsoleApi.FatalError("main", `Unhandled server exception with user login to account, automatic protection called at net.fimastgd.forevercore.api.accounts.login\nJSException: ${error} at net.fimastgd.forevercore.api.accounts.login`);
+        ConsoleApi.FatalError("main", `Unhandled server exception with user login to account, automatic protection called at net.fimastgd.forevercore.api.accounts.login\nJSException: ${error}`);
         return "-1";
     }
 };

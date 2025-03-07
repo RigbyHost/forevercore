@@ -1,62 +1,100 @@
 'package net.fimastgd.forevercore.api.lib.diffLib';
 
-const db = require("../../serverconf/db");
-const settings = require("../../serverconf/settings");
-const c = require("ansi-colors");
+import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import db from '../../serverconf/db';
+import settings from '../../serverconf/settings';
+import ConsoleApi from '../../modules/console-api';
 
-const ConsoleApi = require("../../modules/console-api");
-
-function dateNow() {
-    const currentDate = new Date();
-    const fDate = `${currentDate.getDate().toString().padStart(2, "0")}/${(currentDate.getMonth() + 1).toString().padStart(2, "0")}/${currentDate.getFullYear()} ${currentDate.getHours().toString().padStart(2, "0")}:${currentDate.getMinutes().toString().padStart(2, "0")}`;
-    return fDate;
-}
+/**
+ * Utility class for difficulty voting system
+ */
 class DiffLib {
-    static async canUserVote(accountID, levelID) {
+    /**
+     * Check if user can vote for difficulty on a level
+     * @param accountID - Account ID
+     * @param levelID - Level ID
+     * @returns True if user can vote
+     */
+    static async canUserVote(accountID: number | string, levelID: number | string): Promise<boolean> {
         try {
             const query = "SELECT COUNT(*) AS count FROM diffVote WHERE accountID = ? AND levelID = ?";
-            const [rows] = await db.execute(query, [accountID, levelID]);
-            if (rows[0].count > 1) {
-                return false;
-            } else {
-                return true;
-            }
+            const [rows] = await db.execute<RowDataPacket[]>(query, [accountID, levelID]);
+
+            // User can vote if they haven't already voted more than once
+            return rows[0].count <= 1;
         } catch (error) {
-			ConsoleApi.Error("main", `canUserVoteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
+            ConsoleApi.Error("main", `canUserVoteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
             return false;
         }
     }
-    static async getAverageVote(levelID) {
+
+    /**
+     * Get average difficulty vote for a level
+     * @param levelID - Level ID
+     * @returns Average star count or false if error
+     */
+    static async getAverageVote(levelID: number | string): Promise<number | false> {
         try {
-            const [rows] = await db.query("SELECT stars FROM diffVote WHERE levelID = ?", [levelID]);
+            const [rows] = await db.query<RowDataPacket[]>(
+                "SELECT stars FROM diffVote WHERE levelID = ?",
+                [levelID]
+            );
+
+            // Calculate average stars from all votes
             const starsArray = rows.map(row => row.stars);
             const averageStars = Math.round(starsArray.reduce((acc, val) => acc + val, 0) / starsArray.length);
+
             return averageStars;
         } catch (error) {
-			ConsoleApi.Error("main", `getAverageVoteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
+            ConsoleApi.Error("main", `getAverageVoteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
             return false;
         }
     }
-    static async votesCount(levelID) {
+
+    /**
+     * Count the number of votes for a level
+     * @param levelID - Level ID
+     * @returns Vote count
+     */
+    static async votesCount(levelID: number | string): Promise<number> {
         try {
             const query = "SELECT COUNT(*) AS count FROM diffVote WHERE levelID = ?";
-            const [rows] = await db.execute(query, [levelID]);
+            const [rows] = await db.execute<RowDataPacket[]>(query, [levelID]);
+
             return rows[0].count;
         } catch (error) {
-			ConsoleApi.Error("main", `votesCountException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
-            return "-1";
+            ConsoleApi.Error("main", `votesCountException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
+            return -1;
         }
     }
-    static async vote(levelID, accountID, stars) {
+
+    /**
+     * Register a difficulty vote for a level
+     * @param levelID - Level ID
+     * @param accountID - Account ID
+     * @param stars - Star count
+     * @returns True if vote successful
+     */
+    static async vote(
+        levelID: number | string,
+        accountID: number | string,
+        stars: number | string
+    ): Promise<boolean> {
         try {
             const query = "INSERT INTO diffVote (levelID, accountID, stars, timestamp) VALUES (?, ?, ?, ?)";
-            await db.execute(query, [levelID, accountID, stars, Math.floor(Date.now() / 1000)]);
+            await db.execute(query, [
+                levelID,
+                accountID,
+                stars,
+                Math.floor(Date.now() / 1000)
+            ]);
+
             return true;
         } catch (error) {
-			ConsoleApi.Error("main", `voteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
+            ConsoleApi.Error("main", `voteException: ${error} at net.fimastgd.forevercore.api.lib.diffLib`);
             return false;
         }
     }
 }
 
-module.exports = DiffLib;
+export default DiffLib;
