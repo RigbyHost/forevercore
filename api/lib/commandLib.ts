@@ -310,7 +310,7 @@ class CommandLib {
             // Log action
             await db.execute(
                 "INSERT INTO modactions (type, value, value3, timestamp, account, value2, value4) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [5, "1", levelID, uploadDate, accountID, timestamp, 0]
+                [5, "1", levelID, uploadDate, accountID, timestamp.toString(), "0"]
             );
 
             return true;
@@ -349,7 +349,7 @@ class CommandLib {
             // Log action
             await db.execute(
                 "INSERT INTO modactions (type, value, value3, timestamp, account, value2, value4) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [5, "1", levelID, uploadDate, accountID, timestamp, 1]
+                [5, "1", levelID, uploadDate, accountID, timestamp.toString(), "1"]
             );
 
             return true;
@@ -519,7 +519,7 @@ class CommandLib {
                 );
 
                 const reward = await ExploitPatch.number(carray[1]);
-                let diff = await ExploitPatch.charclean(carray[2]);
+                let diff: any = await ExploitPatch.charclean(carray[2]);
                 const featured = isNaN(Number(carray[3])) ?
                     await ExploitPatch.number(carray[4]) :
                     await ExploitPatch.number(carray[3]);
@@ -547,7 +547,12 @@ class CommandLib {
                             extreme: 5
                         };
 
-                        diff = (5 + diffList[diff]).toString();
+                        // Исправление: проверить, что diff - это строка и существует в словаре
+                        if (typeof diff === 'string' && diff in diffList) {
+                            diff = (5 + diffList[diff]).toString();
+                        } else {
+                            diff = "0"; // Дефолтное значение
+                        }
                     } else {
                         const diffList: { [key: string]: number } = {
                             na: -1,
@@ -559,7 +564,12 @@ class CommandLib {
                             demon: 5
                         };
 
-                        diff = diffList[diff];
+                        // Исправление: проверить, что diff - это строка и существует в словаре
+                        if (typeof diff === 'string' && diff in diffList) {
+                            diff = diffList[diff];
+                        } else {
+                            diff = 0; // Дефолтное значение
+                        }
                     }
                 }
 

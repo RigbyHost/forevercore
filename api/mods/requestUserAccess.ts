@@ -24,8 +24,8 @@ const requestUserAccess = async (
     const accountID = await GJPCheck.getAccountIDOrDie(accountIDStr, gjp2Str, gjpStr, req);
     
     // Check mod permissions
-    if (typeof(await ApiLib.getMaxValuePermission(accountID, "actionRequestMod")) === 'number' &&
-    (await ApiLib.getMaxValuePermission(accountID, "actionRequestMod")) >= 1) {
+    const requestModPerm = await ApiLib.getMaxValuePermission(accountID, "actionRequestMod");
+    if (typeof requestModPerm === 'number' && requestModPerm >= 1) {
       permState = await ApiLib.getMaxValuePermission(accountID, "modBadgeLevel");
       
       // Return access level based on badge level

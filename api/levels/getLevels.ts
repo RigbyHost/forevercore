@@ -228,46 +228,48 @@ const getLevels = async (
         if (epicFilter && epicFilter !== "") params.push(epicFilter);
 
         // Difficulty filters
-        switch (parseInt(diff)) {
-            case -1:
-                params.push("starDifficulty = '0'");
-                break;
-            case -3:
-                params.push("starAuto = '1'");
-                break;
-            case -2:
-                if (demonFilterStr) {
-                    const demonFilter = parseInt(demonFilterStr);
-                    params.push("starDemon = 1");
+        if (diff !== undefined) {
+            const diffValue = typeof diff === 'string' ? parseInt(diff) : NaN;
+            
+            switch (diffValue) {
+                case -1:
+                    params.push("starDifficulty = '0'");
+                    break;
+                case -3:
+                    params.push("starAuto = '1'");
+                    break;
+                case -2:
+                    if (demonFilterStr) {
+                        const demonFilter = parseInt(demonFilterStr);
+                        params.push("starDemon = 1");
 
-                    switch (demonFilter) {
-                        case 1:
-                            params.push("starDemonDiff = '3'");
-                            break;
-                        case 2:
-                            params.push("starDemonDiff = '4'");
-                            break;
-                        case 3:
-                            params.push("starDemonDiff = '0'");
-                            break;
-                        case 4:
-                            params.push("starDemonDiff = '5'");
-                            break;
-                        case 5:
-                            params.push("starDemonDiff = '6'");
-                            break;
+                        switch (demonFilter) {
+                            case 1:
+                                params.push("starDemonDiff = '3'");
+                                break;
+                            case 2:
+                                params.push("starDemonDiff = '4'");
+                                break;
+                            case 3:
+                                params.push("starDemonDiff = '0'");
+                                break;
+                            case 4:
+                                params.push("starDemonDiff = '5'");
+                                break;
+                            case 5:
+                                params.push("starDemonDiff = '6'");
+                                break;
+                        }
                     }
-                }
-                break;
-            case "-":
-                break;
-            default:
-                if (diff) {
-                    const diffString = typeof diff === 'string' ? diff : diff;
-                    const formattedDiff = diffString.replace(/,/g, "0,") + "0";
-                    params.push(`starDifficulty IN (${formattedDiff}) AND starAuto = '0' AND starDemon = '0'`);
-                }
-                break;
+                    break;
+                default:
+                    if (diff !== "-") {
+                        const diffString = typeof diff === 'string' ? diff : diff;
+                        const formattedDiff = diffString.replace(/,/g, "0,") + "0";
+                        params.push(`starDifficulty IN (${formattedDiff}) AND starAuto = '0' AND starDemon = '0'`);
+                    }
+                    break;
+            }
         }
 
         // Search string

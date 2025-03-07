@@ -28,7 +28,7 @@ interface CommentData {
 }
 
 /**
- * Get comments for a level or user
+ * Gets comments for a level or user
  * @param binaryVersionStr - Binary version string
  * @param gameVersionStr - Game version string
  * @param modeStr - Sort mode string (0 = most recent, 1 = most liked)
@@ -155,10 +155,13 @@ const getComments = async (
                 if (comment1.userName) {
                     const extID = !isNaN(Number(comment1.extID)) ? comment1.extID : 0;
 
-                    if (binVer > 31) {
+                    if (typeof binVer === 'number' && binVer > 31) {
                         // For newer binary versions, include badge and color info
                         const badge = await ApiLib.getMaxValuePermission(extID, "modBadgeLevel");
-                        const colorString = badge > 0 ? `~12~${await ApiLib.getAccountCommentColor(extID)}` : "";
+                        
+                        // Check if badge is a number and greater than 0
+                        const badgeValue = typeof badge === 'number' && badge > 0;
+                        const colorString = badgeValue ? `~12~${await ApiLib.getAccountCommentColor(extID)}` : "";
 
                         commentParts.push(
                             `11~${badge}${colorString}:1~${comment1.userName}~7~1~9~${comment1.icon}~10~${comment1.color1}~11~${comment1.color2}~14~${comment1.iconType}~15~${comment1.special}~16~${extID}`
@@ -177,7 +180,7 @@ const getComments = async (
         // Construct final response
         let response = commentstring.join("|");
 
-        if (binVer < 32) {
+        if (typeof binVer === 'number' && binVer < 32) {
             response += `#${userstring.join("|")}`;
         }
 

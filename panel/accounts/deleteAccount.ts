@@ -14,13 +14,22 @@ import ConsoleApi from '../../modules/console-api';
 const deleteAccount = async (accountID: string | number): Promise<string> => {
   try {
     // Delete account data from database
-    await db.query('DELETE FROM accounts WHERE accountID = ?', [accountID]);
+    const [accountResult] = await db.query<ResultSetHeader>(
+      'DELETE FROM accounts WHERE accountID = ?', 
+      [accountID]
+    );
     
     // Delete user data if it exists
-    const [rows] = await db.query('SELECT * FROM users WHERE extID = ?', [accountID]);
+    const [rows] = await db.query<ResultSetHeader[]>(
+      'SELECT * FROM users WHERE extID = ?', 
+      [accountID]
+    );
     
-    if (rows.length > 0) {
-      await db.query('DELETE FROM users WHERE extID = ?', [accountID]);
+    if (rows && rows.length > 0) {
+      await db.query<ResultSetHeader>(
+        'DELETE FROM users WHERE extID = ?', 
+        [accountID]
+      );
     }
     
     // Delete account save data files

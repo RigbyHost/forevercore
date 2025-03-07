@@ -31,7 +31,7 @@ const deleteAccountComment = async (
     // Check permission to delete comment
     const permission = await ApiLib.checkPermission(accountID, "actionDeleteComment");
     
-    if (permission === 1) {
+    if (typeof(permission) === "number" && permission === 1) {
       // Admin can delete any comment
       const query = `DELETE FROM acccomments WHERE commentID = ? LIMIT 1`;
       await db.query<ResultSetHeader>(query, [commentID]);
