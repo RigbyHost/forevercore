@@ -94,7 +94,7 @@ const getLevels = async (
         let orderenabled = true;
         let ordergauntlet = false;
         let isIDSearch = false;
-        const params: string[] = ["unlisted = 0"];
+        let params: string[] = ["unlisted = 0"];
         let morejoins = "";
 
         // Process input parameters
@@ -228,7 +228,7 @@ const getLevels = async (
         if (epicFilter && epicFilter !== "") params.push(epicFilter);
 
         // Difficulty filters
-        switch (diff) {
+        switch (parseInt(diff)) {
             case -1:
                 params.push("starDifficulty = '0'");
                 break;
@@ -263,7 +263,7 @@ const getLevels = async (
                 break;
             default:
                 if (diff) {
-                    const diffString = typeof diff === 'string' ? diff : diff.toString();
+                    const diffString = typeof diff === 'string' ? diff : diff;
                     const formattedDiff = diffString.replace(/,/g, "0,") + "0";
                     params.push(`starDifficulty IN (${formattedDiff}) AND starAuto = '0' AND starDemon = '0'`);
                 }

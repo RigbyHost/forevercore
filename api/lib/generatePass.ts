@@ -64,7 +64,7 @@ class GeneratePass {
    */
   static async assignModIPs(accountID: number | string, ip: string, req?: Request): Promise<void> {
     const modipCategory = await ApiLib.getMaxValuePermission(accountID, "modipCategory");
-    if (modipCategory > 0) {
+    if (typeof modipCategory === 'number' && modipCategory > 0) {
       const [rows] = await db.execute<RowDataPacket[]>(
         "SELECT count(*) as count FROM modips WHERE accountID = ?", 
         [accountID]

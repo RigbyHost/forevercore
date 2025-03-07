@@ -43,7 +43,7 @@ const getFriendRequests = async (req: Request): Promise<string> => {
     let reqstring = "";
     
     // Process parameters
-    const getSent = !req.body.getSent ? 0 : await ExploitPatch.remove(req.body.getSent);
+    const getSent = !parseInt(req.body.getSent) ? 0 : await parseInt(ExploitPatch.remove(req.body.getSent));
     const bcgjp = req.body.gameVersion > 21 ? req.body.gjp2 : req.body.gjp; // Backwards Compatible GJP
     
     if (!req.body.accountID || !req.body.page || isNaN(Number(req.body.page)) || !bcgjp) {

@@ -6,7 +6,7 @@ import ApiLib from './apiLib';
 import ExploitPatch from './exploitPatch';
 import fs from 'fs';
 import path from 'path';
-import cp from '../system/calculateCPs';
+import { calculate } from '../system/calculateCPs';
 import ConsoleApi from '../../modules/console-api';
 
 /**
@@ -146,7 +146,7 @@ class CommandLib {
             }
 
             // Calculate creator points
-            cp.calculate();
+            calculate();
             return true;
         } else if (comment.startsWith("!rate") && !(await ApiLib.checkPermission(accountID, "commandRate"))) {
             return "NO";
@@ -198,7 +198,7 @@ class CommandLib {
             }
 
             // Calculate creator points
-            cp.calculate();
+            calculate();
             return true;
         } else if (comment.startsWith("!rate") && !(await ApiLib.checkPermission(accountID, "commandRate"))) {
             return "NO";
@@ -547,7 +547,7 @@ class CommandLib {
                             extreme: 5
                         };
 
-                        diff = 5 + diffList[diff];
+                        diff = (5 + diffList[diff]).toString();
                     } else {
                         const diffList: { [key: string]: number } = {
                             na: -1,

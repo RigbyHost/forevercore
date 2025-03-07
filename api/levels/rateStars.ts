@@ -62,7 +62,8 @@ const rateStars = async (
           
           // Check if enough votes to change difficulty
           if ((await DiffLib.votesCount(levelID)) >= settings.diffVoteLevel) {
-            let AVERAGE = await DiffLib.getAverageVote(levelID);
+            const avgVote = await DiffLib.getAverageVote(levelID);
+            let AVERAGE = typeof avgVote === 'number' ? avgVote : 0;
             
             // Adjust ratings for auto/demon like RobTop server
             if (settings.hardDiffVote === false) {

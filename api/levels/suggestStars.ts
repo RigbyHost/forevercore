@@ -4,7 +4,7 @@ import { Request } from 'express';
 import ApiLib from '../lib/apiLib';
 import ExploitPatch from '../lib/exploitPatch';
 import GJPCheck from '../lib/GJPCheck';
-import cp from '../system/calculateCPs';
+import { calculate } from '../system/calculateCPs';
 import ConsoleApi from '../../modules/console-api';
 
 /**
@@ -50,16 +50,16 @@ const suggestStars = async (
     if ((await ApiLib.checkPermission(accountID, "actionRateStars")) && 
         !starFeatured && !starEpic && !starLegendary && !starMythic) {
       // Standard stars rater
-      await ApiLib.rateLevel(accountID, levelID, stars, difficulty.diff, difficulty.auto, difficulty.demon);
+      await ApiLib.rateLevel(accountID, levelID, parseInt(stars), difficulty.diff, difficulty.auto, difficulty.demon);
       ConsoleApi.Log("main", `MOD level rating. levelID: ${levelID}, difficulty: ${difficulty.diff}, rateMOD: star rate`);
       return "1";
     } else if (starFeatured && !starEpic && !starLegendary && !starMythic) {
       // Featured rater
       if (Number(feature) <= 1) {
-        await ApiLib.rateLevel(accountID, levelID, stars, difficulty.diff, difficulty.auto, difficulty.demon);
+        await ApiLib.rateLevel(accountID, levelID, parseInt(stars), difficulty.diff, difficulty.auto, difficulty.demon);
         await ApiLib.featureLevel(accountID, levelID, feature);
         await ApiLib.verifyCoinsLevel(accountID, levelID, 1);
-        cp.calculate();
+        calculate();
         ConsoleApi.Log("main", `MOD level rating. levelID: ${levelID}, difficulty: ${difficulty.diff}, rateMOD: feature`);
         return "1";
       } else {
@@ -68,10 +68,10 @@ const suggestStars = async (
     } else if (starEpic && !starLegendary && !starMythic) {
       // Epic rater
       if (Number(feature) <= 2) {
-        await ApiLib.rateLevel(accountID, levelID, stars, difficulty.diff, difficulty.auto, difficulty.demon);
+        await ApiLib.rateLevel(accountID, levelID, parseInt(stars), difficulty.diff, difficulty.auto, difficulty.demon);
         await ApiLib.featureLevel(accountID, levelID, feature);
         await ApiLib.verifyCoinsLevel(accountID, levelID, 1);
-        cp.calculate();
+        calculate();
         ConsoleApi.Log("main", `MOD level rating. levelID: ${levelID}, difficulty: ${difficulty.diff}, rateMOD: epic`);
         return "1";
       } else {
@@ -80,10 +80,10 @@ const suggestStars = async (
     } else if (starLegendary && !starMythic) {
       // Legendary rater
       if (Number(feature) <= 3) {
-        await ApiLib.rateLevel(accountID, levelID, stars, difficulty.diff, difficulty.auto, difficulty.demon);
+        await ApiLib.rateLevel(accountID, levelID, parseInt(stars), difficulty.diff, difficulty.auto, difficulty.demon);
         await ApiLib.featureLevel(accountID, levelID, feature);
         await ApiLib.verifyCoinsLevel(accountID, levelID, 1);
-        cp.calculate();
+        calculate();
         ConsoleApi.Log("main", `MOD level rating. levelID: ${levelID}, difficulty: ${difficulty.diff}, rateMOD: legendary`);
         return "1";
       } else {
@@ -92,7 +92,7 @@ const suggestStars = async (
     } else if (await ApiLib.checkPermission(accountID, "actionRateMythic")) {
       // Mythic rater
       if (Number(feature) <= 4) {
-        await ApiLib.rateLevel(accountID, levelID, stars, difficulty.diff, difficulty.auto, difficulty.demon);
+        await ApiLib.rateLevel(accountID, levelID, parseInt(stars), difficulty.diff, difficulty.auto, difficulty.demon);
         
         // Convert values to string to ensure consistency
         const accountIDS = accountID.toString();
@@ -101,7 +101,7 @@ const suggestStars = async (
         
         await ApiLib.featureLevel(accountIDS, levelIDS, featureS);
         await ApiLib.verifyCoinsLevel(accountID, levelID, 1);
-        cp.calculate();
+        calculate();
         
         ConsoleApi.Log("main", `MOD level rating. levelID: ${levelID}, difficulty: ${difficulty.diff}, rateMOD: mythic`);
         return "1";

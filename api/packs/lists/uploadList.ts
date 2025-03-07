@@ -14,7 +14,7 @@ const uploadList = async (req: Request): Promise<string> => {
   try {
     // Authenticate user
     const accountID = await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req);
-    const listID = await ExploitPatch.number(req.body.listID);
+    const listID = parseInt(ExploitPatch.number(req.body.listID));
     
     // Process list parameters
     const listName = (req.body.listName && await (ExploitPatch.remove(req.body.listName) != "")) 
@@ -24,7 +24,7 @@ const uploadList = async (req: Request): Promise<string> => {
     const listDesc = await ExploitPatch.remove(req.body.listDesc);
     const listLevels = await ExploitPatch.remove(req.body.listLevels);
     const difficulty = await ExploitPatch.number(req.body.difficulty);
-    const listVersion = await ExploitPatch.number(req.body.listVersion) === 0 
+    const listVersion = parseInt(ExploitPatch.number(req.body.listVersion)) === 0 
       ? 1 
       : (await ExploitPatch.number(req.body.listVersion));
     

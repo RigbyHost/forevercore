@@ -52,7 +52,7 @@ const getUserList = async (req: Request): Promise<string> => {
     
     // Authenticate user
     const accountID = await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req);
-    const type = await ExploitPatch.remove(req.body.type);
+    const type = parseInt(ExploitPatch.remove(req.body.type));
     
     let people = "";
     let peoplestring = "";
@@ -60,10 +60,10 @@ const getUserList = async (req: Request): Promise<string> => {
     
     // Determine query based on list type
     let query: string;
-    if (type == 0) {
+    if (type === 0) {
       // Friends list
       query = "SELECT person1, isNew1, person2, isNew2 FROM friendships WHERE person1 = ? OR person2 = ?";
-    } else if (type == 1) {
+    } else if (type === 1) {
       // Blocked users list
       query = "SELECT person1, person2 FROM blocks WHERE person1 = ?";
     } else {

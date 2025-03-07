@@ -47,7 +47,7 @@ const deleteComment = async (
       const creatorAccID = rows[0]?.extID;
       
       // Delete if user is level creator or has admin permission
-      if (creatorAccID == accountID || (await ApiLib.checkPermission(accountID, "actionDeleteComment")) == 1) {
+      if (creatorAccID == accountID || (await ApiLib.checkPermission(accountID, "actionDeleteComment")) === true) {
         await db.execute<ResultSetHeader>(
           "DELETE FROM comments WHERE commentID = ? LIMIT 1", 
           [commentID]

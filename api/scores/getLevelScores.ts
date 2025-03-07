@@ -138,7 +138,7 @@ const getLevelScores = async (
     switch (type) {
       case 0: // Friends
         const friends = await ApiLib.getFriends(accountID);
-        friends.push(accountID);
+        friends.push(parseInt(accountID));
         const friendsString = friends.join(",");
         
         query = `SELECT accountID, uploadDate, percent, coins FROM levelscores WHERE dailyID ${condition} 0 AND levelID = ? AND accountID IN (${friendsString}) ORDER BY percent DESC`;

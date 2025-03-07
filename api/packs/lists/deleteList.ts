@@ -18,7 +18,7 @@ const deleteList = async (req: Request): Promise<string> => {
     const listID = await ExploitPatch.number(req.body.listID);
     
     // Check if user owns the list
-    if (isNaN(Number(listID)) || accountID != await ApiLib.getListOwner(listID)) {
+    if (isNaN(Number(listID)) || String(accountID) !== String(await ApiLib.getListOwner(listID))) {
       return "-1";
     }
     

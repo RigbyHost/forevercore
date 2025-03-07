@@ -42,12 +42,12 @@ interface UserData extends RowDataPacket {
 const getLevelScoresPlat = async (req: Request): Promise<string> => {
   try {
     // Authenticate user
-    const accountID = await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req);
+    const accountID = parseInt(await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req));
     const levelID = await ExploitPatch.remove(req.body.levelID);
     
     // Get submitted score
     const scores = {
-      time: await ExploitPatch.number(req.body.time),
+      time: parseInt(ExploitPatch.number(req.body.time)),
       points: await ExploitPatch.number(req.body.points)
     };
     

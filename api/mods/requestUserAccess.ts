@@ -24,11 +24,12 @@ const requestUserAccess = async (
     const accountID = await GJPCheck.getAccountIDOrDie(accountIDStr, gjp2Str, gjpStr, req);
     
     // Check mod permissions
-    if ((await ApiLib.getMaxValuePermission(accountID, "actionRequestMod")) >= 1) {
+    if (typeof(await ApiLib.getMaxValuePermission(accountID, "actionRequestMod")) === 'number' &&
+    (await ApiLib.getMaxValuePermission(accountID, "actionRequestMod")) >= 1) {
       permState = await ApiLib.getMaxValuePermission(accountID, "modBadgeLevel");
       
       // Return access level based on badge level
-      if (permState >= 2) {
+      if (typeof permState === 'number' && permState >= 2) {
         ConsoleApi.Log("main", `Elder Moderator or else granted to accountID: ${accountID}`);
         return "2";
       }

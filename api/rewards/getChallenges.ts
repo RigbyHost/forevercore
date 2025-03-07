@@ -42,7 +42,7 @@ const getChallenges = async (
     
     // Get user ID
     let userID: string | number;
-    if (accountID != 0) {
+    if (accountID !== '0') {
       userID = await ApiLib.getUserID(accountID);
     } else {
       userID = await ApiLib.getUserID(udid);

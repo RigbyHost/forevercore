@@ -74,11 +74,11 @@ const downloadMessage = async (
         [messageID, accountID]
       );
       
-      accountID = result.accID;
+      accountID = String(result.accID);
       isSender = 0;
     } else {
       isSender = 1;
-      accountID = result.toAccountID;
+      accountID = String(result.toAccountID);
     }
     
     // Get user data
