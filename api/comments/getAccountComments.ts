@@ -33,7 +33,7 @@ const getAccountComments = async (
     try {
         let accountID: string;
 
-        // Handle edge case with array input (ROBERT LOPATA MOMENT)
+        // ВАЖНО: Обработка краевого случая с массивом
         if (Array.isArray(accountIDStr)) {
             ConsoleApi.Warn("main", "Array instead of Int detected, trying to offset array...");
             accountID = await ExploitPatch.remove(accountIDStr[1]);

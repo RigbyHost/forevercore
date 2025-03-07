@@ -1,3 +1,15 @@
+[08/03/2025 00:04] [main/INFO]: Level hui (1.dat) uploaded
+[08/03/2025 00:04] [main/INFO]: Received levels by accountID: 1
+[08/03/2025 00:04] [main/INFO]: Received levels by accountID: 1
+[08/03/2025 00:04] [main/ERROR]: checkPermissionException: Error: Unknown column 'actionFreeCopy' in 'field list' at net.fimastgd.forevercore.api.lib.apiLib
+[08/03/2025 00:04] [main/INFO]: Downloaded level 1.dat
+[08/03/2025 00:06] [main/INFO]: Received SIGINT signal, shutting down gracefully...
+[08/03/2025 00:06] [FLS system/INFO]: Saving level chunks... [ IN FUTURE ]
+[08/03/2025 00:06] [FLS system/INFO]: Saving account chunks... [ IN FUTURE ]
+[08/03/2025 00:06] [main/INFO]: Stopping database server...
+[08/03/2025 00:06] [main/INFO]: Stopping server...
+[08/03/2025 00:06] [Server thread/INFO]: ----- [ SERVER STOPPED ] -----
+[08/03/2025 00:06] [Database/INFO]: Connecting to database testing_forevercore on 192.168.0.135
 [08/03/2025 00:06] [Server thread/INFO]: Using package net.fimastgd.forevercore
 [08/03/2025 00:06] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
 [08/03/2025 00:06] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
