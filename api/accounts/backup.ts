@@ -83,7 +83,7 @@ const backupAccount = async (
       // Process save data
       let saveDataArr = saveDataOr.split(";");
       let saveDataDecoded = saveDataArr[0].replace(/-/g, "+").replace(/_/g, "/");
-      saveDataDecoded = Buffer.from(saveDataDecoded, "base64");
+      saveDataDecoded = Buffer.from(saveDataDecoded, "base64").toString();
       saveDataDecoded = require("zlib").gunzipSync(saveDataDecoded).toString();
 
       // Extract orbs and levels from save data
