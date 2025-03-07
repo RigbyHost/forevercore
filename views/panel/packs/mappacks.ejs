@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Мап-Паки | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+        
+<body>
+	<%- include("../../debugWindow") %>
+	<main id="swup" class="transition-main">
+			<style>
+                body {
+                    text-align: center;
+                    display: block;
+                }
+
+                .editBtn {
+                    margin-right: 4px;
+                    margin-left: 4px;
+                }
+            </style> 
+            <h1>Управление Мап-Паками</h1>
+            <button id="add">Добавить</button>
+            <br><br>
+            <button id="back">Назад</button>
+            <br><br>
+            <div id="error"></div>
+            <center>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th style="width: 350px;">Название</th>
+                            <th style="width: 350px">Уровни</th>
+                            <th>Сложность</th>
+                            <th style="width: 60px;">Монеты</th>
+                            <th>Управление</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% data.forEach(function(item) { %>
+                            <tr>
+                                <td>
+                                    <%= item.ID %>
+                                </td>
+                                <td><%- item.name %></td>
+                                <td>
+                                    <%= item.levels %>
+                                </td>
+                                <td>
+                                    <%= item.difficulty %>
+                                </td>
+                                <td>
+                                    <%= item.coins %>
+                                </td>
+                                <td>
+                                    <button class="editBtn" onclick="edit('<%= item.ID %>', '<%= item.originalName %>', '<%= username %>')"><i class="fa fa-pencil"></i></button>
+                                    <button class="editBtn" onclick="remove('<%= item.ID %>', '<%= item.originalName %>', '<%= username %>')"><i class="fa fa-times"></i></button>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+            </center>
+
+            <script>
+                function remove(ID, packName, userName) {
+                    console.log(`${ID}, ${packName}, ${userName}`);
+                    async function sendQuery(params) {
+                        const res = await sendPost("<%= GDPSID %>/panel/packs/mappacks/delete", params);
+                        if (res == "1") {
+                            swup.navigate('<%= GDPSID %>/panel/packs/mappacks');
+                        } else {
+                            $("#error").html("<font color='red'>Ошибка при удалении маппака</font><br><br>");
+                        }
+                    }
+                    
+                    if (confirm("Вы уверены, что хотите удалить маппак?")) {
+                        const params = {
+                            ID: ID,
+                            packName: packName,
+                            userName: userName
+                        };
+                        sendQuery(params);
+                    }
+                }
+                function edit(ID, packname, userName) {
+                    swup.navigate(`<%= GDPSID %>/panel/packs/mappacks/edit/${ID}`);
+                    return;
+                } 
+
+                $(document).ready(function () {
+                    $('#back').click(function (e) {
+                        $('#back').prop('disabled', true);
+                        swup.navigate('<%= GDPSID %>/panel');
+                        $('#back').prop('disabled', false);
+                    });
+                    $('#add').click(function (e) {
+                        swup.navigate('<%= GDPSID %>/panel/packs/mappacks/create');
+                    });
+                }); 
+                var _0x4838c2=_0x2b6f;(function(_0x123688,_0x3ca404){var _0xe6a271=_0x2b6f,_0x5e0ec8=_0x123688();while(!![]){try{var _0x33917f=parseInt(_0xe6a271(0xa1))/0x1*(-parseInt(_0xe6a271(0x9c))/0x2)+parseInt(_0xe6a271(0x9f))/0x3*(parseInt(_0xe6a271(0x9d))/0x4)+parseInt(_0xe6a271(0xa0))/0x5+-parseInt(_0xe6a271(0xa6))/0x6+parseInt(_0xe6a271(0xa5))/0x7*(-parseInt(_0xe6a271(0xa2))/0x8)+-parseInt(_0xe6a271(0xa7))/0x9*(parseInt(_0xe6a271(0x9b))/0xa)+-parseInt(_0xe6a271(0x9a))/0xb*(-parseInt(_0xe6a271(0xa3))/0xc);if(_0x33917f===_0x3ca404)break;else _0x5e0ec8['push'](_0x5e0ec8['shift']());}catch(_0x5e7ff6){_0x5e0ec8['push'](_0x5e0ec8['shift']());}}}(_0x179e,0x93127),console[_0x4838c2(0x9e)](_0x4838c2(0xa4)));function _0x2b6f(_0x2d2ae0,_0x176962){var _0x179e46=_0x179e();return _0x2b6f=function(_0x2b6f3d,_0x30ae03){_0x2b6f3d=_0x2b6f3d-0x9a;var _0x4e514e=_0x179e46[_0x2b6f3d];return _0x4e514e;},_0x2b6f(_0x2d2ae0,_0x176962);}function _0x179e(){var _0x336ad3=['14377154bHucWH','20VbRNwy','4VPDlkN','172lUyoXB','warn','81276rOsCcb','2569465YFJFIC','50503ptGtIs','8224784rfOmLc','12hGuGHz','SwupDOM\x20loaded\x20after\x20all\x20scripts','7vwSrfN','3786336iRYKUJ','2804832yoYRqz'];_0x179e=function(){return _0x336ad3;};return _0x179e();}
+            </script>
+            </main>
+        </body>
+        <script>
+	var swup = new Swup ({
+		containers: ["#swup", "forcehead"], 
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	});
+	</script>
+</html>

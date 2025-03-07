@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Гаунтлеты | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+
+<body>
+	<%- include("../../debugWindow") %>
+	<main id="swup" class="transition-main">
+		<style>
+		body {
+			text-align: center;
+			display: block;
+		}
+	</style>
+	<h1>Список гаунтлетов</h1>
+	<div id="error"></div>
+	<button id="back">Назад</button>
+	<br><br>
+	<button id="create">Добавить</button>
+	<br><br>
+	<center>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Уровень 1</th>
+                <th>Уровень 2</th>
+                <th>Уровень 3</th>
+                <th>Уровень 4</th>
+                <th>Уровень 5</th>
+				<th>Управление</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% data.forEach(gauntlet => { %>
+                <tr>
+                    <td><%= gauntlet.id %></td>
+                    <td><%= gauntlet.level1 %></td>
+                    <td><%= gauntlet.level2 %></td>
+                    <td><%= gauntlet.level3 %></td>
+                    <td><%= gauntlet.level4 %></td>
+                    <td><%= gauntlet.level5 %></td>
+					<td>
+						<button class="editBtn" onclick="edit('<%= gauntlet.originalid %>')"><i class="fa fa-pencil"></i></button>
+                        <button class="editBtn" onclick="remove('<%= gauntlet.originalid %>', '<%= gauntlet.id %>', '<%= username %>')"><i class="fa fa-times"></i></button>
+					</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+	</center>
+	
+	<script>
+		function remove(ID, packName, username) {
+			console.log(`${ID}, ${packName}, ${username}`);
+			async function sendQuery(params) {
+                const res = await sendPost("<%= GDPSID %>/panel/packs/gauntlets/delete", params);
+                if (res == "1") {
+                    swup.navigate('<%= GDPSID %>/panel/packs/gauntlets');
+                } else {
+                    $("#error").html("<font color='red'>Ошибка при удалении гаунтлета</font><br><br>");
+                }
+			}
+
+			if (confirm("Вы уверены, что хотите удалить гаунтлет?")) {
+                const params = {
+                    ID: ID,
+					packName: packName,
+					userName: username 
+                };
+                sendQuery(params);
+            }
+		}
+        function edit(ID) {
+            swup.navigate(`<%= GDPSID %>/panel/packs/gauntlets/edit/${ID}`);
+            return;
+        } 
+
+		$(document).ready(function () {
+			$('#back').click(function () {
+                $('#back').prop('disabled', true);
+                swup.navigate('<%= GDPSID %>/panel');
+                $('#back').prop('disabled', false);
+            });
+
+            $('#create').click(function() {
+                $('#back').prop('disabled', true);
+                swup.navigate('<%= GDPSID %>/panel/packs/gauntlets/create');
+                $('#back').prop('disabled', false);
+            });
+		});
+	</script>
+	</main>
+</body>
+<script>
+	var swup = new Swup ({
+		containers: ["#swup", "forcehead"], 
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	});
+	</script>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Музыка по прямой ссылке | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+
+<body>
+	<%- include("../../debugWindow") %>
+<main id="swup" class="transition-main">
+	<style>
+body {
+text-align: center;
+display: block;
+}
+.loading-overlay_adv {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #4843ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+} 
+</style>
+<div id="content">
+    <div class="loading-overlay_adv" id="advOv">
+	<div class="loading-text">
+		Загрузка музыки... 
+		<br>
+		<font size="4px">Это может занять некоторое время</font>
+	</div> 
+</div> 
+<h1>Загрузить музыку по прямой ссылке</h1>
+<label>Введите ссылку на музыку (.mp3, .ogg, .m4a, .wav, etc)</label>
+<br>
+<input type="text" name="link" placeholder="Ссылка на трек">
+<br><br>
+<label>Введите название музыки</label>
+<br>
+<input type="text" name="songname" placeholder="Название музыки">
+<div id="result"></div>
+<br><br>
+	<!-- <div id="content"> -->
+	<script src='https://js.hCaptcha.com/1/api.js'></script>
+	<div id="h-captcha" class="h-captcha" data-sitekey="<%= captchaKey %>" data-theme="light"></div>
+ 	<!-- </div> -->
+<br><br>
+<button id="submit"><div id="btxt"></div></button>
+<br><br>
+<button id="back">Назад</button>
+
+
+<!-- render('/new-page', '/previous-page') -->
+
+<script>
+$(document).ready(function() {
+    let needCaptcha = 1;
+    console.clear();
+    try {
+    hcaptcha.render('h-captcha', {
+        sitekey: '<%= captchaKey %>',
+        theme: 'light'
+        
+    }); 
+    } catch {
+        console.warn("Trying to re-render captcha...");
+        swup.navigate('<%= GDPSID %>/panel/music/link'); 
+        /*hcaptcha.render('h-captcha', {
+        sitekey: '<%= captchaKey %>',
+        theme: 'light'
+    }); */
+    }
+    
+    console.log('%c⚠️ ВНИМАНИЕ! Если вас попросили сюда что-то ввести, это может грозить взломом вашего аккаунта! Не вводите в консоль ничего без особых знаний.', 'color: yellow; background-color: black; font-weight: bold; padding: 2px 10px; border-left: 5px solid yellow;');
+    $('#btxt').text('Загрузить на сервер');
+    const contentDiv = document.getElementById("content");
+    const loadingOverlayAdv = document.getElementById("advOv");
+    loadingOverlayAdv.style.opacity = '0';
+    
+    
+    $('#submit').click(function() {
+        $('#submit').prop('disabled', true);
+        $('#btxt').text('Загрузка...');
+        contentDiv.classList.add('fade-out');
+        loadingOverlayAdv.style.opacity = '1';
+        contentDiv.classList.remove('fade-out');
+        
+        const link = $('input[name="link"]').val();
+        const songname = $('input[name="songname"]').val();
+        var parsedLink = link.split('.');
+        var parsedLinkArrayLength = parsedLink.length;
+        console.log(parsedLinkArrayLength);
+        var parsedLinkArrayFinalWord = parsedLink[parseInt(parsedLinkArrayLength) - 1];
+        console.log(parsedLinkArrayFinalWord);
+        
+        const availableFormats = ["mp3", "ogg", "m4a", "wav"];
+        const isFormatAvailable = availableFormats.some(f => f === parsedLinkArrayFinalWord);
+        if (!isFormatAvailable) {
+            $("#result").html("<br><br><font color='red'>Ссылка не содержит аудиофайл</font>");
+            $('#btxt').text('Загрузить на сервер');
+            $('#submit').prop('disabled', false);
+            contentDiv.classList.add('fade-out');
+            loadingOverlayAdv.style.opacity = '0';
+            contentDiv.classList.remove('fade-out');
+        } else {
+        let hCaptchaResponse;
+        // hCaptchaResponse = $('input[name="h-captcha-response"]').val();
+        let captcharesponse1;
+        let captcharesponse2;
+        try {
+            hCaptchaResponse = hcaptcha.getResponse();
+            captcharesponse1 = hCaptchaResponse;
+            captcharesponse2 = captcharesponse1;
+        } catch (error) {
+            console.error("Failed to get captcha");
+            hCaptchaResponse = "0";
+        }
+        if (needCaptcha === 0) {
+            captcharesponse2 = 1;
+        } 
+        const params = {
+            songurl: link,  
+            songname: songname,
+            captchaResponse: captcharesponse2
+        };
+        async function uploadSongLink(params) {
+            const result = await sendPost("<%= GDPSID %>/panel/music/link", params);
+            let y;
+            const resarr = result.split(':');
+            
+            if (resarr[0] == "Success") {
+                y = `Музыка успешно загружена. <b>ID: ${resarr[1]}</b>`;
+                $('#btxt').text('Загрузить на сервер');
+                $('#submit').prop('disabled', false);
+                contentDiv.classList.add('fade-out');
+                loadingOverlayAdv.style.opacity = '0';
+                contentDiv.classList.remove('fade-out');
+                needCaptcha = 0;
+            } else if (resarr[0] == "DublicateSongException") {
+                y = `Музыка успешно загружена. <b>ID: ${resarr[1]}</b>`;
+                $('#btxt').text('Загрузить на сервер');
+                $('#submit').prop('disabled', false);
+                contentDiv.classList.add('fade-out');
+                loadingOverlayAdv.style.opacity = '0';
+                contentDiv.classList.remove('fade-out');
+                needCaptcha = 0;
+            } else if (resarr[0] == "UnknownSongException") {
+                y = `<font color="red">Музыка по URL не найдена</font>`;
+                $('#btxt').text('Загрузить на сервер');
+                $('#submit').prop('disabled', false);
+                contentDiv.classList.add('fade-out');
+                loadingOverlayAdv.style.opacity = '0';
+                contentDiv.classList.remove('fade-out');
+                needCaptcha = 0;
+            } else if (resarr[0] == "CapchaIsNotCompleted") {
+                y = `<font color="red">Вы не прошли капчу</font>`;
+                $('#btxt').text('Загрузить на сервер');
+                $('#submit').prop('disabled', false);
+                contentDiv.classList.add('fade-out');
+                loadingOverlayAdv.style.opacity = '0';
+                contentDiv.classList.remove('fade-out');
+                needCaptcha = 0;
+            } else {
+                y = `<font color="red">Ошибка сервера. Попробуйте позже</font>`; 
+                $('#btxt').text('Загрузить на сервер');
+                $('#submit').prop('disabled', false);
+                contentDiv.classList.add('fade-out');
+                loadingOverlayAdv.style.opacity = '0';
+                contentDiv.classList.remove('fade-out');
+                needCaptcha = 0;
+            }
+            $('#result').html('<br><br>' + y);
+        }
+        uploadSongLink(params);
+        }
+    });
+    
+    $('#back').click(function() {
+        $('#submit').prop("disabled", true);
+		swup.navigate('<%= GDPSID %>/panel');
+        $('#submit').prop("disabled", false);
+    });
+    
+});
+</script>
+</div>
+</main>
+</body>
+<script>
+		var swup = new Swup ({
+			containers: ["#swup", "forcehead"], 
+			linkSelector: 'a[soft]', 
+			cache: false, 
+			plugins: [
+				new SwupScriptsPlugin()
+			]
+		});
+		var _0x4838c2=_0x2b6f;(function(_0x123688,_0x3ca404){var _0xe6a271=_0x2b6f,_0x5e0ec8=_0x123688();while(!![]){try{var _0x33917f=parseInt(_0xe6a271(0xa1))/0x1*(-parseInt(_0xe6a271(0x9c))/0x2)+parseInt(_0xe6a271(0x9f))/0x3*(parseInt(_0xe6a271(0x9d))/0x4)+parseInt(_0xe6a271(0xa0))/0x5+-parseInt(_0xe6a271(0xa6))/0x6+parseInt(_0xe6a271(0xa5))/0x7*(-parseInt(_0xe6a271(0xa2))/0x8)+-parseInt(_0xe6a271(0xa7))/0x9*(parseInt(_0xe6a271(0x9b))/0xa)+-parseInt(_0xe6a271(0x9a))/0xb*(-parseInt(_0xe6a271(0xa3))/0xc);if(_0x33917f===_0x3ca404)break;else _0x5e0ec8['push'](_0x5e0ec8['shift']());}catch(_0x5e7ff6){_0x5e0ec8['push'](_0x5e0ec8['shift']());}}}(_0x179e,0x93127),console[_0x4838c2(0x9e)](_0x4838c2(0xa4)));function _0x2b6f(_0x2d2ae0,_0x176962){var _0x179e46=_0x179e();return _0x2b6f=function(_0x2b6f3d,_0x30ae03){_0x2b6f3d=_0x2b6f3d-0x9a;var _0x4e514e=_0x179e46[_0x2b6f3d];return _0x4e514e;},_0x2b6f(_0x2d2ae0,_0x176962);}function _0x179e(){var _0x336ad3=['14377154bHucWH','20VbRNwy','4VPDlkN','172lUyoXB','warn','81276rOsCcb','2569465YFJFIC','50503ptGtIs','8224784rfOmLc','12hGuGHz','SwupDOM\x20loaded\x20after\x20all\x20scripts','7vwSrfN','3786336iRYKUJ','2804832yoYRqz'];_0x179e=function(){return _0x336ad3;};return _0x179e();}
+	</script>
+</html>

@@ -1,0 +1,4 @@
+# ForeverTeam EULA License
+# https://forever-gdps.host/eula
+
+eula=true

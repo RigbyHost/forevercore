@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>App Logs</title>
+	<style>
+		body {
+			font-family: monospace;
+			background-color: #FFF;
+			color: #000;
+		}
+		.log-container {
+			width: 90%;
+			height: 450px;
+			margin: 0 auto;
+			display: block;
+			overflow-y: auto;
+			white-space: pre-wrap;
+			background-color: #000;
+			color: #FFF;
+			border: 1px solid #000;
+		}
+		@media (max-width: 767px) {
+			.log-container {
+				font-size: 0.7em;
+			}
+		}
+		@media (min-width: 768px) {
+			.log-container {
+				width: 65%;
+				height: 320px;
+				font-size: 1em;
+			}
+		}
+		.input-container {
+			width: 90%;
+			height: 450px;
+			margin: 0 auto;
+			display: block;
+		}
+		@media (min-width: 768px) {
+			.input-container {
+				width: 65%;
+				height: 320px;
+			}
+		}
+		.send_items {
+			height: 35px !important;
+			margin: 5px 2px 0px 0px;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/3002/js/render.js"></script>
+</head>
+<body>
+	<h1 style="text-align: center;">App Logs</h1>
+	<div id="logs" class="log-container"></div>
+	<br>
+	<div class="input-container">
+		<input class="send_items" name="command" placeholder="Отправить команду"></input>
+		<button style="width: 37px;" class="send_items" id="send">&gt;</button>
+	</div>
+	<script>
+		async function fetchLogs() {
+			try {
+				const res = await sendPost('/3002/console', { fetchLogs: true });
+				const logsContainer = document.getElementById('logs');
+				logsContainer.innerHTML = res;
+				if (!userScroll) {
+					logsContainer.scrollTop = logsContainer.scrollHeight;
+				}
+			} catch (error) {
+				console.error('Error fetching logs:', error);
+			}
+		}
+		async function sendCommand(command) { 
+			const params = {
+				hash: "ef110ebb-a1fc-4b1b-8430-1dcb46d087c1", 
+				cmd: command
+			};
+			const res = await sendPost('/3002/cmd', params);
+			$('input[name="command"]').val("");
+		}
+
+		fetchLogs();
+		setInterval(fetchLogs, 1000);
+		let userScroll = false;
+		document.getElementById('logs').addEventListener('scroll', function() {
+			const logsContainer = document.getElementById('logs');
+			if (logsContainer.scrollTop + logsContainer.clientHeight < logsContainer.scrollHeight) {
+				userScroll = true;
+			} else {
+				userScroll = false;
+			}
+		});
+		
+		$(document).ready(function () {
+			$('#send').click(function () {
+				sendCommand($('input[name="command"]').val());
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+#  -----------------------------------------------------------
+# |  I haven't been able to implement Node.JS "getChallenges" |
+# |  function at the moment, so I'm using PHP API             |
+#  -----------------------------------------------------------
+# /!\ ДЛЯ ОПЫТНЫХ ПОЛЬЗОВАТЕЛЕЙ /!\
+# /!\ FOR ADVANCED USERS /!\ 
+# /!\ If you don't know what it is, don't change anything! /!\ 
+
+getChallenges: "https://forever-gdps.host/NODE_API/getChallenges.php"
+getSongInfo: "https://forever-gdps.host/NODE_API/getSongInfo.php"
+getZeMuInfo: "https://forever-gdps.host/NODE_API/getZeMuInfo.php"

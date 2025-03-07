@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Список музыки | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+
+<body>
+	<%- include("../../debugWindow") %>
+	<main id="swup" class="transition-main">
+		<!-- fix -->
+		 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />-->
+		<style>
+        body {
+            text-align: center;
+            display: block;
+        }
+        table {
+            text-align: center;
+            margin: 0 auto; 
+        }
+        /* ПК */
+        @media screen and (min-width: 768px) {
+            .table_th__id {
+                width: 70px;
+            }
+            .table_th__name {
+                width: 350px;
+            }
+            .table_th__author {
+                width: 170px;
+            }
+            .table_th__size {
+                width: 100px;
+            }
+            .table_th__play {
+                width: 70px;
+            }
+            .paginator {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .paginator__obj {
+                margin: 20px;
+                flex: 1 1 70px;
+            }
+        }
+        /* ВЕДРОФОН */
+        @media screen and (max-width: 767px) {
+            .table_th__id {
+                width: auto;
+            }
+            .table_th__name {
+                width: auto;
+            }
+            .table_th__author {
+                width: auto;
+            }
+            .table_th__size {
+                width: auto;
+            }
+            .table_th__play {
+                width: auto;
+            }
+        }
+    </style>
+    
+    <h1>Список музыки</h1>
+    <h3>Страница: <%= parseInt(page) + 1 %></h3>
+    <br><br>
+    <center>
+    <div class="paginator">
+        <% if (page != 0) { %>
+        <div class="paginator__obj">
+            <a id="prevPage" href="">Предыдущая страница</a>
+        </div>
+        <% } %>
+        <div class="paginator__obj">
+            <a id="nextPage" href="">Следующая страница</a>
+        </div>
+    </div>
+    </center>
+    <br><br>
+    <button id="backBtn">Назад</button>
+    <br><br>
+     <table border="1">
+    <tr>
+      <th class="table_th__id">ID</th>
+      <th class="table_th__name" >Название</th>
+      <th class="table_th__author">Автор</th>
+      <th class="table_th__size">Размер</th>
+      <th class="table_th__play">Слушать</th>
+    </tr>
+    <% rows.forEach(function(row) { %>
+      <tr>
+        <td><%= row.ID %></td>
+        <td><%= row.name %></td>
+        <td><%= row.authorName %></td>
+        <td><%= row.size %> МБ</td>
+        <td>
+          <button onclick="playAudio('<%= row.download %>')"><i class="fas fa-play"></i></button>
+          <button onclick="stopAudio()"><i class="fas fa-stop"></i></button>
+        </td>
+      </tr>
+    <% }); %>
+    </table>
+    <br><br><br><br>
+  </center>
+    
+    <script>
+        console.clear();
+        console.log('%c⚠️ ВНИМАНИЕ! Если вас попросили сюда что-то ввести, это может грозить взломом вашего аккаунта! Не вводите в консоль ничего без особых знаний.', 'color: yellow; background-color: black; font-weight: bold; padding: 2px 10px; border-left: 5px solid yellow;');
+        if (typeof currentAudio === "undefined") {
+            var currentAudio;
+        } 
+        function playAudio(eurl) {
+                //let url = (eurl.includes('%')) ? decodeURIComponent(eurl).replace(/http/, "https").replace(/https:\//, "https://") : eurl;
+                let url;
+                if (eurl.includes('%')) {
+                    url = decodeURIComponent(eurl);
+                    if (!url.startsWith("https://")) {
+                        url = url.replace(/https:\//, "https://");
+                    } else if (!url.startsWith("http://")) {
+                        url = url.replace(/http:\//, "http://");
+                    }
+                    url = url.replace(/\?f\d+$/, '');
+                    if (!url.includes("geometrydashcontent")) {
+                        if (!url.includes("zendomusic")) {
+                            location.href = url;
+                            return;
+                        } 
+                    } 
+                } else {
+                    url = eurl;
+                }
+                
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+                currentAudio = new Audio(url);
+                currentAudio.play();
+            }
+            
+            function stopAudio() {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+            }
+        $(document).ready(function() {
+            $('#backBtn').click(function(e) {
+				swup.navigate('<%= GDPSID %>/panel');
+            });
+            
+            $('#nextPage').click(function(e) {
+                e.preventDefault();
+                swup.navigate('<%= GDPSID %>/panel/music/list/offset.<%= parseInt(page) + 1 %>');
+            });
+            $('#prevPage').click(function(e) {
+                e.preventDefault();
+                swup.navigate('<%= GDPSID %>/panel/music/list/offset.<%= parseInt(page) - 1 %>');
+            });
+            var _0x4838c2=_0x2b6f;(function(_0x123688,_0x3ca404){var _0xe6a271=_0x2b6f,_0x5e0ec8=_0x123688();while(!![]){try{var _0x33917f=parseInt(_0xe6a271(0xa1))/0x1*(-parseInt(_0xe6a271(0x9c))/0x2)+parseInt(_0xe6a271(0x9f))/0x3*(parseInt(_0xe6a271(0x9d))/0x4)+parseInt(_0xe6a271(0xa0))/0x5+-parseInt(_0xe6a271(0xa6))/0x6+parseInt(_0xe6a271(0xa5))/0x7*(-parseInt(_0xe6a271(0xa2))/0x8)+-parseInt(_0xe6a271(0xa7))/0x9*(parseInt(_0xe6a271(0x9b))/0xa)+-parseInt(_0xe6a271(0x9a))/0xb*(-parseInt(_0xe6a271(0xa3))/0xc);if(_0x33917f===_0x3ca404)break;else _0x5e0ec8['push'](_0x5e0ec8['shift']());}catch(_0x5e7ff6){_0x5e0ec8['push'](_0x5e0ec8['shift']());}}}(_0x179e,0x93127),console[_0x4838c2(0x9e)](_0x4838c2(0xa4)));function _0x2b6f(_0x2d2ae0,_0x176962){var _0x179e46=_0x179e();return _0x2b6f=function(_0x2b6f3d,_0x30ae03){_0x2b6f3d=_0x2b6f3d-0x9a;var _0x4e514e=_0x179e46[_0x2b6f3d];return _0x4e514e;},_0x2b6f(_0x2d2ae0,_0x176962);}function _0x179e(){var _0x336ad3=['14377154bHucWH','20VbRNwy','4VPDlkN','172lUyoXB','warn','81276rOsCcb','2569465YFJFIC','50503ptGtIs','8224784rfOmLc','12hGuGHz','SwupDOM\x20loaded\x20after\x20all\x20scripts','7vwSrfN','3786336iRYKUJ','2804832yoYRqz'];_0x179e=function(){return _0x336ad3;};return _0x179e();}
+        });
+    </script>
+    </main>
+</body>
+<script>
+	var swup = new Swup ({
+		containers: ["#swup", "head"],  
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	});
+</script>
+</html>

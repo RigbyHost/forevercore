@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Изменить никнейм | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+
+<body>
+	<%- include("../../debugWindow") %> 
+	<main id="swup" class="transition-main">
+		<a href="<%= GDPSID %>/panel/accounts/login" style="display: none" id="exit"></a>
+	<style>
+		body {
+			text-align: center;
+			display: block;
+		}
+	</style>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<h1>Изменить никнейм</h1>
+	<label>Новый никнейм</label>
+	<br>
+	<input type="text" name="newusername" placeholder="Новый никнейм">
+	<br><br>
+	<button id="submit">Изменить никнейм</button>
+	<br><br>
+	<button id="back">Назад</button>
+	<!-- <br><br>
+	<button id="exitBtn2">Выйти</button> -->
+	<p><div id="result"></div></p>
+	
+	
+	<script>
+	var swup = new Swup ({
+		containers: ["#swup", "forcehead"], 
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	});
+	swup.cache.clear()
+	//$(document).ready(function() {
+		try {
+			$('#submit').click(function(e) {
+				e.preventDefault();
+				$('#submit').prop('disabled', true);
+				$('#back').prop('disabled', true);
+				const newusername = $('input[name="newusername"]').val();
+				const currentusername = "<%= username %>";
+				if (newusername == currentusername) {
+					$('#result').html(`<font color="red">Новый никнейм совпадает со старым</font>`);
+					$('#submit').prop('disabled', false);
+					$('#back').prop('disabled', false);
+				} else {
+					const params = {
+						newusr: newusername
+					}
+					async function changeUsernameAs(params) {
+						const res = await sendPost('<%= GDPSID %>/panel/accounts/changeUsername', params);
+						if (res == "1") {
+							document.getElementById("result").innerHTML = `Никнейм успешно изменён на ${newusername}! Перезайдите в панель и в аккаунт на GDPS через "Refresh Login"<br><br><button id="exitBtn2">Перезайти в панель</button>`;
+							$('#exitBtn2').click(function(e) {
+								console.log("clck!");
+								$(this).prop('disabled', true);
+								const params = {
+									username: "Test"
+								}
+								sendPost('<%= GDPSID %>/panel/accounts/exit');
+								// location.href = '<%= GDPSID %>/panel/accounts/login';
+								setTimeout(() => {document.getElementById("exit").click();
+									$('#exitBtn2').prop('disabled', false);
+								}, 500);
+							});
+						} else if (res == "-2" || res == "-3") {
+							document.getElementById("result").innerHTML = `<font color="red">Никнейм должен быть больше 3-х символов и меньше 20-ти</font>`;
+							$('#submit').prop('disabled', false);
+							$('#back').prop('disabled', false);
+						} else {
+							document.getElementById("result").innerHTML = `<font color="red">Ошибка при изменении никнейма на стороне сервера. Попробуйте ещё раз (Response: ${res})</font>`;
+							$('#submit').prop('disabled', false);
+							$('#back').prop('disabled', false);
+						}
+					} 
+					changeUsernameAs(params);
+				} 
+			});
+			$('#back').click(function() {
+				$('#back').prop('disabled', true);
+				swup.navigate('<%= GDPSID %>/panel');
+				return;
+				$('#back').prop('disabled', false);
+			});
+			
+		} catch (error) {
+			console.warn("Trying to skip function calling...");
+		}
+	// });
+	</script>
+	</main>
+	
+	<script>
+		/* var swup = new Swup ({
+		containers: ["#swup"], 
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	}); */
+	</script>
+</body>
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="<%= GDPSID %>/css/index.css" rel="stylesheet" />
+	<title>Редактор роли | <%= GDPS %></title>
+	<link rel="stylesheet" href="https://cdn.forever-gdps.host/engines/transitions.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="<%= GDPSID %>/js/render.js"></script>
+	<noscript>Включите JavaScript в браузере для корректной работы сайта</noscript>
+	<forcehead>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/swup@4"></script>
+		<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
+	</forcehead>
+</head>
+
+<body>
+	<%- include("../../debugWindow") %>
+	<main id="swup" class="transition-main">
+	<style>
+		body {
+			text-align: center;
+			display: block;
+		} 
+		.button_badge {
+			margin-right: 10px;
+			margin-left: 10px;
+			background-color: #e5e5e5;
+			margin-bottom: 10px;
+			user-select: none;
+			-webkit-user-select: none; /* Safari */
+			-moz-user-select: none;    /* Firefox */
+			-ms-user-select: none;     /* Internet Explorer/Edge */
+		}
+		.button_badge__selected {
+			margin-right: 10px;
+			margin-left: 10px;
+			background-color: #96cfff;
+			margin-bottom: 10px;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
+		<% function rgbToHex(rgb) {
+			try {
+				rgb = rgb.replace(/ /g, "");
+				let result = rgb.match(/^(\d{1,3}),(\d{1,3}),(\d{1,3})$/);
+				if (!result) {
+					throw new Error("Invalid RGB format");
+				}
+				let r = parseInt(result[1]).toString(16).padStart(2, '0');
+				let g = parseInt(result[2]).toString(16).padStart(2, '0');
+				let b = parseInt(result[3]).toString(16).padStart(2, '0');
+				return `#${r}${g}${b}`;
+			} catch (e) {
+				return "#000000";
+			}
+		} %>
+
+	<h1>Редактор роли</h1>
+	<% if (roles.properties.rolename != undefined) { %>
+
+	<label>Название роли</label>
+	<br>
+	<input type="text" name="roleName" maxlength="20" minlength="3" placeholder="Название роли" value="<%= roles.properties.rolename %>">
+	<br><br>
+	<label>Цвет</label>
+	<br>
+	<input type="color" value="<%= rgbToHex(roles.properties.color)%>">
+	<br><br>
+	<label>Значок роли</label>
+	<br><br>
+	<button id="noBadge" class="<% if (roles.properties.badge == 0 || roles.properties.badge < 0 || roles.properties.badge > 3) { %>button_badge__selected<% } else { %>button_badge<% } %>">Без значка</button><br>
+	<button id="moderatorBadge" class="<% if (roles.properties.badge == 1) { %>button_badge__selected<% } else { %>button_badge<% } %>"><img src="https://cdn.forever-gdps.host/gd/moderatorBadge.png" width="35px"></button>
+	<button id="eldermoderatorBadge" class="<% if (roles.properties.badge == 2) { %>button_badge__selected<% } else { %>button_badge<% } %>"><img src="https://cdn.forever-gdps.host/gd/eldermoderatorBadge.png" width="35px"></button>
+	<button id="helperBadge" class="<% if (roles.properties.badge == 3) { %>button_badge__selected<% } else { %>button_badge<% } %>"><img src="https://cdn.forever-gdps.host/gd/helperBadge.png" width="35px"></button>
+	<br><br>
+	
+	<h2>Права роли</h2>
+	<input type="checkbox" name="diffRatePerm" value="1"> Оценка на сложность (без звёзд) 
+	<br>
+	<input type="checkbox" name="starRatePerm" value="1"> Оценка на звёзды
+	<br>
+	<input type="checkbox" name="rateDemonPerm" value="1"> Оценка на Demon сложности
+	<br>
+	<input type="checkbox" name="featuredRatePerm" value="1"> Оценка на Featured
+	<br>
+	<input type="checkbox" name="epicRatePerm" value="1"> Оценка на Epic
+	<br>
+	<input type="checkbox" name="legendaryRatePerm" value="1"> Оценка на Legendary
+	<br>
+	<input type="checkbox" name="mythicRatePerm" value="1"> Оценка на Mythic
+	<br>
+	<input type="checkbox" name="sendRatePerm" value="1"> Отправка на оценку в Suggest-лист
+	<br>
+	<input type="checkbox" name="deleteCommentsPerm" value="1"> Удаление комментариев
+	<h2>Настройка панели</h2>
+	<input type="radio" name="panelType" id="defaultPanel" value="1">
+	<label for="defaultPanel">Базовая панель</label>
+	<br>
+	<input type="radio" name="panelType" id="advancedPanel" value="2">
+	<label for="advancedPanel">Расширенная панель</label>
+	<br>
+	<input type="radio" name="panelType" id="adminPanel" value="3">
+	<label for="adminPanel">Админ панель</label>
+	<h2>Дополнительно</h2>
+	<input type="checkbox" name="reqActivating" value="1"> Активация роли через Options - Help - Req.
+	<h2>Команды</h2>
+	<font color="grey"> В комментарии к уровням</font>
+	<br><br>
+	<input type="checkbox" name="CMD_rate" value="1"> !rate
+	<br>
+	<input type="checkbox" name="CMD_unrate" value="1"> !unrate
+	<br>
+	<input type="checkbox" name="CMD_feature" value="1"> !feature
+	<br>
+	<input type="checkbox" name="CMD_epic" value="1"> !epic
+	<br>
+	<input type="checkbox" name="CMD_unepic" value="1"> !unepic
+	<br>
+	<input type="checkbox" name="CMD_verifycoins" value="1"> !verifycoins / !unverifycoins
+	<br>
+	<input type="checkbox" name="CMD_daily" value="1"> !daily
+	<br>
+	<input type="checkbox" name="CMD_weekly" value="1"> !weekly
+	<br>
+	<input type="checkbox" name="CMD_delete" value="1"> !delete
+	<br>
+	<input type="checkbox" name="CMD_setacc" value="1"> !setacc 
+	<br>
+	<input type="checkbox" name="CMD_rename" value="1"> !rename 
+	<br>
+	<input type="checkbox" name="CMD_pass" value="1"> !pass
+	<br>
+	<input type="checkbox" name="CMD_description" value="1"> !description
+	<br>
+	<input type="checkbox" name="CMD_unlist" value="1"> !unlist 
+	<br>
+	<input type="checkbox" name="CMD_song" value="1"> !song
+	
+	<br><br>
+	<div id="result"></div>
+	<br><br>
+	<button id="submit">Сохранить</button>
+	<br><br>
+	<% } %>
+	<button id="back">Назад</button>
+	<br><br><br><br>
+	
+
+	
+	<script>
+		// console.log(`<%- // JSON.stringify(roles, null, 2); %>`);
+		$(document).ready(function() {
+			console.clear();
+			var _0x4838c2=_0x2b6f;(function(_0x123688,_0x3ca404){var _0xe6a271=_0x2b6f,_0x5e0ec8=_0x123688();while(!![]){try{var _0x33917f=parseInt(_0xe6a271(0xa1))/0x1*(-parseInt(_0xe6a271(0x9c))/0x2)+parseInt(_0xe6a271(0x9f))/0x3*(parseInt(_0xe6a271(0x9d))/0x4)+parseInt(_0xe6a271(0xa0))/0x5+-parseInt(_0xe6a271(0xa6))/0x6+parseInt(_0xe6a271(0xa5))/0x7*(-parseInt(_0xe6a271(0xa2))/0x8)+-parseInt(_0xe6a271(0xa7))/0x9*(parseInt(_0xe6a271(0x9b))/0xa)+-parseInt(_0xe6a271(0x9a))/0xb*(-parseInt(_0xe6a271(0xa3))/0xc);if(_0x33917f===_0x3ca404)break;else _0x5e0ec8['push'](_0x5e0ec8['shift']());}catch(_0x5e7ff6){_0x5e0ec8['push'](_0x5e0ec8['shift']());}}}(_0x179e,0x93127),console[_0x4838c2(0x9e)](_0x4838c2(0xa4)));function _0x2b6f(_0x2d2ae0,_0x176962){var _0x179e46=_0x179e();return _0x2b6f=function(_0x2b6f3d,_0x30ae03){_0x2b6f3d=_0x2b6f3d-0x9a;var _0x4e514e=_0x179e46[_0x2b6f3d];return _0x4e514e;},_0x2b6f(_0x2d2ae0,_0x176962);}function _0x179e(){var _0x336ad3=['14377154bHucWH','20VbRNwy','4VPDlkN','172lUyoXB','warn','81276rOsCcb','2569465YFJFIC','50503ptGtIs','8224784rfOmLc','12hGuGHz','SwupDOM\x20loaded\x20after\x20all\x20scripts','7vwSrfN','3786336iRYKUJ','2804832yoYRqz'];_0x179e=function(){return _0x336ad3;};return _0x179e();}
+			<% if (roles.properties.rolename == undefined) { %>
+				Swal.fire({
+					title: 'Ошибка',
+					text: 'Роль с ID \'<%= rid %>\' не найдена',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
+				$('#back').click(function() {
+				swup.navigate('<%= GDPSID %>/panel/roles');
+			});
+			<% } else { %>	
+
+			$('#defaultPanel').prop('checked', true);
+			$('input[name="reqActivating"]').prop('checked', true);
+			
+			$('#adminPanel').change(function () {
+				// alert("Давать это право опасно, так как будет выдан полный доступ ко всем инструментам");
+				Swal.fire({
+					title: 'Предупреждение',
+					text: 'Давать это право опасно, так как будет выдан полный доступ ко всем инструментам и управлению всем GDPS!',
+					icon: 'warning',
+					confirmButtonText: 'OK'
+				});
+			});
+			
+			$('input[name="sendRatePerm"]').change(function () {
+				if ($(this).is(':checked')) {
+					$('input[name="rateDemonPerm"]').prop("checked", false);
+					$('input[name="rateDemonPerm"]').prop("disabled", true);
+					$('input[name="starRatePerm"]').prop("checked", false);
+					$('input[name="starRatePerm"]').prop("disabled", true);
+					$('input[name="featuredRatePerm"]').prop("checked", false);
+					$('input[name="featuredRatePerm"]').prop("disabled", true);
+					$('input[name="epicRatePerm"]').prop("checked", false);
+					$('input[name="epicRatePerm"]').prop("disabled", true);
+					$('input[name="legendaryRatePerm"]').prop("checked", false);
+					$('input[name="legendaryRatePerm"]').prop("disabled", true);
+					$('input[name="mythicRatePerm"]').prop("checked", false);
+					$('input[name="mythicRatePerm"]').prop("disabled", true);
+				} else {
+					$('input[name="rateDemonPerm"]').prop("disabled", false);
+					$('input[name="starRatePerm"]').prop("disabled", false);
+					$('input[name="featuredRatePerm"]').prop("disabled", false);
+					$('input[name="epicRatePerm"]').prop("disabled", false);
+					$('input[name="legendaryRatePerm"]').prop("disabled", false);
+					$('input[name="mythicRatePerm"]').prop("disabled", false); 
+				}
+			});
+
+			<% if (roles.actions.diffRatePerm == 1) { %>
+				$('input[name="diffRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.starRatePerm == 1) { %>
+				$('input[name="starRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.rateDemonPerm == 1) { %>
+				$('input[name="rateDemonPerm"]').prop("checked", true);
+			<% } if (roles.actions.rateDemonPerm == 1) { %>
+				$('input[name="rateDemonPerm"]').prop("checked", true);
+			<% } if (roles.actions.featuredRatePerm == 1) { %>
+				$('input[name="featuredRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.epicRatePerm == 1) { %>
+				$('input[name="epicRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.legendaryRatePerm == 1) { %>
+				$('input[name="legendaryRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.mythicRatePerm == 1) { %>
+				$('input[name="mythicRatePerm"]').prop("checked", true);
+			<% } if (roles.actions.sendRatePerm == 1) { %>
+				$('input[name="sendRatePerm"]').prop("checked", true);
+				$('input[name="rateDemonPerm"]').prop("checked", false);
+				$('input[name="rateDemonPerm"]').prop("disabled", true);
+				$('input[name="starRatePerm"]').prop("checked", false);
+				$('input[name="starRatePerm"]').prop("disabled", true);
+				$('input[name="featuredRatePerm"]').prop("checked", false);
+				$('input[name="featuredRatePerm"]').prop("disabled", true);
+				$('input[name="epicRatePerm"]').prop("checked", false);
+				$('input[name="epicRatePerm"]').prop("disabled", true);
+				$('input[name="legendaryRatePerm"]').prop("checked", false);
+				$('input[name="legendaryRatePerm"]').prop("disabled", true);
+				$('input[name="mythicRatePerm"]').prop("checked", false);
+				$('input[name="mythicRatePerm"]').prop("disabled", true);
+			<% } if (roles.actions.reqActivating == 0) { %>
+				$('input[name="reqActivating"]').prop("checked", false);
+			<% } if (roles.actions.deleteCommentsPerm == 1) { %>
+				$('input[name="deleteCommentsPerm"]').prop("checked", true);
+			<% } if (roles.actions.panelType == 1) { %>
+				$('#defaultPanel').prop("checked", true);
+			<% } if (roles.actions.panelType == 2) { %>
+				$('#advancedPanel').prop("checked", true);
+			<% } if (roles.actions.panelType == 3) { %>
+				$('#adminPanel').prop("checked", true);
+			<% } if (roles.commands.CMD_rate == 1) { %>
+				$('input[name="CMD_rate"]').prop("checked", true);
+			<% } if (roles.commands.CMD_unrate == 1) { %>
+				$('input[name="CMD_unrate"]').prop("checked", true);
+			<% } if (roles.commands.CMD_feature == 1) { %>
+				$('input[name="CMD_feature"]').prop("checked", true);
+			<% } if (roles.commands.CMD_epic == 1) { %>
+				$('input[name="CMD_epic"]').prop("checked", true);
+			<% } if (roles.commands.CMD_unepic == 1) { %>
+				$('input[name="CMD_unepic"]').prop("checked", true);
+			<% } if (roles.commands.CMD_daily == 1) { %>
+				$('input[name="CMD_daily"]').prop("checked", true);
+			<% } if (roles.commands.CMD_weekly == 1) { %>
+				$('input[name="CMD_weekly"]').prop("checked", true);
+			<% } if (roles.commands.CMD_delete == 1) { %>
+				$('input[name="CMD_delete"]').prop("checked", true);
+			<% } if (roles.commands.CMD_verifycoins == 1) { %>
+				$('input[name="CMD_verifycoins"]').prop("checked", true);
+			<% } if (roles.commands.CMD_setacc == 1) { %>
+				$('input[name="CMD_setacc"]').prop("checked", true);
+			<% } if (roles.commands.CMD_rename == 1) { %>
+				$('input[name="CMD_rename"]').prop("checked", true);
+			<% } if (roles.commands.CMD_pass == 1) { %>
+				$('input[name="CMD_pass"]').prop("checked", true);
+			<% } if (roles.commands.CMD_description == 1) { %>
+				$('input[name="CMD_description"]').prop("checked", true);
+			<% } if (roles.commands.CMD_unlist == 1) { %>
+				$('input[name="CMD_unlist"]').prop("checked", true);
+			<% } if (roles.commands.CMD_song == 1) { %>
+				$('input[name="CMD_song"]').prop("checked", true);
+			<% } %>
+			
+			var BADGE = <%= roles.properties.badge %>;
+
+			$('#submit').click(function (e) {
+				$('#result').html("Загрузка...");
+				$('#submit').prop('disabled', true);
+				$('#back').prop('disabled', true);
+				// HEX => RGB
+				const hexToRgb = (hex) => {
+					const bigint = parseInt(hex.slice(1), 16);
+					const r = (bigint >> 16) & 255;
+					const g = (bigint >> 8) & 255;
+					const b = bigint & 255;
+					return `${r.toString().padStart(3, '0')},${g.toString().padStart(3, '0')},${b.toString().padStart(3, '0')}`;
+				};
+				
+				const COLOR = hexToRgb($('input[type="color"]').val());
+				
+				
+				// actions n panel type
+				let $diffRatePerm;
+				let $starRatePerm;
+				let $rateDemonPerm;
+				let $featuredRatePerm;
+				let $epicRatePerm;
+				let $legendaryRatePerm;
+				let $mythicRatePerm;
+				let $sendRatePerm;
+				let $panelType;
+				let $reqActivating;
+				let $deleteCommentsPerm;
+
+				
+				
+				// commands
+				let CMD_rate;
+				let CMD_unrate
+				let CMD_feature;
+				let CMD_epic;
+				let CMD_unepic;
+				let CMD_verifycoins;
+				let CMD_daily;
+				let CMD_weekly;
+				let CMD_delete;
+				let CMD_setacc;
+				let CMD_rename;
+				let CMD_pass;
+				let CMD_description;
+				let CMD_unlist;
+				let CMD_song;
+				
+				// actions n panel type
+				if ($('input[name="diffRatePerm"]').is(':checked')) {
+					$diffRatePerm = $('input[name="diffRatePerm"]').val();
+				} else {
+					$diffRatePerm = "0";
+				}
+				if ($('input[name="starRatePerm"]').is(':checked')) {
+					$starRatePerm = $('input[name="starRatePerm"]').val();
+				} else {
+					$starRatePerm = "0";
+				}
+				if ($('input[name="rateDemonPerm"]').is(':checked')) {
+					$rateDemonPerm = $('input[name="rateDemonPerm"]').val();
+				} else {
+					$rateDemonPerm = "0";
+				}
+				if ($('input[name="featuredRatePerm"]').is(':checked')) {
+					$featuredRatePerm = $('input[name="featuredRatePerm"]').val();
+				} else {
+					$featuredRatePerm = "0";
+				}
+				if ($('input[name="epicRatePerm"]').is(':checked')) {
+					$epicRatePerm = $('input[name="epicRatePerm"]').val();
+				} else {
+					$epicRatePerm = "0";
+				}
+				if ($('input[name="legendaryRatePerm"]').is(':checked')) {
+					$legendaryRatePerm = $('input[name="legendaryRatePerm"]').val();
+				} else {
+					$legendaryRatePerm = "0";
+				}
+				if ($('input[name="mythicRatePerm"]').is(':checked')) {
+					$mythicRatePerm = $('input[name="mythicRatePerm"]').val();
+				} else {
+					$mythicRatePerm = "0";
+				}
+				if ($('input[name="sendRatePerm"]').is(':checked')) {
+					$sendRatePerm = $('input[name="sendRatePerm"]').val();
+				} else {
+					$sendRatePerm = "0";
+				}
+				if ($('input[name="deleteCommentsPerm"]').is(':checked')) {
+					$deleteCommentsPerm = $('input[name="deleteCommentsPerm"]').val();
+				} else {
+					$deleteCommentsPerm = "0";
+				}
+				
+				// panel type logic
+				if ($('#defaultPanel').is(':checked')) {
+					$panelType = $('#defaultPanel').val();
+				} else if ($('#advancedPanel').is(':checked')) {
+					$panelType = $('#advancedPanel').val();
+				} else if ($('#adminPanel').is(':checked')) {
+					$panelType = $('#adminPanel').val();
+				} else {
+					$panelType = "1";
+				}
+				
+				// additionally
+				if ($('input[name="reqActivating"]').is(':checked')) {
+					$reqActivating = $('input[name="reqActivating"]').val();
+				} else {
+					$reqActivating = "0";
+				}
+				
+				// commands
+				if ($('input[name="CMD_rate"]').is(':checked')) {
+					CMD_rate = $('input[name="CMD_rate"]').val();
+				} else {
+					CMD_rate = "0";
+				}
+				if ($('input[name="CMD_unrate"]').is(':checked')) {
+					CMD_unrate = $('input[name="CMD_unrate"]').val();
+				} else {
+					CMD_unrate = "0";
+				}
+				if ($('input[name="CMD_feature"]').is(':checked')) {
+					CMD_feature = $('input[name="CMD_feature"]').val();
+				} else {
+					CMD_feature = "0";
+				}
+				if ($('input[name="CMD_epic"]').is(':checked')) {
+					CMD_epic = $('input[name="CMD_epic"]').val();
+				} else {
+					CMD_epic = "0";
+				}
+				if ($('input[name="CMD_unepic"]').is(':checked')) {
+					CMD_unepic = $('input[name="CMD_unepic"]').val();
+				} else {
+					CMD_unepic = "0";
+				}
+				if ($('input[name="CMD_verifycoins"]').is(':checked')) {
+					CMD_verifycoins = $('input[name="CMD_verifycoins"]').val();
+				} else {
+					CMD_verifycoins = "0";
+				}
+				if ($('input[name="CMD_daily"]').is(':checked')) {
+					CMD_daily = $('input[name="CMD_daily"]').val();
+				} else {
+					CMD_daily = "0";
+				}
+				if ($('input[name="CMD_weekly"]').is(':checked')) {
+					CMD_weekly = $('input[name="CMD_weekly"]').val();
+				} else {
+					CMD_weekly = "0";
+				}
+				if ($('input[name="CMD_delete"]').is(':checked')) {
+					CMD_delete = $('input[name="CMD_delete"]').val();
+				} else {
+					CMD_delete = "0";
+				}
+				if ($('input[name="CMD_setacc"]').is(':checked')) {
+					CMD_setacc = $('input[name="CMD_setacc"]').val();
+				} else {
+					CMD_setacc = "0";
+				}
+				if ($('input[name="CMD_rename"]').is(':checked')) {
+					CMD_rename = $('input[name="CMD_rename"]').val();
+				} else {
+					CMD_rename = "0";
+				}
+				if ($('input[name="CMD_pass"]').is(':checked')) {
+					CMD_pass = $('input[name="CMD_pass"]').val();
+				} else {
+					CMD_pass = "0";
+				}
+				if ($('input[name="CMD_description"]').is(':checked')) {
+					CMD_description = $('input[name="CMD_description"]').val();
+				} else {
+					CMD_description = "0";
+				}
+				if ($('input[name="CMD_unlist"]').is(':checked')) {
+					CMD_unlist = $('input[name="CMD_unlist"]').val();
+				} else {
+					CMD_unlist = "0";
+				}
+				if ($('input[name="CMD_song"]').is(':checked')) {
+					CMD_song = $('input[name="CMD_song"]').val();
+				} else {
+					CMD_song = "0";
+				}
+				
+				const properties = {
+					rid: <%= parseInt(rid, 10) %>,
+					rolename: $('input[name="roleName"]').val(),
+					color: COLOR,
+					badge: parseInt(BADGE)
+				};
+				const actions = {
+					diffRatePerm: parseInt($diffRatePerm),
+					starRatePerm: parseInt($starRatePerm),
+					rateDemonPerm: parseInt($rateDemonPerm),
+					featuredRatePerm: parseInt($featuredRatePerm),
+					epicRatePerm: parseInt($epicRatePerm),
+					legendaryRatePerm: parseInt($legendaryRatePerm),
+					mythicRatePerm: parseInt($mythicRatePerm),
+					sendRatePerm: parseInt($sendRatePerm),
+					panelType: parseInt($panelType),
+					reqActivating: parseInt($reqActivating),
+					deleteCommentsPerm: parseInt($deleteCommentsPerm)
+				};
+				const commands = {
+					CMD_rate: parseInt(CMD_rate),
+					CMD_unrate: parseInt(CMD_unrate),
+					CMD_feature: parseInt(CMD_feature),
+					CMD_epic: parseInt(CMD_epic),
+					CMD_unepic: parseInt(CMD_unepic),
+					CMD_verifycoins: parseInt(CMD_verifycoins),
+					CMD_daily: parseInt(CMD_daily),
+					CMD_weekly: parseInt(CMD_weekly),
+					CMD_delete: parseInt(CMD_delete),
+					CMD_setacc: parseInt(CMD_setacc),
+					CMD_rename: parseInt(CMD_rename),
+					CMD_pass: parseInt(CMD_pass),
+					CMD_description: parseInt(CMD_description),
+					CMD_unlist: parseInt(CMD_unlist),
+					CMD_song: parseInt(CMD_song)
+				};
+
+				async function sendJSON(params) {
+					const jres = await sendPostJSON('<%= GDPSID %>/panel/roles/edit', params);
+					console.log(JSON.stringify(jres, null, 2))
+					const res = jres;
+					if (res.editrole.status == 1) {
+						$('#submit').prop('disabled', false);
+						$('#back').prop('disabled', false);
+						swup.navigate('<%= GDPSID %>/panel/roles');
+					} else if (res.editrole.status == -1) {
+						$('#submit').prop('disabled', false);
+						$('#back').prop('disabled', false);
+						$('#result').html(`<font color="red">Системная ошибка<br>Details: { "status": -1, "message": "${res.editrole.message}" }</font>`);
+					} else {
+						$('#submit').prop('disabled', false);
+						$('#back').prop('disabled', false);
+						$('#result').html(`<font color="red">Unhandled system error<br>Details: { "status": 0, "message": "" }</font>`);
+					}
+				}
+				const params = {
+					rid: '<%= rid %>',
+					properties: properties,
+					actions: actions,
+					commands: commands
+				};
+				 sendJSON(params);
+				console.log(JSON.stringify(params, null, 2))
+			});
+			
+			$('#noBadge').click(function (e) {
+				$('#noBadge').removeClass('button_badge').addClass('button_badge__selected');
+				$('#moderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#eldermoderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#helperBadge').removeClass('button_badge__selected').addClass('button_badge');
+				BADGE = 0;
+			});
+			
+			$('#moderatorBadge').click(function (e) {
+				$('#moderatorBadge').removeClass('button_badge').addClass('button_badge__selected');
+				$('#noBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#eldermoderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#helperBadge').removeClass('button_badge__selected').addClass('button_badge');
+				BADGE = 1;
+			});
+			
+			$('#eldermoderatorBadge').click(function (e) {
+				$('#eldermoderatorBadge').removeClass('button_badge').addClass('button_badge__selected');
+				$('#noBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#moderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#helperBadge').removeClass('button_badge__selected').addClass('button_badge');
+				BADGE = 2;
+			});
+			
+			$('#helperBadge').click(function (e) {
+				$('#helperBadge').removeClass('button_badge').addClass('button_badge__selected');
+				$('#noBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#eldermoderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				$('#moderatorBadge').removeClass('button_badge__selected').addClass('button_badge');
+				BADGE = 3;
+			});
+			$('#back').click(function() {
+				swup.navigate('<%= GDPSID %>/panel/roles');
+			});
+			<% } %>
+		});
+	</script>
+	</main>
+</body>
+<script>
+	var swup = new Swup ({
+		containers: ["#swup", "forcehead"], 
+		linkSelector: 'a[soft]', 
+		cache: false, 
+		plugins: [
+			new SwupScriptsPlugin()
+		]
+	});
+	// var _0x4838c2=_0x2b6f;(function(_0x123688,_0x3ca404){var _0xe6a271=_0x2b6f,_0x5e0ec8=_0x123688();while(!![]){try{var _0x33917f=parseInt(_0xe6a271(0xa1))/0x1*(-parseInt(_0xe6a271(0x9c))/0x2)+parseInt(_0xe6a271(0x9f))/0x3*(parseInt(_0xe6a271(0x9d))/0x4)+parseInt(_0xe6a271(0xa0))/0x5+-parseInt(_0xe6a271(0xa6))/0x6+parseInt(_0xe6a271(0xa5))/0x7*(-parseInt(_0xe6a271(0xa2))/0x8)+-parseInt(_0xe6a271(0xa7))/0x9*(parseInt(_0xe6a271(0x9b))/0xa)+-parseInt(_0xe6a271(0x9a))/0xb*(-parseInt(_0xe6a271(0xa3))/0xc);if(_0x33917f===_0x3ca404)break;else _0x5e0ec8['push'](_0x5e0ec8['shift']());}catch(_0x5e7ff6){_0x5e0ec8['push'](_0x5e0ec8['shift']());}}}(_0x179e,0x93127),console[_0x4838c2(0x9e)](_0x4838c2(0xa4)));function _0x2b6f(_0x2d2ae0,_0x176962){var _0x179e46=_0x179e();return _0x2b6f=function(_0x2b6f3d,_0x30ae03){_0x2b6f3d=_0x2b6f3d-0x9a;var _0x4e514e=_0x179e46[_0x2b6f3d];return _0x4e514e;},_0x2b6f(_0x2d2ae0,_0x176962);}function _0x179e(){var _0x336ad3=['14377154bHucWH','20VbRNwy','4VPDlkN','172lUyoXB','warn','81276rOsCcb','2569465YFJFIC','50503ptGtIs','8224784rfOmLc','12hGuGHz','SwupDOM\x20loaded\x20after\x20all\x20scripts','7vwSrfN','3786336iRYKUJ','2804832yoYRqz'];_0x179e=function(){return _0x336ad3;};return _0x179e();}
+	</script>
+</html>

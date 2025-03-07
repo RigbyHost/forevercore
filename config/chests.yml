@@ -1,0 +1,19 @@
+smallChest:
+  minOrbs: 200
+  maxOrbs: 400
+  minDiamonds: 2
+  maxDiamonds: 10
+  items: [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14]
+  minKeys: 1
+  maxKeys: 6
+  wait: 3600 # in seconds
+
+bigChest:
+  minOrbs: 2000
+  maxOrbs: 4000
+  minDiamonds: 15
+  maxDiamonds: 50
+  items: [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14]
+  minKeys: 1
+  maxKeys: 6
+  wait: 14400 # in seconds

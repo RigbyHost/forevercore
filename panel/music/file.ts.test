@@ -1,0 +1,50 @@
+import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import settings from '../../serverconf/settings';
+
+const db: Connection = require("../../serverconf/db");
+
+/*
+ARRAY STRUCTURE:
+    [0] = song name (string)
+    [1] = url (string)
+    [2] = size (string | number)
+*/
+
+async function getSongFileInfo(array: [string, string, string | number]): Promise<string> {
+    async function checkSong(): Promise<number> {
+        // sorry
+        return -1;
+    }
+
+    try {
+        if (array[2] === "Unknown") {
+            return "UnknownSongException:0";
+        }
+
+        const songId = await checkSong();
+        if (songId === -1) {
+            const query = `INSERT INTO songs (ID, name, authorID, authorName, size, download)
+            VALUES (?, ?, ?, ?, ?, ?)`;
+            
+            const [result] = await db.execute<ResultSetHeader>(query, [
+                null,
+                array[0],
+                8,
+                "Forever Music [File]", 
+                array[2],
+                array[1],
+            ]);
+
+            const lastID = result.insertId.toString();
+            return `Success:${lastID}`;
+        } else {
+            return `DublicateSongException:${songId}`;
+        }
+    } catch (error) {
+        console.error(error);
+        return "UnknownSongException:0";
+    }
+}
+
+export default getSongFileInfo;
+

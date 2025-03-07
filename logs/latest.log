@@ -1,0 +1,5 @@
+[07/03/2025 18:17] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 18:17] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 18:17] [main/INFO]: GDPS Engine started!
+[07/03/2025 18:17] [Query thread/INFO]: Handled new session '/panel/accounts/login', opened by anonym
+[07/03/2025 18:17] [Render thread/INFO]: Rendered page '/panel/accounts/login'

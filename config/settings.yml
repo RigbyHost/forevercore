@@ -1,0 +1,22 @@
+# REQUIRED `ffmpeg` TO USE YOUTUBE MUSIC!
+# $ sudo apt-get install ffmpeg
+# on Windows don't work - core need to fork with YouTube Windows support
+
+PORT: 3005
+
+serverName: "GDPS"  # your GDPS name
+GDPSID: ""  # on single GDPS put "" and nothing else
+NodeName: "n01"  # I forgot why this XD. try to leave it like that                                           
+
+sessionGrants: false  # false = max security (recommend); true = low security
+unregisteredSubmissions: false  # false - NO green accounts (recommend)
+
+topCount: 100  # how many players will be in the "TOP 100"
+objectLimitFU: true  # false - can upload a level with a single object; true - with minimum limit (recommend)
+objectLimitCount: 100  # read "objectLimitFU"; 100 - recommend, min: 5, max: 500
+
+diffVote: true  # vote for the difficulty of the non-rated level (like robtop server); true - recommend
+diffVoteLevel: 3  # how many votes are needed to set the difficulty of the levels; min: 2, max: 50; for small GDPS recommended: 3, for medium GDPS: 10, for big GDPS: 25+
+hardDiffVote: false  # false: 10 stars vote = 9 (insane), 1 star vote = 2 (easy) (recommend); true: 10 stars vote = 10 (demon), 1 star vote = 1 (auto)
+
+serverURL: "http://localhost:3005"  # your domain or localhost. example: https://domain.com OR http://localhost:3001

@@ -1,0 +1,31 @@
+<center>
+
+	<div class="roles-container">
+
+		<% if (roles) { %>
+			<% for (let roleID in roles) { %>
+				<div class="container">
+					<% if (roles[roleID].badge === 1) { %>
+						<img src="https://cdn.forever-gdps.host/gd/moderatorBadge.png" width="60px" class="badge">
+					<% } else if (roles[roleID].badge === 2) { %>
+						<img src="https://cdn.forever-gdps.host/gd/eldermoderatorBadge.png" width="60px" class="badge">
+					<% } else if (roles[roleID].badge === 3) { %>
+						<img src="https://cdn.forever-gdps.host/gd/helperBadge.png" width="60px" class="badge">
+					<% } %>
+					<div class="text-content">
+						<h2 style="color: rgb(<%= roles[roleID].color %>);"><%= roles[roleID].roleName %></h2>
+						ID роли: <%= roleID %>
+						<br>
+						Аккаунты с ролью: <%= roles[roleID].userList %>
+						<br><br>
+						<button id="set-<%= roleID %>" onclick="changeRole(<%= roleID %>, '<%= roles[roleID].roleName %>')">Выдать / снять роль</button>
+						<button onclick="deleteRole(<%= roleID %>, '<%= roles[roleID].roleName %>')">Удалить роль</button>
+						<button onclick="editRole(<%= roleID %>)">Изменить роль</button>
+					</div>
+				</div>
+			<% } %>
+		<% } else { %>
+			<p>На сервере нет ролей</p>
+		<% } %>
+	</div>
+	</center>
