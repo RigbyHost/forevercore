@@ -14,8 +14,7 @@ import db from './serverconf/db';
 import { settings } from './serverconf/settings';
 import ConsoleApi from './modules/console-api';
 import ApiRouter from './routes/api-router';
-import { createAccountHandlers } from './routes/handlers/account-handlers';
-import { createLevelHandlers } from './routes/handlers/level-handlers';
+import { createAllHandlers } from './routes/handlers';
 import TS_handler from './tslib/TS_handler';
 import { Roles } from './panel/roles/roles';
 
