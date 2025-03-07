@@ -3,7 +3,7 @@
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import db from '../../serverconf/db';
 import ExploitPatch from './exploitPatch';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import XORCipher from './XORCipher';
 import FixIp from './fixIp';
 import crypto from 'crypto';

@@ -1,1 +1,39 @@
-[07/03/2025 22:26] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:51] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[07/03/2025 22:51] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 22:51] [main/INFO]: GDPS Engine started on port 3005!
+[07/03/2025 22:51] [Database/INFO]: Database connection successful
+[07/03/2025 22:51] [TS_handler/INFO]: Database connection successful
+[07/03/2025 22:51] [TS_handler/INFO]: All required database tables exist
+[07/03/2025 22:51] [TS_handler/INFO]: Routes validation complete
+[07/03/2025 22:51] [TS_handler/INFO]: TypeScript initialization complete

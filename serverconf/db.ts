@@ -1,8 +1,7 @@
-'package net.fimastgd.forevercore.serverconf.db';
-
 import mysql from 'mysql2/promise';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
 import ConsoleApi from '../modules/console-api';
 
 interface DatabaseConfig {
@@ -24,21 +23,29 @@ interface DatabaseConfig {
  */
 function loadDatabaseConfig(): DatabaseConfig {
     try {
-        // Try to load configuration from file
-        const configPath = path.join(__dirname, 'database.json');
-        if (fs.existsSync(configPath)) {
-            const configText = fs.readFileSync(configPath, 'utf8');
-            const config = JSON.parse(configText);
+        // Try to load configuration from YAML file
+        const configPath = path.join(__dirname, '../config/db.yml');
+        const fileContents = fs.readFileSync(configPath, 'utf8');
+        const config = yaml.load(fileContents) as DatabaseConfig;
 
-            // Validate required fields
-            if (!config.host || !config.user || !config.database) {
-                throw new Error('Missing required database configuration fields');
-            }
-
-            return config;
+        // Validate required fields
+        if (!config.host || !config.user || !config.database) {
+            throw new Error('Missing required database configuration fields');
         }
 
-        // Default configuration if no file found
+        // Merge with default configuration
+        return {
+            ...config,
+            port: config.port || 3306,
+            waitForConnections: config.waitForConnections ?? true,
+            connectionLimit: config.connectionLimit ?? 10,
+            queueLimit: config.queueLimit ?? 0,
+            timezone: config.timezone || '+00:00',
+            charset: config.charset || 'utf8mb4'
+        };
+    } catch (error) {
+        // Fallback to environment variables or default values
+        ConsoleApi.Error('Database', `Error loading database configuration: ${error}`);
         return {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
@@ -51,9 +58,6 @@ function loadDatabaseConfig(): DatabaseConfig {
             timezone: '+00:00',
             charset: 'utf8mb4'
         };
-    } catch (error) {
-        ConsoleApi.Error('Database', `Error loading database configuration: ${error}`);
-        process.exit(1);
     }
 }
 

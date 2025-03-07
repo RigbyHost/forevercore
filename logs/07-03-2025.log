@@ -51,3 +51,188 @@
 [07/03/2025 18:17] [Render thread/INFO]: Rendered page '/panel/accounts/login'
 [07/03/2025 22:26] [Database/INFO]: Connecting to database gdps on localhost
 [07/03/2025 22:26] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:36] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:41] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:41] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:41] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:41] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:41] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:42] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:42] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:42] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:42] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:42] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:42] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:42] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:43] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:43] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:44] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:44] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:45] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:45] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:45] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:45] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:45] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:45] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:46] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:46] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[07/03/2025 22:46] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[07/03/2025 22:46] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 22:46] [main/INFO]: GDPS Engine started on port 3005!
+[07/03/2025 22:46] [Database/FATAL ERROR]: Failed to connect to database: Error
+[07/03/2025 22:50] [Database/ERROR]: Error loading database configuration: Error: ENOENT: no such file or directory, open '/Users/connor/Desktop/config/db.yml'
+[07/03/2025 22:50] [Database/INFO]: Connecting to database gdps on localhost
+[07/03/2025 22:50] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[07/03/2025 22:50] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[07/03/2025 22:50] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 22:50] [main/INFO]: GDPS Engine started on port 3005!
+[07/03/2025 22:50] [Database/FATAL ERROR]: Failed to connect to database: Error
+[07/03/2025 22:51] [Database/INFO]: Connecting to database testing_forevercore on 192.168.0.135
+[07/03/2025 22:51] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[07/03/2025 22:51] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 22:51] [main/INFO]: GDPS Engine started on port 3005!
+[07/03/2025 22:51] [TS_handler/ERROR]: Database validation failed: Error: connect EHOSTUNREACH 192.168.0.135:3306 - Local (192.168.0.207:49531)
+[07/03/2025 22:51] [Database/FATAL ERROR]: Failed to connect to database: Error: connect EHOSTUNREACH 192.168.0.135:3306 - Local (192.168.0.207:49530)
+[07/03/2025 22:51] [Database/INFO]: Connecting to database testing_forevercore on 192.168.0.135
+[07/03/2025 22:51] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[07/03/2025 22:51] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[07/03/2025 22:51] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[07/03/2025 22:51] [main/INFO]: GDPS Engine started on port 3005!
+[07/03/2025 22:51] [Database/INFO]: Database connection successful
+[07/03/2025 22:51] [TS_handler/INFO]: Database connection successful
+[07/03/2025 22:51] [TS_handler/INFO]: All required database tables exist
+[07/03/2025 22:51] [TS_handler/INFO]: Routes validation complete
+[07/03/2025 22:51] [TS_handler/INFO]: TypeScript initialization complete

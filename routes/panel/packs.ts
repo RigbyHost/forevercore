@@ -2,7 +2,7 @@
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import Panel from '../../panel/main';
 const getRoleInfo = require("../../panel/accounts/getRoleInfo").default;
 import { Connection, RowDataPacket, ResultSetHeader, FieldPacket } from 'mysql2/promise';
@@ -50,7 +50,7 @@ router.get('/', async (req: express.Request, res: express.Response) => {
 
 router.get('/mappacks', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -70,7 +70,7 @@ router.get('/mappacks', async (req: express.Request, res: express.Response) => {
 // редактор мап паков
 router.get('/mappacks/edit/:id', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -99,7 +99,7 @@ router.get('/mappacks/edit/:id', async (req: express.Request, res: express.Respo
 });
 router.get('/mappacks/create', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -118,7 +118,7 @@ router.get('/mappacks/create', async (req: express.Request, res: express.Respons
 // ГАУНТЛЕТЫ
 router.get('/gauntlets', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -137,7 +137,7 @@ router.get('/gauntlets', async (req: express.Request, res: express.Response) => 
 
 router.get('/gauntlets/create', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -156,7 +156,7 @@ router.get('/gauntlets/create', async (req: express.Request, res: express.Respon
 // редактор гаунтлетов
 router.get('/gauntlets/edit/:id', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -188,7 +188,7 @@ router.get('/gauntlets/edit/:id', async (req: express.Request, res: express.Resp
 // POST
 router.post('/mappacks/create', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;
@@ -213,7 +213,7 @@ router.post('/mappacks/create', async (req: express.Request, res: express.Respon
 
 router.post('/mappacks/edit', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;
@@ -238,7 +238,7 @@ router.post('/mappacks/edit', async (req: express.Request, res: express.Response
 
 router.post('/mappacks/delete', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;
@@ -270,7 +270,7 @@ router.post('/mappacks/delete', async (req: express.Request, res: express.Respon
 
 router.post('/gauntlets/create', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;
@@ -297,7 +297,7 @@ router.post('/gauntlets/create', async (req: express.Request, res: express.Respo
 
 router.post('/gauntlets/edit', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;
@@ -326,7 +326,7 @@ router.post('/gauntlets/edit', async (req: express.Request, res: express.Respons
 
 router.post('/gauntlets/delete', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.send("-1");
         return;

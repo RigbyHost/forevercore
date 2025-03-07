@@ -2,7 +2,7 @@
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import Panel from '../../panel/main';
 const getRoleInfo = require("../../panel/accounts/getRoleInfo").default;
 import { Connection, RowDataPacket, ResultSetHeader, FieldPacket } from 'mysql2/promise';
@@ -23,7 +23,7 @@ const is = new Numbers();
 
 router.get('/', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -43,7 +43,7 @@ router.get('/', async (req: express.Request, res: express.Response) => {
 
 router.post('/', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -62,7 +62,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
 
 router.get('/create', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         if (settings.GDPSID != "") {
             res.redirect(`${settings.GDPSID}/panel/accounts/login`);
@@ -80,7 +80,7 @@ router.get('/create', async (req: express.Request, res: express.Response) => {
 
 router.get('/edit/:id', async (req: express.Request, res: express.Response) => {
 	const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || adminPanel == 0) {
         res.status(200).json({ status: -3, message: "Not authorized" });
         return;
@@ -103,7 +103,7 @@ router.get('/edit/:id', async (req: express.Request, res: express.Response) => {
 
 router.post('/create', async (req: express.Request, res: express.Response) => {
 	const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     const { rid, properties, actions, commands } = req.body;
     if (!req.cookies.username || adminPanel == 0) {
         res.status(200).json({ status: -3, message: "Not authorized" });
@@ -117,7 +117,7 @@ router.post('/create', async (req: express.Request, res: express.Response) => {
 
 router.post('/edit', async (req: express.Request, res: express.Response) => {
 	const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     const { rid, properties, actions, commands } = req.body;
     if (!req.cookies.username || adminPanel == 0) {
         res.status(200).json({ status: -3, message: "Not authorized" });
@@ -130,7 +130,7 @@ router.post('/edit', async (req: express.Request, res: express.Response) => {
 });
 router.post('/handrole', async (req: express.Request, res: express.Response) => {
 	const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     const { rid, properties, actions, commands } = req.body;
     if (!req.cookies.username || adminPanel == 0) {
         res.status(200).send("-3");
@@ -168,7 +168,7 @@ router.post('/handrole', async (req: express.Request, res: express.Response) => 
 });
 router.post('/delete', async (req: express.Request, res: express.Response) => {
 	const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     const { roleID } = req.body;
     if (!req.cookies.username || adminPanel == 0) {
         res.status(200).json({ status: -3, message: "Not authorized" });

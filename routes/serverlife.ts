@@ -2,7 +2,7 @@
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import settings from '../serverconf/settings';
+import { settings } from '../serverconf/settings';
 import banUser from '../panel/leaderboard/ban';
 import unbanUser from '../panel/leaderboard/unban';
 import Panel from '../panel/main';

@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import Panel from '../main';
-import apiURL from '../../serverconf/api';
+import { apiURL } from '../../serverconf/api';
 import ConsoleApi from '../../modules/console-api';
 
 /**

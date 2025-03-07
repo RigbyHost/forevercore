@@ -11,7 +11,7 @@ import * as c from 'ansi-colors';
 import minimist from 'minimist';
 
 import db from './serverconf/db';
-import settings from './serverconf/settings';
+import { settings } from './serverconf/settings';
 import ConsoleApi from './modules/console-api';
 import ApiRouter from './routes/api-router';
 import { createAccountHandlers } from './routes/handlers/account-handlers';
@@ -143,7 +143,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = parseInt(settings.PORT);
+const PORT = settings.PORT;
 
 app.listen(PORT, () => {
 	ConsoleApi.Log$LightGreen("main", `GDPS Engine started on port ${PORT}!`);

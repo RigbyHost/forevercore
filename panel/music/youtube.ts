@@ -1,7 +1,6 @@
 'package net.fimastgd.forevercore.panel.music.youtube';
 
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import settings from '../../serverconf/settings';
 
 const db: Connection = require("../../serverconf/db");
 const ConsoleApi = require("../../modules/console-api");

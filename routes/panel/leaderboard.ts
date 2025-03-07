@@ -2,7 +2,7 @@
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import banUser from '../../panel/leaderboard/ban';
 import unbanUser from '../../panel/leaderboard/unban';
 import Panel from '../../panel/main';
@@ -25,7 +25,7 @@ router.get('/', async (req: express.Request, res: express.Response) => {
 
 router.get('/ban', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
 			// я гений, исправлять лень
@@ -48,7 +48,7 @@ router.get('/ban', async (req: express.Request, res: express.Response) => {
 // POST
 router.post('/ban', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
@@ -69,7 +69,7 @@ router.post('/ban', async (req: express.Request, res: express.Response) => {
 
 router.post('/unban', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             

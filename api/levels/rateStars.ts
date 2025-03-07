@@ -6,7 +6,7 @@ import ApiLib from '../lib/apiLib';
 import GJPCheck from '../lib/GJPCheck';
 import DiffLib from '../lib/diffLib';
 import db from '../../serverconf/db';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 
 /**

@@ -2,7 +2,6 @@
 
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import db from '../../serverconf/db';
-import settings from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 
 /**

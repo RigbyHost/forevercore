@@ -9,7 +9,7 @@ import ApiLib from '../lib/apiLib';
 import FixIp from '../lib/fixIp';
 import GJPCheck from '../lib/GJPCheck';
 import db from '../../serverconf/db';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 
 /**

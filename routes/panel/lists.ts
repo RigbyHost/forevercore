@@ -3,7 +3,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import axios from 'axios';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import Panel from '../../panel/main';
 import ListLib from '../../panel/lists/listLib';
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
@@ -24,7 +24,7 @@ router.get('/', async (req: express.Request, res: express.Response) => {
 
 router.get('/reports', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID)); 
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID); 
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
@@ -47,7 +47,7 @@ router.get('/reports', async (req: express.Request, res: express.Response) => {
 
 router.get('/suggests', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
@@ -72,7 +72,7 @@ router.get('/suggests', async (req: express.Request, res: express.Response) => {
 
 router.get('/suggests/:offset', async (req: express.Request, res: express.Response) => {
    const accountID = await Panel.account("getID", req.cookies.username);
-   const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+   const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
    if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
@@ -108,7 +108,7 @@ router.get('/suggests/:offset', async (req: express.Request, res: express.Respon
 
 router.get('/unlisted', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
@@ -133,7 +133,7 @@ router.get('/unlisted', async (req: express.Request, res: express.Response) => {
 
 router.get('/unlisted/:offset', async (req: express.Request, res: express.Response) => {
     const accountID = await Panel.account("getID", req.cookies.username);
-    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(parseInt(accountID));
+    const { roleName, advancedPanel, adminPanel } = await getRoleInfo(accountID);
     if (!req.cookies.username || advancedPanel == 0) {
         if (adminPanel != 0) {
             
