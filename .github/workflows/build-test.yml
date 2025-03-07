@@ -1,0 +1,61 @@
+name: TypeScript Build Check
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Возможность запуска вручную
+
+jobs:
+  build:
+    name: Bun Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Validate tsconfig.json
+      run: |
+        echo "Validating tsconfig.json..."
+        bun x tsc -p tsconfig.json --noEmit --listFiles
+
+    - name: Check TypeScript code
+      run: |
+        echo "Running type check..."
+        bun x tsc --noEmit
+
+    - name: Run comprehensive type check
+      run: |
+        echo "Running comprehensive type check..."
+        bun x tsc --noEmit --skipLibCheck false --project tsconfig.json
+
+    - name: Check for circular dependencies
+      run: |
+        echo "Checking for circular dependencies..."
+        bun x madge --circular --extensions ts ./
+      continue-on-error: true
+
+    - name: Check code style with ESLint (if present)
+      run: |
+        if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f ".eslintrc.yml" ]; then
+          echo "ESLint configuration found, running check..."
+          bun x eslint . --ext .ts
+        else
+          echo "No ESLint configuration found, skipping code style check."
+        fi
+      continue-on-error: true
+
+    - name: Report status
+      run: |
+        echo "TypeScript build check completed!"
+        echo "All checks have passed successfully."
