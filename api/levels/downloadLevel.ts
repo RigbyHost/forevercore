@@ -53,6 +53,8 @@ interface LevelData {
     ts: string;
     songIDs?: string;
     sfxIDs?: string;
+    unlisted2: number; // Добавлено недостающее свойство
+    levelInfo: string; // Добавлено недостающее свойство
 }
 
 /**
@@ -211,7 +213,7 @@ const downloadLevel = async (
         let pass = level.password;
         let desc = level.levelDesc;
 
-        if ((await ApiLib.checkModIPPermission("actionFreeCopy", req)) === 1) {
+        if ((await ApiLib.checkPermission(parseInt(accountIDStr), "actionFreeCopy")) === true) {
             pass = "1";
         }
 
