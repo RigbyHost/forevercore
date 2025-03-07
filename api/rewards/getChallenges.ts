@@ -4,7 +4,7 @@ import ExploitPatch from '../lib/exploitPatch';
 import db from '../../serverconf/db';
 import ApiLib from '../lib/apiLib';
 import ConsoleApi from '../../modules/console-api';
-import apiURL from '../../serverconf/api';
+import { apiURL } from '../../serverconf/api';
 
 /**
  * Interface for quest data

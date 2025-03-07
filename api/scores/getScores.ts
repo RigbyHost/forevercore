@@ -5,7 +5,7 @@ import { RowDataPacket } from 'mysql2/promise';
 import db from '../../serverconf/db';
 import ExploitPatch from '../lib/exploitPatch';
 import GJPCheck from '../lib/GJPCheck';
-import settings from '../../serverconf/settings';
+import { settings } from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 
 /**

@@ -87,10 +87,8 @@ app.use('/serverlife', serverlife);
 
 // Create and configure API Router
 const apiRouter = new ApiRouter();
-
-for (const handlers in createAllHandlers()) {
-	apiRouter.registerHandlers(handlers);
-}
+const handlers = createAllHandlers();
+apiRouter.registerHandlers(handlers);
 
 // Apply API routes
 app.use('/', apiRouter.initialize());
