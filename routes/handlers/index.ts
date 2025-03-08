@@ -8,12 +8,9 @@ import { createPacksHandlers } from './packs-handlers';
 import { createRewardsHandlers } from './rewards-handlers';
 import { createScoresHandlers } from './score-handlers';
 import { createSystemHandlers } from './system-handlers';
+import { createCommentHandlers } from './comment-handlers';
 import { ApiHandler } from '../api-router';
 
-/**
- * Создает и возвращает массив всех обработчиков API
- * @returns Массив всех API-обработчиков
- */
 export function createAllHandlers(): ApiHandler[] {
     return [
         ...createAccountHandlers(),
@@ -25,6 +22,7 @@ export function createAllHandlers(): ApiHandler[] {
         ...createPacksHandlers(),
         ...createRewardsHandlers(),
         ...createScoresHandlers(),
-        ...createSystemHandlers()
+        ...createSystemHandlers(),
+        ...createCommentHandlers()
     ];
 }

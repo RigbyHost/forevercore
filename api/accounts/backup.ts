@@ -1,5 +1,4 @@
-import path from 'path';
-import fs from 'fs/promises';
+// api/accounts/backup.ts
 import { Request } from 'express';
 import db from '../../serverconf/db';
 import ExploitPatch from '../lib/exploitPatch';
@@ -7,15 +6,7 @@ import GeneratePass from '../lib/generatePass';
 import ConsoleApi from '../../modules/console-api';
 
 /**
- * Interface for account backup result
- */
-interface BackupResult {
-  orbs: string;
-  lvls: string;
-}
-
-/**
- * Backs up a GD account
+ * Backs up a GD account to database
  * @param userNameOr - Username
  * @param passwordOr - Password
  * @param saveDataOr - Save data
@@ -33,19 +24,22 @@ const backupAccount = async (
   req?: Request
 ): Promise<string> => {
   try {
-    // Clear any timeout if exists
+    // Логируем запрос
+    ConsoleApi.Log("main", `Backup request received for account ${accountIDOr || userNameOr}`);
+    
+    // Очистка таймаута, если существует
     if (typeof setTimeout === "function") {
       setTimeout(() => {}, 0);
     }
 
-    // Get username if not provided
+    // Получить имя пользователя, если не предоставлено
     let userName: string | null = null;
     if (typeof userNameOr === "undefined") {
       const [rows] = await db.execute<any[]>(
         "SELECT userName FROM accounts WHERE accountID = ?", 
         [accountIDOr]
       );
-      userName = rows.length ? rows[0].accountID : null;
+      userName = rows.length ? rows[0].userName : null;
     } else {
       userName = await ExploitPatch.remove(userNameOr);
     }
@@ -53,7 +47,7 @@ const backupAccount = async (
     const password = passwordOr || "";
     const saveData = await ExploitPatch.remove(saveDataOr);
 
-    // Get account ID
+    // Получить ID аккаунта
     let accountID: string | number | null;
     if (!accountIDOr) {
       const [rows] = await db.execute<any[]>(
@@ -65,13 +59,13 @@ const backupAccount = async (
       accountID = ExploitPatch.remove(accountIDOr);
     }
 
-    // Validate account ID
+    // Проверить ID аккаунта
     if (!isFinite(Number(accountID))) {
-      ConsoleApi.Log("main", `Failed to backup account: ${accountID}`);
+      ConsoleApi.Log("main", `Failed to backup account: ${accountID} - invalid ID`);
       return "-1";
     }
 
-    // Check password
+    // Проверить пароль
     let pass = 0;
     if (passwordOr) {
       pass = await GeneratePass.isValid(accountIDOr, passwordOr, req);
@@ -80,34 +74,26 @@ const backupAccount = async (
     }
 
     if (pass === 1) {
-      // Process save data
+      // Обработка данных сохранения
       let saveDataArr = saveDataOr.split(";");
       let saveDataDecoded = saveDataArr[0].replace(/-/g, "+").replace(/_/g, "/");
       saveDataDecoded = Buffer.from(saveDataDecoded, "base64").toString();
-      saveDataDecoded = require("zlib").gunzipSync(saveDataDecoded).toString();
-
-      // Extract orbs and levels from save data
+      
+      // Извлечь сферы и уровни из данных сохранения
       let orbs = saveDataDecoded.split("</s><k>14</k><s>")[1].split("</s>")[0];
       let lvls = saveDataDecoded.split("<k>GS_value</k>")[1].split("</s><k>4</k><s>")[1].split("</s>")[0];
 
-      // Mask password in save data
+      // Маскировать пароль в данных сохранения
       saveDataDecoded = saveDataDecoded.replace(
         `<k>GJA_002</k><s>${passwordOr}</s>`, 
         "<k>GJA_002</k><s>password</s>"
       );
       
-      // Compress and encode save data
-      saveDataDecoded = require("zlib").gzipSync(saveDataDecoded).toString("base64");
-      saveDataDecoded = saveDataDecoded.replace(/\+/g, "-").replace(/\//g, "_");
-      saveDataDecoded = saveDataDecoded + ";" + saveDataArr[1];
+      // Сохранить данные в БД
+      const query = `UPDATE accounts SET saveData = ?, lastBackup = ? WHERE accountID = ?`;
+      await db.execute(query, [saveDataOr, Math.floor(Date.now() / 1000), accountID]);
 
-      // Write save data to file
-      const accountsPath = path.join("./data/accounts", `${accountIDOr}.dat`);
-      const accountsKeyPath = path.join("./data/accounts/keys", `${accountIDOr}`);
-      await fs.writeFile(`${accountsPath}`, saveDataDecoded);
-      await fs.writeFile(`${accountsKeyPath}`, "");
-
-      // Get user ID and update orbs and levels
+      // Получить ID пользователя и обновить сферы и уровни
       let userNameFin: string;
       let extID: string;
       
@@ -133,10 +119,10 @@ const backupAccount = async (
         );
       }
 
-      ConsoleApi.Log("main", `Account backuped. ID: ${accountID}`);
+      ConsoleApi.Log("main", `Account backed up successfully. ID: ${accountID}`);
       return "1";
     } else {
-      ConsoleApi.Log("main", `Failed to backup account. ID: ${accountID}`);
+      ConsoleApi.Log("main", `Failed to backup account. ID: ${accountID} - authentication failed`);
       return "-1";
     }
   } catch (err) {

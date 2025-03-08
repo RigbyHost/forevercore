@@ -77,6 +77,7 @@ export class ApiRouter {
      * @returns This router instance for chaining
      */
     registerHandler(handler: ApiHandler): ApiRouter {
+        ConsoleApi.Debug('ApiRouter', `Registering handler for ${handler.getMethod().toUpperCase()} ${handler.getPath()}`);
         this.handlers.push(handler);
         return this;
     }
@@ -87,6 +88,13 @@ export class ApiRouter {
      * @returns This router instance for chaining
      */
     registerHandlers(handlers: ApiHandler[]): ApiRouter {
+        ConsoleApi.Log('ApiRouter', `Registering ${handlers.length} handlers`);
+        
+        // Добавим подробное логирование каждого обработчика в массиве
+        for (const handler of handlers) {
+            ConsoleApi.Debug('ApiRouter', `Registering handler for ${handler.getMethod().toUpperCase()} ${handler.getPath()}`);
+        }
+        
         this.handlers.push(...handlers);
         return this;
     }

@@ -1,66 +1,133 @@
-[08/03/2025 12:26] [Server thread/INFO]: Using package net.fimastgd.forevercore
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /deleteGJMessages20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJMessage20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJMessages20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJMessage20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /deleteGJList.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /uploadGJList.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /requestUserAccess.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJSongInfo.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /likeGJItem.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJTopArtists.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJGauntlets.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJMapPacks.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJChallenges.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJChests.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJCreators.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevelScores.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJLevelScoresPlat.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /getGJScores.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /updateGJUserScore.php
-[08/03/2025 12:26] [ApiRouter/DEBUG]: Registered route: POST /calculateCPs.php
-[08/03/2025 12:26] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
-[08/03/2025 12:26] [main/INFO]: GDPS Engine started on port 3005!
-[08/03/2025 12:26] [Database/INFO]: Database connection successful
-[08/03/2025 12:26] [TS_handler/INFO]: Database connection successful
-[08/03/2025 12:26] [TS_handler/INFO]: All required database tables exist
-[08/03/2025 12:26] [TS_handler/INFO]: Routes validation complete
-[08/03/2025 12:26] [TS_handler/INFO]: TypeScript initialization complete
-[08/03/2025 12:28] [main/INFO]: Received user info. ID: 1
-[08/03/2025 12:28] [main/INFO]: Received SIGINT signal, shutting down gracefully...
-[08/03/2025 12:28] [FLS system/INFO]: Saving level chunks... [ IN FUTURE ]
-[08/03/2025 12:28] [FLS system/INFO]: Saving account chunks... [ IN FUTURE ]
-[08/03/2025 12:28] [main/INFO]: Stopping database server...
-[08/03/2025 12:28] [main/INFO]: Stopping server...
-[08/03/2025 12:28] [Server thread/INFO]: ----- [ SERVER STOPPED ] -----
+[08/03/2025 13:37] [Server thread/INFO]: Using package net.fimastgd.forevercore
+[08/03/2025 13:37] [ApiRouter/INFO]: Registering 57 handlers
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/registerGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/loginGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/backupGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/backupGJAccount20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /database/accounts/backupGJAccountNew.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/syncGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /accounts/syncGJAccount20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /database/accounts/syncGJAccountNew.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJUserInfo20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /updateGJAccSettings20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /deleteGJMessages20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJMessage20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJMessages20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJMessage20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJLevel19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJLevel20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJLevel21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevels.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevels19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevels20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevels21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJLevel19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJLevel20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJLevel21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /downloadGJLevel22.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /deleteGJLevelUser20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /rateGJStars20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /rateGJStars211.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /suggestGJStars20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /rateGJDemon21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /reportGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /updateGJDesc20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJDailyLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /deleteGJList.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJList.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /requestUserAccess.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJSongInfo.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /likeGJItem.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJTopArtists.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJGauntlets.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJMapPacks.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJChallenges.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJChests.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJCreators.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevelScores.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJLevelScoresPlat.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJScores.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /updateGJUserScore.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /calculateCPs.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJComments21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJComment21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /deleteGJComment20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /getGJAccountComments20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /uploadGJAccComment20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registering handler for POST /deleteGJAccComment20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/registerGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/loginGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/backupGJAccount20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/backupGJAccountNew.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /accounts/syncGJAccount20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /database/accounts/syncGJAccountNew.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJUserInfo20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /updateGJAccSettings20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /deleteGJMessages20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJMessage20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJMessages20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJMessage20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJLevel21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevels21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel19.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /downloadGJLevel22.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /deleteGJLevelUser20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /rateGJStars211.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /suggestGJStars20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /rateGJDemon21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /reportGJLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /updateGJDesc20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJDailyLevel.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /deleteGJList.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJList.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /requestUserAccess.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJSongInfo.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /likeGJItem.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJTopArtists.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJGauntlets.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJMapPacks.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJChallenges.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJChests.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJCreators.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevelScores.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJLevelScoresPlat.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJScores.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /updateGJUserScore.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /calculateCPs.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJComments21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJComment21.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /deleteGJComment20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /getGJAccountComments20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /uploadGJAccComment20.php
+[08/03/2025 13:37] [ApiRouter/DEBUG]: Registered route: POST /deleteGJAccComment20.php
+[08/03/2025 13:37] [Anvil PluginLoader/INFO]: Plugin test.jsx loaded successfully.
+[08/03/2025 13:37] [main/INFO]: GDPS Engine started on port 3005!
+[08/03/2025 13:37] [Database/INFO]: Database connection successful
+[08/03/2025 13:37] [TS_handler/INFO]: Database connection successful
+[08/03/2025 13:37] [TS_handler/INFO]: All required database tables exist
+[08/03/2025 13:37] [TS_handler/INFO]: Routes validation complete
+[08/03/2025 13:37] [TS_handler/INFO]: TypeScript initialization complete
+[08/03/2025 13:37] [main/INFO]: Received user info. ID: 1
+[08/03/2025 13:37] [Comments/INFO]: Processing request for account comments, account ID: 1,1
+[08/03/2025 13:37] [main/WARN]: Array instead of Int detected, trying to offset array...
+[08/03/2025 13:37] [main/INFO]: Received account comments. accountID: 1
+[08/03/2025 13:43] [main/INFO]: Received SIGINT signal, shutting down gracefully...
+[08/03/2025 13:43] [FLS system/INFO]: Saving level chunks... [ IN FUTURE ]
+[08/03/2025 13:43] [FLS system/INFO]: Saving account chunks... [ IN FUTURE ]
+[08/03/2025 13:43] [main/INFO]: Stopping database server...
+[08/03/2025 13:43] [main/INFO]: Stopping server...
+[08/03/2025 13:43] [Server thread/INFO]: ----- [ SERVER STOPPED ] -----

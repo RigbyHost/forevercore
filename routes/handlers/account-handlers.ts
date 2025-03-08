@@ -64,12 +64,14 @@ export class LoginAccountHandler extends BaseApiHandler {
  * Handler for account backup endpoint
  */
 export class BackupAccountHandler extends BaseApiHandler {
-    constructor(path: string = '/accounts/backupGJAccount.php') {
-        super(path);
+    constructor() {
+        super('/accounts/backupGJAccount.php');
     }
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
+            ConsoleApi.Log('Backup', `Attempt to backup account (standard): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
             const result = await backupAccount(
                 req.body.userName,
                 req.body.password,
@@ -90,18 +92,58 @@ export class BackupAccountHandler extends BaseApiHandler {
 /**
  * Handler for account backup (GD 2.0) endpoint
  */
-export class BackupAccount20Handler extends BackupAccountHandler {
+export class BackupAccount20Handler extends BaseApiHandler {
     constructor() {
         super('/accounts/backupGJAccount20.php');
+    }
+
+    async handle(req: Request, res: Response): Promise<void> {
+        try {
+            ConsoleApi.Log('Backup', `Attempt to backup account (2.0): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
+            const result = await backupAccount(
+                req.body.userName,
+                req.body.password,
+                req.body.saveData,
+                req.body.accountID,
+                req.body.gjp2,
+                req
+            );
+
+            res.status(200).send(result);
+        } catch (error) {
+            ConsoleApi.Error('BackupAccount20Handler', `Error during backup: ${error}`);
+            res.status(200).send('-1');
+        }
     }
 }
 
 /**
  * Handler for new account backup endpoint
  */
-export class BackupAccountNewHandler extends BackupAccountHandler {
+export class BackupAccountNewHandler extends BaseApiHandler {
     constructor() {
         super('/database/accounts/backupGJAccountNew.php');
+    }
+
+    async handle(req: Request, res: Response): Promise<void> {
+        try {
+            ConsoleApi.Log('Backup', `Attempt to backup account (new): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
+            const result = await backupAccount(
+                req.body.userName,
+                req.body.password,
+                req.body.saveData,
+                req.body.accountID,
+                req.body.gjp2,
+                req
+            );
+
+            res.status(200).send(result);
+        } catch (error) {
+            ConsoleApi.Error('BackupAccountNewHandler', `Error during backup: ${error}`);
+            res.status(200).send('-1');
+        }
     }
 }
 
@@ -109,12 +151,14 @@ export class BackupAccountNewHandler extends BackupAccountHandler {
  * Handler for account sync endpoint
  */
 export class SyncAccountHandler extends BaseApiHandler {
-    constructor(path: string = '/accounts/syncGJAccount.php') {
-        super(path);
+    constructor() {
+        super('/accounts/syncGJAccount.php');
     }
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
+            ConsoleApi.Log('Sync', `Attempt to sync account (standard): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
             const result = await syncAccount(
                 req.body.userName,
                 req.body.accountID,
@@ -134,18 +178,56 @@ export class SyncAccountHandler extends BaseApiHandler {
 /**
  * Handler for account sync (GD 2.0) endpoint
  */
-export class SyncAccount20Handler extends SyncAccountHandler {
+export class SyncAccount20Handler extends BaseApiHandler {
     constructor() {
         super('/accounts/syncGJAccount20.php');
+    }
+
+    async handle(req: Request, res: Response): Promise<void> {
+        try {
+            ConsoleApi.Log('Sync', `Attempt to sync account (2.0): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
+            const result = await syncAccount(
+                req.body.userName,
+                req.body.accountID,
+                req.body.password,
+                req.body.gjp2,
+                req
+            );
+
+            res.status(200).send(result);
+        } catch (error) {
+            ConsoleApi.Error('SyncAccount20Handler', `Error during sync: ${error}`);
+            res.status(200).send('-1');
+        }
     }
 }
 
 /**
  * Handler for new account sync endpoint
  */
-export class SyncAccountNewHandler extends SyncAccountHandler {
+export class SyncAccountNewHandler extends BaseApiHandler {
     constructor() {
         super('/database/accounts/syncGJAccountNew.php');
+    }
+
+    async handle(req: Request, res: Response): Promise<void> {
+        try {
+            ConsoleApi.Log('Sync', `Attempt to sync account (new): username=${req.body.userName}, accountID=${req.body.accountID}`);
+            
+            const result = await syncAccount(
+                req.body.userName,
+                req.body.accountID,
+                req.body.password,
+                req.body.gjp2,
+                req
+            );
+
+            res.status(200).send(result);
+        } catch (error) {
+            ConsoleApi.Error('SyncAccountNewHandler', `Error during sync: ${error}`);
+            res.status(200).send('-1');
+        }
     }
 }
 

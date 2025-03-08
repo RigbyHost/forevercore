@@ -1,6 +1,8 @@
 .DS_Store
 /node_modules/
 /**/node_modules/
+bun.lock
+logs
 
 # React Router
 /views/new/.react-router/
