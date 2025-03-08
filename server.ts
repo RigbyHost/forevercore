@@ -17,6 +17,7 @@ import ApiRouter from './routes/api-router';
 import { createAllHandlers } from './routes/handlers';
 import TS_handler from './tslib/TS_handler';
 import { Roles } from './panel/roles/roles';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // Parse command line arguments
 const args = minimist(process.argv.slice(2));

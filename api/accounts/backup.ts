@@ -60,7 +60,7 @@ const backupAccount = async (
     }
 
     // Проверить ID аккаунта
-    if (!isFinite(Number(accountID))) {
+    if (!accountID || !isFinite(Number(accountID))) {
       ConsoleApi.Log("main", `Failed to backup account: ${accountID} - invalid ID`);
       return "-1";
     }
@@ -68,9 +68,9 @@ const backupAccount = async (
     // Проверить пароль
     let pass = 0;
     if (passwordOr) {
-      pass = await GeneratePass.isValid(accountIDOr, passwordOr, req);
+      pass = await GeneratePass.isValid(accountID, passwordOr, req);
     } else if (gjp2Or) {
-      pass = await GeneratePass.isGJP2Valid(accountIDOr, gjp2Or, req);
+      pass = await GeneratePass.isGJP2Valid(accountID, gjp2Or, req);
     }
 
     if (pass === 1) {
@@ -79,15 +79,38 @@ const backupAccount = async (
       let saveDataDecoded = saveDataArr[0].replace(/-/g, "+").replace(/_/g, "/");
       saveDataDecoded = Buffer.from(saveDataDecoded, "base64").toString();
       
-      // Извлечь сферы и уровни из данных сохранения
-      let orbs = saveDataDecoded.split("</s><k>14</k><s>")[1].split("</s>")[0];
-      let lvls = saveDataDecoded.split("<k>GS_value</k>")[1].split("</s><k>4</k><s>")[1].split("</s>")[0];
+      // Извлечь сферы и уровни из данных сохранения - с предварительной проверкой наличия нужных данных
+      let orbs = "0";
+      let lvls = "0";
+      
+      try {
+        // Безопасно извлекаем данные, проверяя наличие ожидаемых частей
+        const orbsMatch = saveDataDecoded.match(/<k>14<\/k><s>([^<]+)<\/s>/);
+        if (orbsMatch && orbsMatch[1]) {
+          orbs = orbsMatch[1];
+        }
+        
+        const lvlsMatch = saveDataDecoded.match(/<k>GS_value<\/k>.*?<k>4<\/k><s>([^<]+)<\/s>/);
+        if (lvlsMatch && lvlsMatch[1]) {
+          lvls = lvlsMatch[1];
+        }
+      } catch (err) {
+        ConsoleApi.Error("main", `Error parsing save data: ${err}`);
+        // Продолжаем выполнение с дефолтными значениями
+      }
 
       // Маскировать пароль в данных сохранения
-      saveDataDecoded = saveDataDecoded.replace(
-        `<k>GJA_002</k><s>${passwordOr}</s>`, 
-        "<k>GJA_002</k><s>password</s>"
-      );
+      if (passwordOr) {
+        try {
+          saveDataDecoded = saveDataDecoded.replace(
+            new RegExp(`<k>GJA_002</k><s>${passwordOr}</s>`, 'g'), 
+            "<k>GJA_002</k><s>password</s>"
+          );
+        } catch (err) {
+          ConsoleApi.Error("main", `Error masking password: ${err}`);
+          // Продолжаем выполнение даже если не удалось замаскировать пароль
+        }
+      }
       
       // Сохранить данные в БД
       const query = `UPDATE accounts SET saveData = ?, lastBackup = ? WHERE accountID = ?`;
@@ -102,21 +125,25 @@ const backupAccount = async (
           "SELECT extID FROM users WHERE userName = ? LIMIT 1", 
           [userNameOr]
         );
-        extID = rows[0].extID;
-        await db.execute(
-          "UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE extID = ?", 
-          [orbs, lvls, extID]
-        );
+        if (rows.length > 0) {
+          extID = rows[0].extID;
+          await db.execute(
+            "UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE extID = ?", 
+            [orbs, lvls, extID]
+          );
+        }
       } else {
         const [rows] = await db.execute<any[]>(
           "SELECT userName FROM users WHERE extID = ? LIMIT 1", 
           [accountIDOr]
         );
-        userNameFin = rows[0].userName;
-        await db.execute(
-          "UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE userName = ?", 
-          [orbs, lvls, userNameFin]
-        );
+        if (rows.length > 0) {
+          userNameFin = rows[0].userName;
+          await db.execute(
+            "UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE userName = ?", 
+            [orbs, lvls, userNameFin]
+          );
+        }
       }
 
       ConsoleApi.Log("main", `Account backed up successfully. ID: ${accountID}`);

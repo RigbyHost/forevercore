@@ -31,6 +31,7 @@
     "g4f": "^1.4.6",
     "get-video-duration": "^4.1.0",
     "http": "^0.0.1-security",
+    "http-proxy-middleware": "^3.0.3",
     "js-yaml": "^4.1.0",
     "minimist": "^1.2.8",
     "mock-aws-s3": "^4.0.2",
