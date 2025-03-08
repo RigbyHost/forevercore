@@ -57,6 +57,10 @@ router.post('/', async (req: express.Request, res: express.Response) => {
     const serverLife = await getServerLife();
     res.json(serverLife);
 });
+router.get('/', async (req: express.Request, res: express.Response) => {
+    const serverLife = await getServerLife();
+    res.json(serverLife);
+});
 /* router.get('/d', async (req: express.Request, res: express.Response) => {
     res.render('debugWindow', { GDPSID: GDPSID });
 }); */

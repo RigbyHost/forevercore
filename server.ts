@@ -64,9 +64,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+// Логгирование всех запросов для отладки
+app.use((req, res, next) => {
+    ConsoleApi.Log("Request", `${req.method} ${req.url}`);
+    next();
+});
+
 // Import route modules
-const panelAccounts = require('./routes/panel/accounts');
 const panelMain = require('./routes/panel/main');
+const panelAccounts = require('./routes/panel/accounts');
 const panelMusic = require('./routes/panel/music').default;
 const panelLists = require('./routes/panel/lists').default;
 const panelLeaderboard = require('./routes/panel/leaderboard').default;
@@ -75,23 +81,46 @@ const panelRoles = require('./routes/panel/roles').default;
 const cmd = require('./routes/cmd/cmd').default;
 const serverlife = require('./routes/serverlife').default;
 
-// Register panel routes
+// Проверка модулей маршрутов
+ConsoleApi.Log("Routes Check", `panelMain: ${typeof panelMain}`);
+ConsoleApi.Log("Routes Check", `serverlife: ${typeof serverlife}`);
+
+// Обработка для случая, если модули импортированы с .default
+const getPanelMainRouter = () => {
+    if (panelMain && typeof panelMain === 'object' && panelMain.default) {
+        return panelMain.default;
+    }
+    return panelMain;
+};
+
+const getServerlifeRouter = () => {
+    if (serverlife && typeof serverlife === 'object' && serverlife.default) {
+        return serverlife.default;
+    }
+    return serverlife;
+};
+
+// Register base routes first, then more specific routes
+app.use('/panel', getPanelMainRouter());
+app.use('/serverlife', getServerlifeRouter());
+
+// Register specific panel routes
 app.use('/panel/accounts', panelAccounts);
-app.use('/panel', panelMain);
 app.use('/panel/music', panelMusic);
 app.use('/panel/lists', panelLists);
 app.use('/panel/leaderboard', panelLeaderboard);
 app.use('/panel/packs', panelPacks);
 app.use('/panel/roles', panelRoles);
+
+// Register command route
 app.use('/cmd', cmd);
-app.use('/serverlife', serverlife);
 
 // Create and configure API Router
 const apiRouter = new ApiRouter();
 const handlers = createAllHandlers();
 apiRouter.registerHandlers(handlers);
 
-// Apply API routes
+// Apply API routes - must be after all other routes
 app.use('/', apiRouter.initialize());
 
 // Load plugins
@@ -136,6 +165,7 @@ app.get("/", (req, res) => {
 	res.send("ForeverCore GDPS Server");
 });
 
+// Логгирование 404 ошибок
 app.use((req, res, next) => {
 	ConsoleApi.Error("404 Handler", `Запрос на несуществующий путь: ${req.method} ${req.originalUrl}`);
 	next();
