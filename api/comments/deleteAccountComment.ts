@@ -1,3 +1,4 @@
+'package net.fimastgd.forevercore.api.comments.deleteAccountComment';
 import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
 import ApiLib from '../lib/apiLib';

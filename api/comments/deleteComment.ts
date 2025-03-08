@@ -1,3 +1,4 @@
+'package net.fimastgd.forevercore.api.comments.deleteComment';
 import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import db from '../../serverconf/db';

@@ -1,3 +1,4 @@
+'package net.fimastgd.forevercore.api.comments.uploadAccountComment';
 import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
 import db from '../../serverconf/db';
