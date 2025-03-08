@@ -9,6 +9,7 @@ import syncAccount from '../../api/accounts/sync';
 import getUserInfo from '../../api/accounts/getUserInfo';
 import updateSettings from '../../api/accounts/updateSettings';
 import ConsoleApi from '../../modules/console-api';
+import getAccountURL from '../../api/lib/getAccountURL';
 
 /**
  * Handler for account registration endpoint
@@ -291,6 +292,42 @@ export class UpdateSettingsHandler extends BaseApiHandler {
 }
 
 /**
+ * Handler for the getAccountURL.php endpoint
+ * Required by Geometry Dash client to determine server protocol
+ */
+export class GetAccountURLHandler extends BaseApiHandler {
+    constructor() {
+        super('/getAccountURL.php');
+    }
+
+    /**
+     * Handles requests to getAccountURL.php
+     * @param req - Express request object
+     * @param res - Express response object
+     * @returns Promise resolving when handling is complete
+     */
+    async handle(req: Request, res: Response): Promise<void> {
+        try {
+            ConsoleApi.Log('GetAccountURL', `Protocol request received from client`);
+            
+            // Get protocol (http/https)
+            const protocol = await getAccountURL(req);
+            
+            // Form proper server URL
+            const serverURL = protocol + '://' + req.headers.host;
+            
+            ConsoleApi.Log('GetAccountURL', `Returning URL: ${serverURL}`);
+            
+            // Return result to client
+            res.status(200).send(serverURL);
+        } catch (error) {
+            ConsoleApi.Error('GetAccountURLHandler', `Error retrieving protocol: ${error}`);
+            res.status(200).send('http://' + req.headers.host); // Fallback option
+        }
+    }
+}
+
+/**
  * Create all account handlers
  * @returns Array of account API handlers
  */
@@ -305,7 +342,8 @@ export function createAccountHandlers() {
         new SyncAccount20Handler(),
         new SyncAccountNewHandler(),
         new GetUserInfoHandler(),
-        new UpdateSettingsHandler()
+        new UpdateSettingsHandler(),
+        new GetAccountURLHandler()
     ];
 }
 

@@ -135,6 +135,11 @@ app.get("/", (req, res) => {
 	res.send("ForeverCore GDPS Server");
 });
 
+app.use((req, res, next) => {
+	ConsoleApi.Error("404 Handler", `Запрос на несуществующий путь: ${req.method} ${req.originalUrl}`);
+	next();
+});
+
 // Add 404 error handler
 app.use((req, res) => {
 	res.status(404).render('errors/404', { url: req.originalUrl });
