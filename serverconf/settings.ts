@@ -7,8 +7,6 @@ interface ServerSettings {
     serverName: string;
     GDPSID: string;
     NodeName: string;
-    sessionGrants: boolean;
-    unregisteredSubmissions: boolean;
     topCount: number;
     objectLimitFU: boolean;
     objectLimitCount: number;
@@ -16,6 +14,9 @@ interface ServerSettings {
     diffVoteLevel: number;
     hardDiffVote: boolean;
     serverURL: string;
+    sessionGrants: boolean;
+    unregisteredSubmissions: boolean;
+    maxAccountBackups: number; // Максимальное количество бэкапов для каждого аккаунта
 }
 
 let parsedYaml: ServerSettings = {
@@ -32,6 +33,7 @@ let parsedYaml: ServerSettings = {
     diffVoteLevel: 3,
     hardDiffVote: false,
     serverURL: 'http://localhost:3005'
+    topCount: 100
 };
 
 try {
