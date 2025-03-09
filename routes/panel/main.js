@@ -3,12 +3,12 @@
 const express = require('express');
 const cookieParser = require("cookie-parser");
 const router = express.Router();
-const settings = require("../../serverconf/settings");
-const Panel = require("../../panel/main");
-const musicState = require("../../serverconf/music");
+const { settings } = require("../../serverconf/settings");
+const Panel = require("../../panel/main").default;
+const { musicState } = require("../../serverconf/music");
 const getRoleInfo = require("../../panel/accounts/getRoleInfo").default;
 
-const ConsoleApi = require("../../modules/console-api");
+const ConsoleApi = require("../../modules/console-api").default;
 
 router.use(cookieParser());
 

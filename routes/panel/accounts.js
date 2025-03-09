@@ -3,16 +3,16 @@
 const express = require('express');
 const cookieParser = require("cookie-parser");
 const router = express.Router();
-const settings = require("../../serverconf/settings");
-const captcha = require("../../serverconf/captcha");
-const Panel = require("../../panel/main");
-const changeUsername = require("../../panel/accounts/changeUsername");
-const changePassword = require("../../panel/accounts/changePassword");
-const deleteAccount = require("../../panel/accounts/deleteAccount");
+const { settings } = require("../../serverconf/settings");
+const { captcha } = require("../../serverconf/captcha");
+const Panel = require("../../panel/main").default;
+const changeUsername = require("../../panel/accounts/changeUsername").default;
+const changePassword = require("../../panel/accounts/changePassword").default;
+const deleteAccount = require("../../panel/accounts/deleteAccount").default;
 //import fetch from 'node-fetch';
 const axios = require('axios');
 
-const ConsoleApi = require("../../modules/console-api");
+const ConsoleApi = require("../../modules/console-api").default;
 
 router.use(cookieParser());
 
