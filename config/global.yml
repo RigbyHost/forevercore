@@ -1,0 +1,9 @@
+# Main ForeverHost configuration
+# EULA license
+# https://forever-gdps.host/eula
+
+# Set false to ignore the GDPS check in the registry
+online-mode: true
+
+# Port to start the server
+global-port: 3010

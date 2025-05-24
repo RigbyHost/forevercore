@@ -18,55 +18,54 @@ interface ChestsYamlConfig {
     bigChest: ChestConfig;
 }
 
-let parsedYaml: ChestsYamlConfig = {
-    smallChest: {
-        minOrbs: 0,
-        maxOrbs: 0,
-        minDiamonds: 0,
-        maxDiamonds: 0,
-        items: [],
-        minKeys: 0,
-        maxKeys: 0,
-        wait: 0
-    },
-    bigChest: {
-        minOrbs: 0,
-        maxOrbs: 0,
-        minDiamonds: 0,
-        maxDiamonds: 0,
-        items: [],
-        minKeys: 0,
-        maxKeys: 0,
-        wait: 0
-    }
-};
+function loadChestConfig(id: string): ChestsYamlConfig {
+    const defaultConfig: ChestsYamlConfig = {
+        smallChest: {
+            minOrbs: 0,
+            maxOrbs: 0,
+            minDiamonds: 0,
+            maxDiamonds: 0,
+            items: [],
+            minKeys: 0,
+            maxKeys: 0,
+            wait: 0
+        },
+        bigChest: {
+            minOrbs: 0,
+            maxOrbs: 0,
+            minDiamonds: 0,
+            maxDiamonds: 0,
+            items: [],
+            minKeys: 0,
+            maxKeys: 0,
+            wait: 0
+        }
+    };
 
-try {
-    const yamlPath = path.join(__dirname, '../config/chests.yml');
-    const fileContents = fs.readFileSync(yamlPath, 'utf8');
-    parsedYaml = yaml.load(fileContents) as ChestsYamlConfig;
-} catch (error) {
-    console.error("Error loading chest settings:", error);
+    try {
+        const yamlPath = path.join(__dirname, `../GDPS_DATA/${id}/data/config/chests.yml`);
+        const fileContents = fs.readFileSync(yamlPath, 'utf8');
+        return yaml.load(fileContents) as ChestsYamlConfig;
+    } catch (error) {
+        console.error(`Ошибка при загрузке конфигурации сундуков для ID ${id}:`, error);
+        return defaultConfig;
+    }
 }
 
-export const smallChest = {
-    minOrbs: parsedYaml.smallChest.minOrbs,
-    maxOrbs: parsedYaml.smallChest.maxOrbs,
-    minDiamonds: parsedYaml.smallChest.minDiamonds,
-    maxDiamonds: parsedYaml.smallChest.maxDiamonds,
-    items: parsedYaml.smallChest.items,
-    minKeys: parsedYaml.smallChest.minKeys,
-    maxKeys: parsedYaml.smallChest.maxKeys,
-    wait: parsedYaml.smallChest.wait
-};
+/** Getting configuration for small chests from containers
+ * @param id <string> container ID
+ * @returns small chest config object
+*/
+export function getSmallChest(id: string): ChestConfig {
+    const parsedYaml = loadChestConfig(id);
+    return parsedYaml.smallChest;
+}
 
-export const bigChest = {
-    minOrbs: parsedYaml.bigChest.minOrbs,
-    maxOrbs: parsedYaml.bigChest.maxOrbs,
-    minDiamonds: parsedYaml.bigChest.minDiamonds,
-    maxDiamonds: parsedYaml.bigChest.maxDiamonds,
-    items: parsedYaml.bigChest.items,
-    minKeys: parsedYaml.bigChest.minKeys,
-    maxKeys: parsedYaml.bigChest.maxKeys,
-    wait: parsedYaml.bigChest.wait
-};
+/** Getting configuration for small chests from containers
+ * @param id <string> container ID
+ * @returns small chest config object
+*/
+export function getBigChest(id: string): ChestConfig {
+    const parsedYaml = loadChestConfig(id);
+    return parsedYaml.bigChest;
+}

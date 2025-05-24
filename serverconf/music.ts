@@ -6,18 +6,22 @@ interface MusicConfig {
     zemu: boolean;
 }
 
-let parsedYaml: MusicConfig = {
-    zemu: false
-};
+// Функция для загрузки конфигурации музыки
+function loadMusicConfig(id: string): MusicConfig {
+    const defaultConfig: MusicConfig = {
+        zemu: false
+    };
 
-try {
-    const yamlPath = path.join(__dirname, '../config/music.yml');
-    const fileContents = fs.readFileSync(yamlPath, 'utf8');
-    parsedYaml = yaml.load(fileContents) as MusicConfig;
-} catch (error) {
-    console.error("Error loading music settings:", error);
+    try {
+        const yamlPath = path.join(__dirname, `../GDPS_DATA/${id}/data/config/music.yml`);
+        const fileContents = fs.readFileSync(yamlPath, 'utf8');
+        return yaml.load(fileContents) as MusicConfig;
+    } catch (error) {
+        console.error(`Ошибка при загрузке конфигурации музыки для ID ${id}:`, error);
+        return defaultConfig;
+    }
 }
 
-export const musicState = {
-    zemu: parsedYaml.zemu
-};
+export function getMusicState(id: string): MusicConfig {
+    return loadMusicConfig(id);
+} 

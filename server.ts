@@ -10,7 +10,7 @@ import readline from 'readline';
 import * as c from 'ansi-colors';
 import minimist from 'minimist';
 
-import db from './serverconf/db';
+import threadConnection from './serverconf/db';
 import { settings } from './serverconf/settings';
 import ConsoleApi from './modules/console-api';
 import ApiRouter from './routes/api-router';
@@ -92,7 +92,7 @@ const getPanelMainRouter = () => {
     }
     return panelMain;
 };
-
+ 
 const getServerlifeRouter = () => {
     if (serverlife && typeof serverlife === 'object' && serverlife.default) {
         return serverlife.default;
@@ -123,8 +123,10 @@ apiRouter.registerHandlers(handlers);
 // Apply API routes - must be after all other routes
 app.use('/', apiRouter.initialize());
 
-// Load plugins
-const loadPlugins = (): void => {
+/** Load plugins
+ * @error not working at non-container mode
+*/
+/* const loadPlugins = (): void => {
 	const pluginsDir = path.join(__dirname, 'plugins');
 
 	if (!fs.existsSync(pluginsDir)) {
@@ -150,7 +152,7 @@ const loadPlugins = (): void => {
 };
 
 // Load plugins
-loadPlugins();
+loadPlugins(); */
 
 // Add home page route
 const GDPSID = settings.GDPSID.replace(/\//g, "");
@@ -194,10 +196,6 @@ app.listen(PORT, () => {
 
 			if (command === 'stop') {
 				ConsoleApi.Write("> stop", true, false);
-				ConsoleApi.Log('FLS system', "Saving level chunks... [ IN FUTURE ]");
-				ConsoleApi.Log('FLS system', "Saving account chunks... [ IN FUTURE ]");
-				ConsoleApi.Log('main', "Stopping database server...");
-				await db.end();
 				ConsoleApi.Log('main', "Stopping server...");
 				ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
 				process.exit(0);
@@ -256,10 +254,6 @@ app.listen(PORT, () => {
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
 	ConsoleApi.Log('main', "Received SIGINT signal, shutting down gracefully...");
-	ConsoleApi.Log('FLS system', "Saving level chunks... [ IN FUTURE ]");
-	ConsoleApi.Log('FLS system', "Saving account chunks... [ IN FUTURE ]");
-	ConsoleApi.Log('main', "Stopping database server...");
-	await db.end();
 	ConsoleApi.Log('main', "Stopping server...");
 	ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
 	process.exit(0);
@@ -267,10 +261,6 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
 	ConsoleApi.Log('main', "Received SIGTERM signal, shutting down gracefully...");
-	ConsoleApi.Log('FLS system', "Saving level chunks... [ IN FUTURE ]");
-	ConsoleApi.Log('FLS system', "Saving account chunks... [ IN FUTURE ]");
-	ConsoleApi.Log('main', "Stopping database server...");
-	await db.end();
 	ConsoleApi.Log('main', "Stopping server...");
 	ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
 	process.exit(0);

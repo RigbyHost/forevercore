@@ -1,7 +1,13 @@
 'package net.fimastgd.forevercore.modules.numbers';
 
 /**
- * Utility class for number type checking
+ * [ DEPRECATED ] Utility class for number type checking [ DEPRECATED ]
+ * [ NEW ] Use 'number-utils-all'! [ NEW ]
+ * 
+ * import { Numbers } from 'number-utils-all'
+ * const nums = new Numbers();
+ * nums.Int(numq) ? "integer" : "not integer / not number" 
+ * etc.
  */
 export class Numbers {
     /**

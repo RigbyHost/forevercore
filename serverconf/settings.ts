@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 interface ServerSettings {
-    PORT: number;
+    PORT: number; // уже не нужно
     serverName: string;
     GDPSID: string;
     NodeName: string;
@@ -19,43 +19,34 @@ interface ServerSettings {
     maxAccountBackups: number; // Максимальное количество бэкапов для каждого аккаунта
 }
 
-let parsedYaml: ServerSettings = {
-    PORT: 3005,
-    serverName: 'GDPS',
-    GDPSID: '',
-    NodeName: 'n01',
-    sessionGrants: false,
-    unregisteredSubmissions: false,
-    topCount: 100,
-    objectLimitFU: true,
-    objectLimitCount: 100,
-    diffVote: true,
-    diffVoteLevel: 3,
-    hardDiffVote: false,
-    serverURL: 'http://localhost:3005'
-    topCount: 100
-};
+function loadServerSettings(id: string): ServerSettings {
+    const defaultSettings: ServerSettings = {
+        PORT: 3005, // уже не нужно 
+        serverName: 'GDPS',
+        GDPSID: '',
+        NodeName: 'n01',
+        sessionGrants: false,
+        unregisteredSubmissions: false,
+        topCount: 100,
+        objectLimitFU: true,
+        objectLimitCount: 100,
+        diffVote: true,
+        diffVoteLevel: 3,
+        hardDiffVote: false,
+        serverURL: 'http://localhost:3005', 
+        maxAccountBackups: 1
+    };
 
-try {
-    const yamlPath = path.join(__dirname, '../config/settings.yml');
-    const fileContents = fs.readFileSync(yamlPath, 'utf8');
-    parsedYaml = yaml.load(fileContents) as ServerSettings;
-} catch (error) {
-    console.error("Error loading settings:", error);
+    try {
+        const yamlPath = path.join(__dirname, `../GDPS_DATA/${id}/data/config/settings.yml`);
+        const fileContents = fs.readFileSync(yamlPath, 'utf8');
+        return yaml.load(fileContents) as ServerSettings;
+    } catch (error) {
+        console.error(`Ошибка при загрузке конфигурации сервера для ID ${id}:`, error);
+        return defaultSettings;
+    }
 }
 
-export const settings: ServerSettings = {
-    PORT: parsedYaml.PORT,
-    serverName: parsedYaml.serverName,
-    GDPSID: parsedYaml.GDPSID,
-    NodeName: parsedYaml.NodeName,
-    sessionGrants: parsedYaml.sessionGrants,
-    unregisteredSubmissions: parsedYaml.unregisteredSubmissions,
-    topCount: parsedYaml.topCount,
-    objectLimitFU: parsedYaml.objectLimitFU,
-    objectLimitCount: parsedYaml.objectLimitCount,
-    diffVote: parsedYaml.diffVote,
-    diffVoteLevel: parsedYaml.diffVoteLevel,
-    hardDiffVote: parsedYaml.hardDiffVote,
-    serverURL: parsedYaml.serverURL
-};
+export function getSettings(id: string): ServerSettings {
+    return loadServerSettings(id);
+}

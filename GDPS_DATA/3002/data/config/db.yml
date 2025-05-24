@@ -1,0 +1,7 @@
+# MariaDB 10.6 - full support
+# MySQL 8.0 - partial support
+
+host: 'localhost'
+user: 'gdps-3002'
+password: 'Tayga13277'
+database: 'gdps-3002'

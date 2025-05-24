@@ -1,7 +1,0 @@
-# MariaDB 10.6 - full support
-# MySQL 8.0 - partial support
-
-host: '192.168.0.135'
-user: 'konder'
-password: 'levAAA07082012@'
-database: 'testing_forevercore'

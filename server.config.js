@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "3002",
       script: "ts-node",
-      args: "server.ts --FLSmX=1024M --SdX=1024M --time=def --nogui",
+      args: "-r tsconfig-paths/register server.ts --FLSmX=1024M --SdX=1024M --time=def --nogui",
       interpreter: "node",
       instances: 1,
       exec_mode: "cluster",
