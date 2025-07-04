@@ -1,45 +1,61 @@
-'package net.fimastgd.forevercore';
+"package net.fimastgd.forevercore";
 
-import express from 'express';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import path from 'path';
-import fs from 'fs';
-import readline from 'readline';
-import * as c from 'ansi-colors';
-import minimist from 'minimist';
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "path";
+import fs from "fs";
+import readline from "readline";
+import * as c from "ansi-colors";
+import minimist from "minimist";
 
-import threadConnection from './serverconf/db';
-import { settings } from './serverconf/settings';
-import ConsoleApi from './modules/console-api';
-import ApiRouter from './routes/api-router';
-import { createAllHandlers } from './routes/handlers';
-import TS_handler from './tslib/TS_handler';
-import { Roles } from './panel/roles/roles';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import threadConnection from "./serverconf/db";
+import { getSettings } from "./serverconf/settings";
+import ConsoleApi from "./modules/console-api";
+import ApiRouter from "./routes/api-router";
+import { createAllHandlers } from "./routes/handlers";
+import TS_handler from "./tslib/TS_handler";
+import { Roles } from "./panel/roles/roles";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 // Parse command line arguments
 const args = minimist(process.argv.slice(2));
-const NOGUI = args.nogui || args['--nogui'] || false;
+const NOGUI = args.nogui || args["--nogui"] || false;
+let versionSwitcher: boolean = false;
+if (args.versionSwitcher && args.versionSwitcher === "basic") {
+	async function checkVersionSwitcher(): Promise<null> {
+		try {
+			await fs.promises.access(path.join(__dirname, 'VersionSwitcher.jsc'));
+			versionSwitcher = true;
+			return null;
+		} catch (IOException) {
+			ConsoleApi.Warn("VersionSwitcher", "Could not find or load class VersionSwitcher from net.fimastgd.forevercore.VersionSwitcher at net.fimastgd.forevercore");
+			return null;
+		}
+	}
+	checkVersionSwitcher();
+} else {
+	ConsoleApi.Warn("VersionSwitcher", "VersionSwitcher is disabled, there may be problems when starting in production");
+}
 
 // Clear log files
 const clearLatest = (): void => {
-	const pathlatest = path.join(__dirname, 'logs', 'latest.log');
-	fs.writeFileSync(pathlatest, '', 'utf-8');
+	const pathlatest = path.join(__dirname, "logs", "latest.log");
+	fs.writeFileSync(pathlatest, "", "utf-8");
 };
 
 const clearStreamLog = (): void => {
-	const pathstream = path.join(__dirname, 'logs', 'stream.log');
-	fs.writeFileSync(pathstream, '', 'utf-8');
+	const pathstream = path.join(__dirname, "logs", "stream.log");
+	fs.writeFileSync(pathstream, "", "utf-8");
 };
 
 // Show warning for NOGUI mode
 if (NOGUI) {
-	console.log('\n ' + c.bgYellow('                                              '));
-	console.log(' ' + c.bgYellow.black(' Будьте осторожны, риск несохранения данных:  '));
-	console.log(' ' + c.bgYellow.black(' Флаг --nogui используйте только в production '));
-	console.log(' ' + c.bgYellow('                                              \n'));
+	console.log("\n " + c.bgYellow("                                              "));
+	console.log(" " + c.bgYellow.black(" Будьте осторожны, риск несохранения данных:  "));
+	console.log(" " + c.bgYellow.black(" Флаг --nogui используйте только в production "));
+	console.log(" " + c.bgYellow("                                              \n"));
 }
 
 // Clear logs
@@ -66,54 +82,42 @@ app.use(cookieParser());
 
 // Логгирование всех запросов для отладки
 app.use((req, res, next) => {
-    ConsoleApi.Log("Request", `${req.method} ${req.url}`);
-    next();
+	ConsoleApi.Log("Request", `${req.method} ${req.url}`);
+	next();
 });
 
 // Import route modules
-const panelMain = require('./routes/panel/main');
-const panelAccounts = require('./routes/panel/accounts');
-const panelMusic = require('./routes/panel/music').default;
-const panelLists = require('./routes/panel/lists').default;
-const panelLeaderboard = require('./routes/panel/leaderboard').default;
-const panelPacks = require('./routes/panel/packs').default;
-const panelRoles = require('./routes/panel/roles').default;
-const cmd = require('./routes/cmd/cmd').default;
-const serverlife = require('./routes/serverlife').default;
+const panelMain = require("./routes/panel/main");
+const panelAccounts = require("./routes/panel/accounts");
+const panelMusic = require("./routes/panel/music").default;
+const panelLists = require("./routes/panel/lists").default;
+const panelLeaderboard = require("./routes/panel/leaderboard").default;
+const panelPacks = require("./routes/panel/packs").default;
+const panelRoles = require("./routes/panel/roles").default;
 
 // Проверка модулей маршрутов
 ConsoleApi.Log("Routes Check", `panelMain: ${typeof panelMain}`);
-ConsoleApi.Log("Routes Check", `serverlife: ${typeof serverlife}`);
 
 // Обработка для случая, если модули импортированы с .default
 const getPanelMainRouter = () => {
-    if (panelMain && typeof panelMain === 'object' && panelMain.default) {
-        return panelMain.default;
-    }
-    return panelMain;
-};
- 
-const getServerlifeRouter = () => {
-    if (serverlife && typeof serverlife === 'object' && serverlife.default) {
-        return serverlife.default;
-    }
-    return serverlife;
+	if (panelMain && typeof panelMain === "object" && panelMain.default) {
+		return panelMain.default;
+	}
+	return panelMain;
 };
 
 // Register base routes first, then more specific routes
-app.use('/panel', getPanelMainRouter());
-app.use('/serverlife', getServerlifeRouter());
-
+app.use("/:gdpsid/panel", getPanelMainRouter());
 // Register specific panel routes
-app.use('/panel/accounts', panelAccounts);
-app.use('/panel/music', panelMusic);
-app.use('/panel/lists', panelLists);
-app.use('/panel/leaderboard', panelLeaderboard);
-app.use('/panel/packs', panelPacks);
-app.use('/panel/roles', panelRoles);
+app.use("/:gdpsid/panel/accounts", panelAccounts);
+app.use("/:gdpsid/panel/music", panelMusic);
+app.use("/:gdpsid/panel/lists", panelLists);
+app.use("/:gdpsid/panel/leaderboard", panelLeaderboard);
+app.use("/:gdpsid/panel/packs", panelPacks);
+app.use("/:gdpsid/panel/roles", panelRoles);
 
 // Register command route
-app.use('/cmd', cmd);
+// app.use("/cmd", cmd);
 
 // Create and configure API Router
 const apiRouter = new ApiRouter();
@@ -121,50 +125,12 @@ const handlers = createAllHandlers();
 apiRouter.registerHandlers(handlers);
 
 // Apply API routes - must be after all other routes
-app.use('/', apiRouter.initialize());
-
-/** Load plugins
- * @error not working at non-container mode
-*/
-/* const loadPlugins = (): void => {
-	const pluginsDir = path.join(__dirname, 'plugins');
-
-	if (!fs.existsSync(pluginsDir)) {
-		fs.mkdirSync(pluginsDir, { recursive: true });
-	}
-
-	fs.readdirSync(pluginsDir).forEach(file => {
-		const pluginPath = path.join(pluginsDir, file);
-
-		try {
-			const plugin = require(pluginPath);
-
-			if (typeof plugin === 'function') {
-				plugin(app);
-				ConsoleApi.Log("Anvil PluginLoader", `Plugin ${file} loaded successfully.`);
-			} else {
-				ConsoleApi.Error("Anvil PluginLoader", `Plugin ${file} is not a correct plugin function, loading ignored.`);
-			}
-		} catch (error) {
-			ConsoleApi.FatalError("Anvil PluginLoader", `Error loading plugin ${file}: ${error}`);
-		}
-	});
-};
-
-// Load plugins
-loadPlugins(); */
+app.use("/", apiRouter.initialize());
 
 // Add home page route
-const GDPSID = settings.GDPSID.replace(/\//g, "");
-
-if (GDPSID !== "") {
-	app.get(`/${GDPSID}`, (req, res) => {
-		res.send("ForeverCore GDPS Server");
-	});
-}
 
 app.get("/", (req, res) => {
-	res.send("ForeverCore GDPS Server");
+	res.send("ForeverHost GDPS");
 });
 
 // Логгирование 404 ошибок
@@ -175,11 +141,11 @@ app.use((req, res, next) => {
 
 // Add 404 error handler
 app.use((req, res) => {
-	res.status(404).render('errors/404', { url: req.originalUrl });
+	res.status(404).render("errors/404", { url: req.originalUrl });
 });
 
 // Start server
-const PORT = settings.PORT;
+const PORT = 3010;
 
 app.listen(PORT, () => {
 	ConsoleApi.Log$LightGreen("main", `GDPS Engine started on port ${PORT}!`);
@@ -191,77 +157,35 @@ app.listen(PORT, () => {
 			output: process.stdout
 		});
 
-		rl.on('line', async (input) => {
+		rl.on("line", async input => {
 			const command = input.trim();
 
-			if (command === 'stop') {
+			if (command === "stop") {
 				ConsoleApi.Write("> stop", true, false);
-				ConsoleApi.Log('main', "Stopping server...");
-				ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
+				ConsoleApi.Log("main", "Stopping server...");
+				ConsoleApi.Log("Server thread", "----- [ SERVER STOPPED ] -----");
 				process.exit(0);
-			} else if (command.split(' ')[0] === 'op') {
-				ConsoleApi.Write(`> ${command}`, true, false);
-				const roles = new Roles();
-				const username = command.split(' ')[1];
-
-				if (!username) {
-					ConsoleApi.Error("main", "Usage: op <username>");
-					return;
-				}
-
-				try {
-					const success = await roles.setRole(username, 1);
-
-					if (success) {
-						ConsoleApi.Log("main", `${username} opped`);
-					} else {
-						ConsoleApi.Error("main", `Failed to op ${username}`);
-					}
-				} catch (error) {
-					ConsoleApi.Error("main", `Error during setRole in "op" command: ${error}`);
-				}
-			} else if (command.split(' ')[0] === 'deop') {
-				ConsoleApi.Write(`> ${command}`, true, false);
-				const roles = new Roles();
-				const username = command.split(' ')[1];
-
-				if (!username) {
-					ConsoleApi.Error("main", "Usage: deop <username>");
-					return;
-				}
-
-				try {
-					const success = await roles.unsetRole(username, 1);
-
-					if (success) {
-						ConsoleApi.Log("main", `${username} deopped`);
-					} else {
-						ConsoleApi.Error("main", `Failed to deop ${username}`);
-					}
-				} catch (error) {
-					ConsoleApi.Error("main", `Error during unsetRole in "deop" command: ${error}`);
-				}
-			} else if (command === '') {
+			} else if (command === "") {
 				// Do nothing for empty command
 			} else {
 				ConsoleApi.Write(`> ${command}`, true, false);
-				ConsoleApi.Error('Line thread', `Unknown command "${command}" loaded in main thread at net.fimastgd.forevercore`);
+				ConsoleApi.Error("Line thread", `Unknown command "${command}" loaded in main thread at net.fimastgd.forevercore`);
 			}
 		});
 	}
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', async () => {
-	ConsoleApi.Log('main', "Received SIGINT signal, shutting down gracefully...");
-	ConsoleApi.Log('main', "Stopping server...");
-	ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
+process.on("SIGINT", async () => {
+	ConsoleApi.Log("main", "Received SIGINT signal, shutting down gracefully...");
+	ConsoleApi.Log("main", "Stopping server...");
+	ConsoleApi.Log("Server thread", "----- [ SERVER STOPPED ] -----");
 	process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
-	ConsoleApi.Log('main', "Received SIGTERM signal, shutting down gracefully...");
-	ConsoleApi.Log('main', "Stopping server...");
-	ConsoleApi.Log('Server thread', "----- [ SERVER STOPPED ] -----");
+process.on("SIGTERM", async () => {
+	ConsoleApi.Log("main", "Received SIGTERM signal, shutting down gracefully...");
+	ConsoleApi.Log("main", "Stopping server...");
+	ConsoleApi.Log("Server thread", "----- [ SERVER STOPPED ] -----");
 	process.exit(0);
 });
