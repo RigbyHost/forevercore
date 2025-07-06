@@ -204,7 +204,7 @@ EOF
 
         stage('Build Docker Images') {
             parallel {
-                stage('Build Node.js Image') {
+                stage('Build Node.js API') {
                     when {
                         expression { params.RUNTIME == 'node' || params.RUNTIME == 'both' }
                     }
@@ -232,7 +232,7 @@ EOF
                     }
                 }
                 
-                stage('Build Bun Image') {
+                stage('Build Bun API') {
                     when {
                         expression { params.RUNTIME == 'bun' }
                     }
@@ -249,6 +249,32 @@ EOF
                                   --target=bun-production \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-bun \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-bun \\
+                                  ${cacheFlag} \\
+                                  --verbosity=info \\
+                                  --build-arg NODE_ENV=${NODE_ENV} \\
+                                  --build-arg BUILD_NUMBER=${BUILD_NUMBER} \\
+                                  --build-arg GIT_COMMIT=${GIT_COMMIT_SHORT}
+                                """
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Admin Panel') {
+                    steps {
+                        container('kaniko') {
+                            script {
+                                def cacheFlag = params.SKIP_CACHE ? '--no-cache' : '--cache=true'
+                                def adminRuntime = params.RUNTIME == 'bun' ? 'bun-production' : 'production'
+                                
+                                sh """
+                                echo '>>> Building Admin Panel Docker image...'
+                                
+                                /kaniko/executor --context=dir://panelui \\
+                                  --dockerfile=panelui/Dockerfile \\
+                                  --target=${adminRuntime} \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG} \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:latest \\
                                   ${cacheFlag} \\
                                   --verbosity=info \\
                                   --build-arg NODE_ENV=${NODE_ENV} \\
@@ -427,6 +453,89 @@ spec:
 EOF
 """
 
+                        // Deploy Admin Panel
+                        sh """
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}-admin
+  namespace: ${targetNamespace}
+  labels:
+    app: ${APP_NAME}-admin
+    version: "${IMAGE_TAG}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${APP_NAME}-admin
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}-admin
+        version: "${IMAGE_TAG}"
+    spec:
+      containers:
+      - name: ${APP_NAME}-admin
+        image: ${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG}
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: PORT
+          value: "3001"
+        - name: NODE_ENV
+          value: "${NODE_ENV}"
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://${APP_NAME}.${targetNamespace}.svc.cluster.local"
+        - name: GDPS_API_URL
+          value: "http://${APP_NAME}.${targetNamespace}.svc.cluster.local"
+        envFrom:
+        - configMapRef:
+            name: ${APP_NAME}-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+EOF
+"""
+
+                        // Create Admin Service
+                        sh """
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}-admin
+  namespace: ${targetNamespace}
+  labels:
+    app: ${APP_NAME}-admin
+spec:
+  ports:
+  - port: 80
+    targetPort: 3001
+    protocol: TCP
+    name: http
+  selector:
+    app: ${APP_NAME}-admin
+EOF
+"""
+
                         // Create Ingress
                         def domainSuffix = params.DEPLOYMENT_TARGET == 'production' ? '' : "-${params.DEPLOYMENT_TARGET}"
                         def fullDomain = "${params.DEPLOYMENT_TARGET == 'production' ? 'gdps' : params.DEPLOYMENT_TARGET + '-gdps'}.forever-gdps.host"
@@ -454,6 +563,13 @@ spec:
   - host: "${fullDomain}"
     http:
       paths:
+      - path: /admin
+        pathType: Prefix
+        backend:
+          service:
+            name: ${APP_NAME}-admin
+            port:
+              number: 80
       - path: /
         pathType: Prefix
         backend:
@@ -475,14 +591,17 @@ EOF
                         def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
                         
                         sh """
-                        echo '>>> Waiting for deployment to be ready...'
+                        echo '>>> Waiting for deployments to be ready...'
                         kubectl rollout status deployment/${APP_NAME} -n ${targetNamespace} --timeout=300s
+                        kubectl rollout status deployment/${APP_NAME}-admin -n ${targetNamespace} --timeout=300s
                         
                         echo '>>> Checking pod status...'
                         kubectl get pods -n ${targetNamespace} -l app=${APP_NAME}
+                        kubectl get pods -n ${targetNamespace} -l app=${APP_NAME}-admin
                         
                         echo '>>> Checking service endpoints...'
                         kubectl get endpoints -n ${targetNamespace} ${APP_NAME}
+                        kubectl get endpoints -n ${targetNamespace} ${APP_NAME}-admin
                         """
                     }
                 }
@@ -502,11 +621,15 @@ EOF
                         # Wait a bit for the service to be fully ready
                         sleep 30
                         
-                        # Check internal service health
-                        kubectl run health-check-${BUILD_NUMBER} --rm -i --restart=Never --image=curlimages/curl -- \\
+                        # Check internal API service health
+                        kubectl run health-check-api-${BUILD_NUMBER} --rm -i --restart=Never --image=curlimages/curl -- \\
                           curl -f --max-time 30 http://${APP_NAME}.${targetNamespace}.svc.cluster.local/ || exit 1
                         
-                        echo '>>> Health check completed successfully!'
+                        # Check internal admin service health
+                        kubectl run health-check-admin-${BUILD_NUMBER} --rm -i --restart=Never --image=curlimages/curl -- \\
+                          curl -f --max-time 30 http://${APP_NAME}-admin.${targetNamespace}.svc.cluster.local/ || exit 1
+                        
+                        echo '>>> Health checks completed successfully!'
                         """
                     }
                 }
@@ -523,7 +646,8 @@ EOF
                 script {
                     sh '''
                     # Clean up any health check pods that might be left
-                    kubectl delete pods -l run=health-check-${BUILD_NUMBER} --ignore-not-found=true || true
+                    kubectl delete pods -l run=health-check-api-${BUILD_NUMBER} --ignore-not-found=true || true
+                    kubectl delete pods -l run=health-check-admin-${BUILD_NUMBER} --ignore-not-found=true || true
                     '''
                 }
             }
@@ -540,9 +664,11 @@ EOF
 📊 Deployment Details:
    • Environment: ${params.DEPLOYMENT_TARGET}
    • Runtime: ${params.RUNTIME}
-   • Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+   • API Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+   • Admin Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG}
    • Namespace: ${targetNamespace}
-   • URL: https://${fullDomain}
+   • GDPS URL: https://${fullDomain}
+   • Admin Panel: https://${fullDomain}/admin
 
 🔧 Build Information:
    • Build: #${BUILD_NUMBER}

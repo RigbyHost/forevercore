@@ -34,6 +34,29 @@ services:
     networks:
       - gdps-network
 
+  # ForeverCore Admin Panel (Next.js)
+  forevercore-admin:
+    build:
+      context: ./panelui
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - NEXT_PUBLIC_API_URL=http://forevercore:3010
+      - GDPS_API_URL=http://forevercore:3010
+    volumes:
+      - ./panelui:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - forevercore
+    restart: unless-stopped
+    networks:
+      - gdps-network
+
   # MySQL Database
   mysql:
     image: mysql:8.0
