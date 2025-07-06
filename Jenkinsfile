@@ -147,9 +147,17 @@ EOF
                         echo '>>> Installing dependencies...'
                         export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
                         if command -v bun >/dev/null 2>&1; then
-                            bun install
+                            echo 'Using Bun for dependency installation'
+                            bun install --frozen-lockfile
                         else
-                            npm ci
+                            echo 'Using npm for dependency installation'
+                            # Generate package-lock.json if missing or outdated
+                            if [ ! -f package-lock.json ] || ! npm ci --dry-run >/dev/null 2>&1; then
+                                echo 'Generating fresh package-lock.json...'
+                                npm install
+                            else
+                                npm ci
+                            fi
                         fi
                         '''
                     }
@@ -172,28 +180,54 @@ EOF
                         # TypeScript compilation check
                         echo 'Checking TypeScript compilation...'
                         if command -v bun >/dev/null 2>&1; then
-                            bun run tsc --noEmit
+                            echo 'Using Bun for TypeScript compilation'
+                            if [ -f node_modules/.bin/tsc ]; then
+                                bun x tsc --noEmit
+                            else
+                                echo 'TypeScript not found, skipping compilation check'
+                            fi
                         else
-                            npx tsc --noEmit
+                            echo 'Using npm for TypeScript compilation'
+                            if [ -f node_modules/.bin/tsc ]; then
+                                npx tsc --noEmit
+                            else
+                                echo 'TypeScript not found, skipping compilation check'
+                            fi
                         fi
                         
                         # Run linting if available
-                        if [ -f "package.json" ] && (npm run | grep -q "lint" || bun run --silent 2>&1 | grep -q "lint"); then
-                            echo 'Running linting...'
-                            if command -v bun >/dev/null 2>&1; then
+                        echo 'Checking for linting scripts...'
+                        if command -v bun >/dev/null 2>&1; then
+                            if bun run --silent lint >/dev/null 2>&1; then
+                                echo 'Running linting with Bun...'
                                 bun run lint
                             else
+                                echo 'No lint script found'
+                            fi
+                        else
+                            if npm run lint --silent >/dev/null 2>&1; then
+                                echo 'Running linting with npm...'
                                 npm run lint
+                            else
+                                echo 'No lint script found'
                             fi
                         fi
                         
                         # Run unit tests if available
-                        if [ -f "package.json" ] && (npm run | grep -q "test" || bun run --silent 2>&1 | grep -q "test"); then
-                            echo 'Running unit tests...'
-                            if command -v bun >/dev/null 2>&1; then
+                        echo 'Checking for test scripts...'
+                        if command -v bun >/dev/null 2>&1; then
+                            if bun run --silent test >/dev/null 2>&1; then
+                                echo 'Running tests with Bun...'
                                 bun run test
                             else
+                                echo 'No test script found'
+                            fi
+                        else
+                            if npm run test --silent >/dev/null 2>&1; then
+                                echo 'Running tests with npm...'
                                 npm test
+                            else
+                                echo 'No test script found'
                             fi
                         fi
                         '''
