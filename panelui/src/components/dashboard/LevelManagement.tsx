@@ -1,391 +1,269 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+'use client'
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { 
-  Gamepad2, 
-  Star, 
-  Trophy, 
-  Eye, 
-  Trash2, 
-  Edit3, 
-  Search, 
-  Filter,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from 'react-hot-toast';
-
-// Схема для рейтинга уровня
-const rateSchema = z.object({
-  stars: z.number().min(1).max(10),
-  difficulty: z.enum(['auto', 'easy', 'normal', 'hard', 'harder', 'insane', 'demon']),
-  featured: z.boolean().default(false),
-  epic: z.boolean().default(false)
-});
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Search, Star, Eye, Download, Edit, Trash2 } from "lucide-react"
 
 interface Level {
-  levelID: string;
-  levelName: string;
-  description: string;
-  username: string;
-  downloads: number;
-  likes: number;
-  stars: number;
-  difficulty: string;
-  featured: boolean;
-  epic: boolean;
-  uploadDate: string;
+  id: number
+  name: string
+  author: string
+  difficulty: string
+  stars: number
+  downloads: number
+  likes: number
+  featured: boolean
+  status: 'pending' | 'approved' | 'rejected'
+  uploadDate: string
 }
 
-interface LevelManagementProps {
-  gdpsName: string;
-  adminLevel: number;
-}
+export default function LevelManagement() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterStatus, setFilterStatus] = useState("all")
+  const [filterDifficulty, setFilterDifficulty] = useState("all")
 
-export default function LevelManagement({ gdpsName, adminLevel }: LevelManagementProps) {
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
-
-  const rateForm = useForm({
-    resolver: zodResolver(rateSchema),
-    defaultValues: {
-      stars: 1,
-      difficulty: 'normal' as const,
+  // Mock data
+  const levels: Level[] = [
+    {
+      id: 1,
+      name: "Bloodbath",
+      author: "Riot",
+      difficulty: "Extreme Demon",
+      stars: 10,
+      downloads: 1500000,
+      likes: 45000,
+      featured: true,
+      status: 'approved',
+      uploadDate: '2023-12-01'
+    },
+    {
+      id: 2,
+      name: "Theory of Everything 2",
+      author: "RobTop",
+      difficulty: "Harder",
+      stars: 6,
+      downloads: 2000000,
+      likes: 80000,
+      featured: true,
+      status: 'approved',
+      uploadDate: '2023-11-15'
+    },
+    {
+      id: 3,
+      name: "Custom Level",
+      author: "Player123",
+      difficulty: "Hard",
+      stars: 0,
+      downloads: 150,
+      likes: 12,
       featured: false,
-      epic: false
+      status: 'pending',
+      uploadDate: '2024-01-10'
     }
-  });
+  ]
 
-  // Загрузка уровней
-  const loadLevels = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        search: searchQuery,
-        filter,
-        page: currentPage.toString()
-      });
-
-      const response = await fetch(`/api/admin/levels?${params}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setLevels(data.levels);
-        setTotalPages(data.totalPages);
-      } else {
-        toast.error('Ошибка загрузки уровней');
-      }
-    } catch (error) {
-      toast.error('Ошибка подключения к серверу');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Рейтинг уровня
-  const rateLevel = async (data: z.infer<typeof rateSchema>) => {
-    if (!selectedLevel || adminLevel < 2) return;
-
-    try {
-      const response = await fetch('/api/admin/rate-level', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          levelID: selectedLevel.levelID,
-          ...data
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        toast.success('Уровень успешно оценен');
-        loadLevels();
-        setSelectedLevel(null);
-      } else {
-        toast.error(result.message || 'Ошибка при оценке уровня');
-      }
-    } catch (error) {
-      toast.error('Ошибка подключения к серверу');
-    }
-  };
-
-  // Удаление уровня
-  const deleteLevel = async (levelID: string) => {
-    if (adminLevel < 3) {
-      toast.error('Недостаточно прав для удаления уровней');
-      return;
-    }
-
-    if (!confirm('Вы уверены, что хотите удалить этот уровень?')) return;
-
-    try {
-      const response = await fetch('/api/admin/delete-level', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ levelID })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        toast.success('Уровень удален');
-        loadLevels();
-      } else {
-        toast.error(result.message || 'Ошибка при удалении уровня');
-      }
-    } catch (error) {
-      toast.error('Ошибка подключения к серверу');
-    }
-  };
-
-  useEffect(() => {
-    loadLevels();
-  }, [searchQuery, filter, currentPage]);
+  const filteredLevels = levels.filter(level => {
+    const matchesSearch = level.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         level.author.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === "all" || level.status === filterStatus
+    const matchesDifficulty = filterDifficulty === "all" || level.difficulty === filterDifficulty
+    
+    return matchesSearch && matchesStatus && matchesDifficulty
+  })
 
   const getDifficultyColor = (difficulty: string) => {
-    const colors = {
-      auto: 'bg-gray-500',
-      easy: 'bg-green-500',
-      normal: 'bg-blue-500',
-      hard: 'bg-yellow-500',
-      harder: 'bg-orange-500',
-      insane: 'bg-red-500',
-      demon: 'bg-purple-500'
-    };
-    return colors[difficulty as keyof typeof colors] || 'bg-gray-500';
-  };
+    const colors: Record<string, string> = {
+      'Auto': 'bg-gray-500',
+      'Easy': 'bg-green-500',
+      'Normal': 'bg-blue-500',
+      'Hard': 'bg-yellow-500',
+      'Harder': 'bg-orange-500',
+      'Insane': 'bg-red-500',
+      'Extreme Demon': 'bg-purple-500'
+    }
+    return colors[difficulty] || 'bg-gray-500'
+  }
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      'pending': 'bg-yellow-500',
+      'approved': 'bg-green-500',
+      'rejected': 'bg-red-500'
+    }
+    return colors[status] || 'bg-gray-500'
+  }
 
   return (
-    <div className=\"space-y-6\">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className=\"flex items-center gap-2\">
-            <Gamepad2 className=\"h-5 w-5\" />
-            Управление уровнями
-          </CardTitle>
-          <CardDescription>
-            Просмотр, оценка и модерация пользовательских уровней
-          </CardDescription>
+          <CardTitle>Level Management</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Фильтры и поиск */}
-          <div className=\"flex flex-col sm:flex-row gap-4 mb-6\">
-            <div className=\"flex-1\">
-              <div className=\"relative\">
-                <Search className=\"absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4\" />
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <Label htmlFor="search">Search Levels</Label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder=\"Поиск уровней...\"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className=\"pl-10\"
+                  id="search"
+                  placeholder="Search by name or author..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
                 />
               </div>
             </div>
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className=\"w-[180px]\">
-                <Filter className=\"h-4 w-4 mr-2\" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value=\"all\">Все уровни</SelectItem>
-                <SelectItem value=\"unrated\">Неоцененные</SelectItem>
-                <SelectItem value=\"featured\">Рекомендуемые</SelectItem>
-                <SelectItem value=\"epic\">Эпические</SelectItem>
-                <SelectItem value=\"reported\">С жалобами</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={loadLevels} disabled={loading}>
-              Обновить
-            </Button>
+            
+            <div className="sm:w-48">
+              <Label>Status Filter</Label>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending Review</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Таблица уровней */}
-          <div className=\"rounded-md border\">
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Автор</TableHead>
-                  <TableHead>Сложность</TableHead>
-                  <TableHead>Звезды</TableHead>
-                  <TableHead>Статистика</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Действия</TableHead>
+                  <TableHead>Level Info</TableHead>
+                  <TableHead>Author</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Stats</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {levels.map((level) => (
-                  <TableRow key={level.levelID}>
-                    <TableCell className=\"font-medium\">
-                      <div>
-                        <div>{level.levelName}</div>
-                        <div className=\"text-sm text-gray-500 truncate max-w-[200px]\">
-                          {level.description}
-                        </div>
+                {filteredLevels.map((level) => (
+                  <TableRow key={level.id}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{level.name}</span>
+                        <span className="text-sm text-muted-foreground">ID: {level.id}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{level.username}</TableCell>
+                    
+                    <TableCell>{level.author}</TableCell>
+                    
                     <TableCell>
                       <Badge className={`${getDifficultyColor(level.difficulty)} text-white`}>
                         {level.difficulty}
                       </Badge>
                     </TableCell>
+                    
                     <TableCell>
-                      <div className=\"flex items-center gap-1\">
-                        <Star className=\"h-4 w-4 text-yellow-500\" />
-                        {level.stars}
+                      <div className="flex flex-col text-sm">
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3" /> {level.stars}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Download className="h-3 w-3" /> {level.downloads.toLocaleString()}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> {level.likes.toLocaleString()}
+                        </span>
                       </div>
                     </TableCell>
+                    
                     <TableCell>
-                      <div className=\"text-sm\">
-                        <div>👁️ {level.downloads}</div>
-                        <div>👍 {level.likes}</div>
-                      </div>
+                      <Badge className={`${getStatusColor(level.status)} text-white capitalize`}>
+                        {level.status}
+                      </Badge>
                     </TableCell>
+                    
                     <TableCell>
-                      <div className=\"flex gap-1\">
-                        {level.featured && (
-                          <Badge variant=\"secondary\">
-                            <Trophy className=\"h-3 w-3 mr-1\" />
-                            Рек.
-                          </Badge>
-                        )}
-                        {level.epic && (
-                          <Badge className=\"bg-purple-500 text-white\">
-                            ⭐ Эпик
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className=\"flex gap-2\">
-                        {adminLevel >= 2 && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                size=\"sm\"
-                                variant=\"outline\"
-                                onClick={() => setSelectedLevel(level)}
-                              >
-                                <Star className=\"h-4 w-4\" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Оценить уровень</DialogTitle>
-                                <DialogDescription>
-                                  Установите рейтинг для уровня \"{level.levelName}\"
-                                </DialogDescription>
-                              </DialogHeader>
-                              <Form {...rateForm}>
-                                <form onSubmit={rateForm.handleSubmit(rateLevel)} className=\"space-y-4\">
-                                  <FormField
-                                    control={rateForm.control}
-                                    name=\"stars\"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Количество звезд</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            type=\"number\"
-                                            min={1}
-                                            max={10}
-                                            {...field}
-                                            onChange={(e) => field.onChange(Number(e.target.value))}
-                                          />
-                                        </FormControl>
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={rateForm.control}
-                                    name=\"difficulty\"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Сложность</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                          <FormControl>
-                                            <SelectTrigger>
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                          </FormControl>
-                                          <SelectContent>
-                                            <SelectItem value=\"auto\">Авто</SelectItem>
-                                            <SelectItem value=\"easy\">Легко</SelectItem>
-                                            <SelectItem value=\"normal\">Нормально</SelectItem>
-                                            <SelectItem value=\"hard\">Сложно</SelectItem>
-                                            <SelectItem value=\"harder\">Сложнее</SelectItem>
-                                            <SelectItem value=\"insane\">Безумно</SelectItem>
-                                            <SelectItem value=\"demon\">Демон</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <div className=\"flex gap-4\">
-                                    <FormField
-                                      control={rateForm.control}
-                                      name=\"featured\"
-                                      render={({ field }) => (
-                                        <FormItem className=\"flex items-center space-x-2\">
-                                          <input
-                                            type=\"checkbox\"
-                                            checked={field.value}
-                                            onChange={field.onChange}
-                                          />
-                                          <FormLabel>Рекомендуемый</FormLabel>
-                                        </FormItem>
-                                      )}
-                                    />
-                                    <FormField
-                                      control={rateForm.control}
-                                      name=\"epic\"
-                                      render={({ field }) => (
-                                        <FormItem className=\"flex items-center space-x-2\">
-                                          <input
-                                            type=\"checkbox\"
-                                            checked={field.value}
-                                            onChange={field.onChange}
-                                          />
-                                          <FormLabel>Эпический</FormLabel>
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                  <Button type=\"submit\" className=\"w-full\">
-                                    Применить рейтинг
-                                  </Button>
-                                </form>
-                              </Form>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                        {adminLevel >= 3 && (
-                          <Button
-                            size=\"sm\"
-                            variant=\"destructive\"
-                            onClick={() => deleteLevel(level.levelID)}
-                          >
-                            <Trash2 className=\"h-4 w-4\" />
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Rate Level: {level.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="stars">Star Rating (0-10)</Label>
+                                <Input
+                                  id="stars"
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  defaultValue={level.stars}
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="difficulty">Difficulty</Label>
+                                <Select defaultValue={level.difficulty}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Auto">Auto</SelectItem>
+                                    <SelectItem value="Easy">Easy</SelectItem>
+                                    <SelectItem value="Normal">Normal</SelectItem>
+                                    <SelectItem value="Hard">Hard</SelectItem>
+                                    <SelectItem value="Harder">Harder</SelectItem>
+                                    <SelectItem value="Insane">Insane</SelectItem>
+                                    <SelectItem value="Extreme Demon">Extreme Demon</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button className="flex-1" variant="default">
+                                  Approve
+                                </Button>
+                                <Button className="flex-1" variant="destructive">
+                                  Reject
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Button variant="outline" size="sm" className="text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -393,35 +271,14 @@ export default function LevelManagement({ gdpsName, adminLevel }: LevelManagemen
               </TableBody>
             </Table>
           </div>
-
-          {/* Пагинация */}
-          <div className=\"flex items-center justify-between mt-4\">
-            <div className=\"text-sm text-gray-500\">
-              Страница {currentPage} из {totalPages}
+          
+          {filteredLevels.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No levels found matching your criteria.
             </div>
-            <div className=\"flex gap-2\">
-              <Button
-                variant=\"outline\"
-                size=\"sm\"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className=\"h-4 w-4\" />
-                Назад
-              </Button>
-              <Button
-                variant=\"outline\"
-                size=\"sm\"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Вперед
-                <ChevronRight className=\"h-4 w-4\" />
-              </Button>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
