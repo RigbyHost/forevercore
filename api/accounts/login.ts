@@ -1,21 +1,21 @@
-'package net.fimastgd.forevercore.api.accounts.login';
+"package net.fimastgd.forevercore.api.accounts.login";
 
-import { Request } from 'express';
-import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import GeneratePass from '../lib/generatePass';
-import ApiLib from '../lib/apiLib';
-import ExploitPatch from '../lib/exploitPatch';
-import ConsoleApi from '../../modules/console-api';
-import db from '../../serverconf/db';
+import { Request } from "express";
+import { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import GeneratePass from "../lib/generatePass";
+import ApiLib from "../lib/apiLib";
+import ExploitPatch from "../lib/exploitPatch";
+import ConsoleApi from "../../modules/console-api";
+import threadConnection from "../../serverconf/db";
 
 /**
  * Login result interface
  */
 interface LoginResult {
-    success: boolean;
-    accountID?: number;
-    userID?: number;
-    message: string;
+	success: boolean;
+	accountID?: number;
+	userID?: number;
+	message: string;
 }
 
 /**
@@ -28,103 +28,98 @@ interface LoginResult {
  * @returns Promise resolving to login result string
  */
 const loginAccount = async (
-    userNameOr?: string,
-    udidOr?: string,
-    passwordOr?: string,
-    gjp2Or?: string,
-    req?: Request
+	gdpsid: string,
+	userNameOr?: string,
+	udidOr?: string,
+	passwordOr?: string,
+	gjp2Or?: string,
+	req?: Request
 ): Promise<string> => {
-    try {
-        // Get client IP
-        const ip = await ApiLib.getIP(req);
+	const db = await threadConnection(gdpsid);
+	try {
+		// Get client IP
+		const ip = await ApiLib.getIP(req);
 
-        // Process input parameters
-        const udid = udidOr ? await ExploitPatch.remove(udidOr) : '';
-        const userName = userNameOr ? await ExploitPatch.remove(userNameOr) : '';
+		// Process input parameters
+		const udid = udidOr ? await ExploitPatch.remove(udidOr) : "";
+		const userName = userNameOr ? await ExploitPatch.remove(userNameOr) : "";
 
-        // Check if username exists
-        const [rows] = await db.execute<RowDataPacket[]>(
-            "SELECT accountID FROM accounts WHERE userName LIKE ?",
-            [userName]
-        );
+		// Check if username exists
+		const [rows] = await db.execute<RowDataPacket[]>("SELECT accountID FROM accounts WHERE userName LIKE ?", [userName]);
 
-        if (rows.length === 0) {
-            ConsoleApi.Log("main", `Failed login to account (Username is invalid): ${userName}`);
-            return "-1";
-        }
+		if (rows.length === 0) {
+			ConsoleApi.Log("main", `Failed login to account (Username is invalid): ${userName}`);
+			return "-1";
+		}
 
-        const id = rows[0].accountID;
+		const id = rows[0].accountID;
 
-        // Validate credentials
-        let pass = 0;
-        if (passwordOr) {
-            pass = await GeneratePass.isValidUsrname(userName, passwordOr, req);
-        } else if (gjp2Or) {
-            pass = await GeneratePass.isGJP2ValidUsrname(userName, gjp2Or, req);
-        }
+		// Validate credentials
+		let pass = 0;
+		if (passwordOr) {
+			pass = await GeneratePass.isValidUsrname(gdpsid, userName, passwordOr, req);
+		} else if (gjp2Or) {
+			pass = await GeneratePass.isGJP2ValidUsrname(gdpsid, userName, gjp2Or, req);
+		}
 
-        if (pass === 1) {
-            // Get user ID or create a new user
-            const [userRows] = await db.execute<RowDataPacket[]>(
-                "SELECT userID FROM users WHERE extID = ?",
-                [id]
-            );
+		if (pass === 1) {
+			// Get user ID or create a new user
+			const [userRows] = await db.execute<RowDataPacket[]>("SELECT userID FROM users WHERE extID = ?", [id]);
 
-            let userID: number;
-            if (userRows.length > 0) {
-                userID = userRows[0].userID;
-            } else {
-                // Create new user entry
-                const [result] = await db.execute<ResultSetHeader>(
-                    "INSERT INTO users (isRegistered, extID, userName) VALUES (1, ?, ?)",
-                    [id, userName]
-                );
-                userID = result.insertId;
-            }
+			let userID: number;
+			if (userRows.length > 0) {
+				userID = userRows[0].userID;
+			} else {
+				// Create new user entry
+				const [result] = await db.execute<ResultSetHeader>("INSERT INTO users (isRegistered, extID, userName) VALUES (1, ?, ?)", [
+					id,
+					userName
+				]);
+				userID = result.insertId;
+			}
 
-            // Log the login action
-            await db.execute(
-                "INSERT INTO actions (type, value, timestamp, value2) VALUES (?, ?, ?, ?)",
-                ['2', userName, Math.floor(Date.now() / 1000), ip]
-            );
+			// Log the login action
+			await db.execute("INSERT INTO actions (type, value, timestamp, value2) VALUES (?, ?, ?, ?)", [
+				"2",
+				userName,
+				Math.floor(Date.now() / 1000),
+				ip
+			]);
 
-            ConsoleApi.Log("main", `Logged to account: ${userName}`);
+			ConsoleApi.Log("main", `Logged to account: ${userName}`);
 
-            // Handle UDID transfer if needed
-            if (!isNaN(parseInt(udid))) {
-                try {
-                    const [oldUserRows] = await db.execute<RowDataPacket[]>(
-                        "SELECT userID FROM users WHERE extID = ?",
-                        [udid]
-                    );
+			// Handle UDID transfer if needed
+			if (!isNaN(parseInt(udid))) {
+				try {
+					const [oldUserRows] = await db.execute<RowDataPacket[]>("SELECT userID FROM users WHERE extID = ?", [udid]);
 
-                    if (oldUserRows.length > 0) {
-                        const oldUserID = oldUserRows[0].userID;
+					if (oldUserRows.length > 0) {
+						const oldUserID = oldUserRows[0].userID;
 
-                        // Transfer levels to new account
-                        await db.execute(
-                            "UPDATE levels SET userID = ?, extID = ? WHERE userID = ?",
-                            [userID, id, oldUserID]
-                        );
-                    }
-                } catch (error) {
-                    ConsoleApi.Warn("main", `UDID transfer failed for ${userName}: ${error}`);
-                }
-            }
+						// Transfer levels to new account
+						await db.execute("UPDATE levels SET userID = ?, extID = ? WHERE userID = ?", [userID, id, oldUserID]);
+					}
+				} catch (error) {
+					ConsoleApi.Warn("main", `UDID transfer failed for ${userName}: ${error}`);
+				}
+			}
 
-            return `${id},${userID}`;
-        } else if (pass === -1) {
-            ConsoleApi.Log("main", `Failed login to account (Invalid password): ${userName}`);
-            return "-12";
-        } else {
-            ConsoleApi.Log("main", `Failed login to account (Failed to check pass): ${userName}`);
-            return "-1";
-        }
-    } catch (error) {
-        ConsoleApi.Warn("main", "Enabled emergency protection against account hacking at net.fimastgd.forevercore.api.accounts.login");
-        ConsoleApi.FatalError("main", `Unhandled server exception with user login to account, automatic protection called at net.fimastgd.forevercore.api.accounts.login\nJSException: ${error}`);
-        return "-1";
-    }
+			return `${id},${userID}`;
+		} else if (pass === -1) {
+			ConsoleApi.Log("main", `Failed login to account (Invalid password): ${userName}`);
+			return "-12";
+		} else {
+			ConsoleApi.Log("main", `Failed login to account (Failed to check pass): ${userName}`);
+			return "-1";
+		}
+	} catch (error) {
+		ConsoleApi.Warn("main", "Enabled emergency protection against account hacking at net.fimastgd.forevercore.api.accounts.login");
+		ConsoleApi.FatalError(
+			"main",
+			`Unhandled server exception with user login to account, automatic protection called at net.fimastgd.forevercore.api.accounts.login\nJSException: ${error}`
+		);
+		return "-1";
+	}
 };
 
 export default loginAccount;
