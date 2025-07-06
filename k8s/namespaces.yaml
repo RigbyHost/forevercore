@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gdps-development
+  labels:
+    name: gdps-development
+    environment: development
+    project: forevercore
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gdps-staging
+  labels:
+    name: gdps-staging
+    environment: staging
+    project: forevercore
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gdps-production
+  labels:
+    name: gdps-production
+    environment: production
+    project: forevercore

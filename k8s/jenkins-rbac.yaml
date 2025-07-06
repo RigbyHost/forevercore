@@ -1,0 +1,173 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-agent-sa
+  namespace: jenkins
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jenkins-deployment-role
+rules:
+# Core resources
+- apiGroups: [""]
+  resources: 
+    - pods
+    - pods/log
+    - services
+    - endpoints
+    - persistentvolumeclaims
+    - configmaps
+    - secrets
+    - namespaces
+    - replicationcontrollers
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Apps resources
+- apiGroups: ["apps"]
+  resources:
+    - deployments
+    - replicasets
+    - daemonsets
+    - statefulsets
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Networking resources
+- apiGroups: ["networking.k8s.io"]
+  resources:
+    - ingresses
+    - networkpolicies
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Extensions resources (legacy)
+- apiGroups: ["extensions"]
+  resources:
+    - ingresses
+    - deployments
+    - replicasets
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Autoscaling resources
+- apiGroups: ["autoscaling"]
+  resources:
+    - horizontalpodautoscalers
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Batch resources
+- apiGroups: ["batch"]
+  resources:
+    - jobs
+    - cronjobs
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# RBAC resources (limited)
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+    - roles
+    - rolebindings
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Events
+- apiGroups: [""]
+  resources:
+    - events
+  verbs: ["get", "list", "watch"]
+
+# Storage
+- apiGroups: ["storage.k8s.io"]
+  resources:
+    - storageclasses
+  verbs: ["get", "list", "watch"]
+
+# Metrics
+- apiGroups: ["metrics.k8s.io"]
+  resources:
+    - pods
+    - nodes
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins-deployment-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins-deployment-role
+subjects:
+- kind: ServiceAccount
+  name: jenkins-agent-sa
+  namespace: jenkins
+---
+# Additional role for specific GDPS namespaces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: gdps-development
+  name: gdps-full-access
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-gdps-development
+  namespace: gdps-development
+subjects:
+- kind: ServiceAccount
+  name: jenkins-agent-sa
+  namespace: jenkins
+roleRef:
+  kind: Role
+  name: gdps-full-access
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: gdps-staging
+  name: gdps-full-access
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-gdps-staging
+  namespace: gdps-staging
+subjects:
+- kind: ServiceAccount
+  name: jenkins-agent-sa
+  namespace: jenkins
+roleRef:
+  kind: Role
+  name: gdps-full-access
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: gdps-production
+  name: gdps-full-access
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-gdps-production
+  namespace: gdps-production
+subjects:
+- kind: ServiceAccount
+  name: jenkins-agent-sa
+  namespace: jenkins
+roleRef:
+  kind: Role
+  name: gdps-full-access
+  apiGroup: rbac.authorization.k8s.io
