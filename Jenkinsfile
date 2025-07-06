@@ -295,7 +295,16 @@ EOF
                         def imageTag = params.RUNTIME == 'bun' ? "${IMAGE_TAG}-bun" : "${IMAGE_TAG}-node"
                         def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
                         
-                        sh "kubectl create namespace ${targetNamespace} --dry-run=client -o yaml | kubectl apply -f -"
+                        // Ensure namespaces exist
+                        sh """
+                        echo '>>> Setting up namespaces and RBAC...'
+                        kubectl apply -f k8s/namespaces.yaml || echo 'Namespaces may already exist'
+                        kubectl apply -f k8s/jenkins-rbac.yaml || echo 'RBAC may already exist'
+                        
+                        echo '>>> Verifying namespace access...'
+                        kubectl get namespace ${targetNamespace} || kubectl create namespace ${targetNamespace}
+                        kubectl auth can-i get pods -n ${targetNamespace} || echo 'Warning: Limited permissions'
+                        """
 
                         // Create ConfigMap for environment variables
                         sh """
@@ -688,9 +697,26 @@ EOF
                     
                     sh """
                     echo '>>> Collecting debug information...'
-                    kubectl get all -n ${targetNamespace} || true
+                    echo 'Pods:'
+                    kubectl get pods -n ${targetNamespace} || true
+                    echo 'Services:'
+                    kubectl get services -n ${targetNamespace} || true
+                    echo 'Deployments:'
+                    kubectl get deployments -n ${targetNamespace} || true
+                    echo 'Ingresses:'
+                    kubectl get ingresses -n ${targetNamespace} || true
+                    echo 'ConfigMaps:'
+                    kubectl get configmaps -n ${targetNamespace} || true
+                    echo 'Secrets:'
+                    kubectl get secrets -n ${targetNamespace} || true
+                    
+                    echo 'Deployment details:'
                     kubectl describe deployment ${APP_NAME} -n ${targetNamespace} || true
+                    kubectl describe deployment ${APP_NAME}-admin -n ${targetNamespace} || true
+                    
+                    echo 'Pod logs:'
                     kubectl logs -l app=${APP_NAME} -n ${targetNamespace} --tail=50 || true
+                    kubectl logs -l app=${APP_NAME}-admin -n ${targetNamespace} --tail=50 || true
                     """
                 }
             }
