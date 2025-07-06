@@ -65,6 +65,36 @@ spec:
             choices: ['node', 'bun'],
             description: 'Select JavaScript runtime'
         )
+        string(
+            name: 'DB_HOST',
+            defaultValue: 'mysql',
+            description: 'MySQL database host'
+        )
+        string(
+            name: 'DB_USER',
+            defaultValue: 'gdps',
+            description: 'MySQL database user'
+        )
+        string(
+            name: 'DB_NAME',
+            defaultValue: 'gdps',
+            description: 'MySQL database name'
+        )
+        string(
+            name: 'REDIS_HOST',
+            defaultValue: 'redis',
+            description: 'Redis server host'
+        )
+        string(
+            name: 'REDIS_PORT',
+            defaultValue: '6379',
+            description: 'Redis server port'
+        )
+        booleanParam(
+            name: 'REDIS_ENABLED',
+            defaultValue: true,
+            description: 'Enable Redis caching'
+        )
         booleanParam(
             name: 'RUN_TESTS',
             defaultValue: true,
@@ -239,6 +269,13 @@ data:
   BUILD_TIME: "${BUILD_TIME}"
   DEPLOYMENT_TARGET: "${params.DEPLOYMENT_TARGET}"
   RUNTIME: "${params.RUNTIME}"
+  DB_HOST: "${params.DB_HOST}"
+  DB_USER: "${params.DB_USER}"
+  DB_NAME: "${params.DB_NAME}"
+  DB_PORT: "3306"
+  REDIS_HOST: "${params.REDIS_HOST}"
+  REDIS_PORT: "${params.REDIS_PORT}"
+  REDIS_ENABLED: "${params.REDIS_ENABLED}"
 EOF
 """
 
