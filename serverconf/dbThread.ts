@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import envConfig from './env-config';
 
 interface DatabaseConfig {
     host: string;
@@ -11,19 +12,50 @@ interface DatabaseConfig {
 }
 
 function createDBThread(id: string): DatabaseConfig {
+    // Priority: Environment variables > YAML config > defaults
+    
+    // Try to get from environment first (recommended for production)
+    const envHost = envConfig.get('DB_HOST');
+    const envUser = envConfig.get('DB_USER');
+    const envPassword = envConfig.get('DB_PASSWORD');
+    const envDatabase = envConfig.get('DB_NAME');
+    const envPort = envConfig.get('DB_PORT');
+    
+    if (envHost && envUser && envDatabase) {
+        return {
+            host: envHost,
+            user: envUser,
+            password: envPassword,
+            database: envDatabase,
+            port: envPort
+        };
+    }
+    
+    // Fallback to YAML config for backward compatibility
     const configPath = path.join(__dirname, `../GDPS_DATA/${id}/data/config/db.yml`);
-    if (!fs.existsSync(configPath)) {
-        throw new Error(`Config file for ID ${id} not found`);
+    if (fs.existsSync(configPath)) {
+        const fileContents = fs.readFileSync(configPath, 'utf8');
+        const config = yaml.load(fileContents) as DatabaseConfig;
+        
+        if (config.host && config.user && config.database) {
+            return {
+                host: config.host,
+                user: config.user,
+                password: config.password || envPassword,
+                database: config.database,
+                port: config.port || envPort
+            };
+        }
     }
-
-    const fileContents = fs.readFileSync(configPath, 'utf8');
-    const config = yaml.load(fileContents) as DatabaseConfig;
-
-    if (!config.host || !config.user || !config.database) {
-        throw new Error(`Invalid config for ID ${id}`);
-    }
-
-    return config;
+    
+    // Last resort: use environment variables with defaults
+    return {
+        host: envHost,
+        user: envUser,
+        password: envPassword,
+        database: envDatabase,
+        port: envPort
+    };
 }
 
 export default createDBThread;

@@ -48,11 +48,36 @@ class RedisConfigManager {
             enabled: false
         };
 
+        // Priority: Environment variables > YAML config > defaults
+        const envHost = process.env.REDIS_HOST;
+        const envPort = process.env.REDIS_PORT;
+        const envPassword = process.env.REDIS_PASSWORD;
+        const envDatabase = process.env.REDIS_DATABASE;
+        const envEnabled = process.env.REDIS_ENABLED;
+
+        if (envHost && envPort) {
+            return {
+                host: envHost,
+                port: parseInt(envPort, 10),
+                password: envPassword,
+                database: envDatabase ? parseInt(envDatabase, 10) : undefined,
+                enabled: envEnabled === 'true'
+            };
+        }
+
+        // Fallback to YAML config for backward compatibility
         try {
             const configPath = path.join(__dirname, '../config/redis.yml');
             if (fs.existsSync(configPath)) {
                 const fileContents = fs.readFileSync(configPath, 'utf8');
-                return { ...defaultConfig, ...yaml.load(fileContents) as RedisConfig };
+                const yamlConfig = yaml.load(fileContents) as RedisConfig;
+                return { 
+                    ...defaultConfig, 
+                    ...yamlConfig,
+                    // Allow env override of password and enabled status
+                    password: envPassword || yamlConfig.password,
+                    enabled: envEnabled === 'true' || yamlConfig.enabled
+                };
             }
         } catch (error) {
             ConsoleApi.Warn('RedisConfig', `Failed to load Redis config: ${error}`);
