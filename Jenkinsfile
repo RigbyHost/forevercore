@@ -27,6 +27,11 @@ spec:
     command: ['/bin/sh']
     args: ['-c', 'trap : TERM INT; sleep infinity & wait']
     tty: true
+  - name: bun
+    image: oven/bun:1.1-alpine
+    command: ['/bin/sh']
+    args: ['-c', 'trap : TERM INT; sleep infinity & wait']
+    tty: true
 """
             defaultContainer 'jnlp'
         }
@@ -102,22 +107,30 @@ spec:
 
         stage('Setup Environment') {
             steps {
-                container('node') {
-                    sh '''
-                    echo '>>> Setting up environment...'
-                    node --version
-                    npm --version
-                    
-                    # Create .env file for build
-                    cat > .env << EOF
+                script {
+                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                    container(containerName) {
+                        sh '''
+                        echo '>>> Setting up environment...'
+                        if command -v bun >/dev/null 2>&1; then
+                            bun --version
+                        else
+                            node --version
+                            npm --version
+                        fi
+                        
+                        # Create .env file for build
+                        cat > .env << EOF
 NODE_ENV=${NODE_ENV}
 GDPS_NAME="${GDPS_NAME}"
 GDPS_ID=${GDPS_ID}
 BUILD_NUMBER=${BUILD_NUMBER}
 GIT_COMMIT=${GIT_COMMIT_SHORT}
 BUILD_TIME=${BUILD_TIME}
+YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 EOF
-                    '''
+                        '''
+                    }
                 }
             }
         }
@@ -127,11 +140,19 @@ EOF
                 expression { params.RUN_TESTS == true }
             }
             steps {
-                container('node') {
-                    sh '''
-                    echo '>>> Installing dependencies...'
-                    npm ci
-                    '''
+                script {
+                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                    container(containerName) {
+                        sh '''
+                        echo '>>> Installing dependencies...'
+                        export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
+                        if command -v bun >/dev/null 2>&1; then
+                            bun install
+                        else
+                            npm ci
+                        fi
+                        '''
+                    }
                 }
             }
         }
@@ -141,26 +162,42 @@ EOF
                 expression { params.RUN_TESTS == true }
             }
             steps {
-                container('node') {
-                    sh '''
-                    echo '>>> Running tests...'
-                    
-                    # TypeScript compilation check
-                    echo 'Checking TypeScript compilation...'
-                    npx tsc --noEmit
-                    
-                    # Run linting if available
-                    if [ -f "package.json" ] && npm run | grep -q "lint"; then
-                        echo 'Running linting...'
-                        npm run lint
-                    fi
-                    
-                    # Run unit tests if available
-                    if [ -f "package.json" ] && npm run | grep -q "test"; then
-                        echo 'Running unit tests...'
-                        npm test
-                    fi
-                    '''
+                script {
+                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                    container(containerName) {
+                        sh '''
+                        echo '>>> Running tests...'
+                        export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
+                        
+                        # TypeScript compilation check
+                        echo 'Checking TypeScript compilation...'
+                        if command -v bun >/dev/null 2>&1; then
+                            bun run tsc --noEmit
+                        else
+                            npx tsc --noEmit
+                        fi
+                        
+                        # Run linting if available
+                        if [ -f "package.json" ] && (npm run | grep -q "lint" || bun run --silent 2>&1 | grep -q "lint"); then
+                            echo 'Running linting...'
+                            if command -v bun >/dev/null 2>&1; then
+                                bun run lint
+                            else
+                                npm run lint
+                            fi
+                        fi
+                        
+                        # Run unit tests if available
+                        if [ -f "package.json" ] && (npm run | grep -q "test" || bun run --silent 2>&1 | grep -q "test"); then
+                            echo 'Running unit tests...'
+                            if command -v bun >/dev/null 2>&1; then
+                                bun run test
+                            else
+                                npm test
+                            fi
+                        fi
+                        '''
+                    }
                 }
             }
         }
