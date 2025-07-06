@@ -49,8 +49,8 @@ Services available:
 | `DB_USER` | MySQL username | `gdps` |
 | `DB_PASSWORD` | MySQL password | **Required** |
 | `DB_NAME` | MySQL database | `gdps` |
-| `JWT_SECRET` | JWT signing secret | **Auto-generated** |
-| `ENCRYPTION_KEY` | Data encryption key | **Auto-generated** |
+| `GJP_SECRET` | GJP password hashing secret | **Auto-generated** |
+| `XOR_KEY` | XOR encryption key for GD data | **Auto-generated** |
 
 ### Optional Features
 
@@ -131,8 +131,8 @@ The project includes a comprehensive Jenkinsfile for automated deployment:
    - `gdps-db-password`
    - `mysql-root-password` 
    - `redis-password`
-   - `gdps-jwt-secret`
-   - `gdps-encryption-key`
+   - `gdps-gjp-secret`
+   - `gdps-xor-key`
    - `gdps-admin-email`
 
 2. **Pipeline parameters:**

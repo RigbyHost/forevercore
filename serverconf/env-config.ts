@@ -24,8 +24,8 @@ interface EnvironmentConfig {
   REDIS_DATABASE: number;
   
   // Security
-  JWT_SECRET: string;
-  ENCRYPTION_KEY: string;
+  GJP_SECRET: string;
+  XOR_KEY: string;
   CAPTCHA_SECRET?: string;
   
   // External services
@@ -93,8 +93,8 @@ class EnvironmentConfigManager {
       REDIS_DATABASE: this.getEnvAsNumber('REDIS_DATABASE', 0),
       
       // Security
-      JWT_SECRET: this.getEnvAsString('JWT_SECRET', this.generateRandomSecret()),
-      ENCRYPTION_KEY: this.getEnvAsString('ENCRYPTION_KEY', this.generateRandomSecret()),
+      GJP_SECRET: this.getEnvAsString('GJP_SECRET', this.generateRandomSecret()),
+      XOR_KEY: this.getEnvAsString('XOR_KEY', this.generateRandomSecret()),
       CAPTCHA_SECRET: this.getEnvAsString('CAPTCHA_SECRET'),
       
       // External services
@@ -206,8 +206,8 @@ class EnvironmentConfigManager {
       ConsoleApi.Warn('EnvConfig', 'Database password is not set in production environment');
     }
     
-    if (this.config.JWT_SECRET.length < 32) {
-      ConsoleApi.Warn('EnvConfig', 'JWT secret should be at least 32 characters long');
+    if (this.config.GJP_SECRET.length < 16) {
+      ConsoleApi.Warn('EnvConfig', 'GJP secret should be at least 16 characters long');
     }
     
     if (this.config.REDIS_ENABLED && !this.config.REDIS_HOST) {
@@ -242,8 +242,8 @@ class EnvironmentConfigManager {
       const safeConfig = { ...this.config };
       // Hide sensitive information
       safeConfig.DB_PASSWORD = '***';
-      safeConfig.JWT_SECRET = '***';
-      safeConfig.ENCRYPTION_KEY = '***';
+      safeConfig.GJP_SECRET = '***';
+      safeConfig.XOR_KEY = '***';
       safeConfig.REDIS_PASSWORD = safeConfig.REDIS_PASSWORD ? '***' : undefined;
       
       ConsoleApi.Log('EnvConfig', 'Current configuration:');

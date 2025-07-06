@@ -21,8 +21,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GJP_SECRET=${GJP_SECRET}
+      - XOR_KEY=${XOR_KEY}
       - GDPS_NAME=${GDPS_NAME:-ForeverCore GDPS}
       - GDPS_ID=${GDPS_ID:-main}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -66,8 +66,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GJP_SECRET=${GJP_SECRET}
+      - XOR_KEY=${XOR_KEY}
       - GDPS_NAME=${GDPS_NAME:-ForeverCore GDPS}
       - GDPS_ID=${GDPS_ID:-main}
       - ADMIN_EMAIL=${ADMIN_EMAIL}

@@ -49,8 +49,8 @@ spec:
         DB_PASSWORD = credentials('gdps-db-password')
         MYSQL_ROOT_PASSWORD = credentials('mysql-root-password')
         REDIS_PASSWORD = credentials('redis-password')
-        JWT_SECRET = credentials('gdps-jwt-secret')
-        ENCRYPTION_KEY = credentials('gdps-encryption-key')
+        GJP_SECRET = credentials('gdps-gjp-secret')
+        XOR_KEY = credentials('gdps-xor-key')
         ADMIN_EMAIL = credentials('gdps-admin-email')
     }
 
@@ -255,8 +255,8 @@ stringData:
   DB_PASSWORD: "${DB_PASSWORD}"
   MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
   REDIS_PASSWORD: "${REDIS_PASSWORD}"
-  JWT_SECRET: "${JWT_SECRET}"
-  ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
+  GJP_SECRET: "${GJP_SECRET}"
+  XOR_KEY: "${XOR_KEY}"
   ADMIN_EMAIL: "${ADMIN_EMAIL}"
 EOF
 """
