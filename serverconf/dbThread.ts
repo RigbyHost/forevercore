@@ -22,11 +22,16 @@ function createDBThread(id: string): DatabaseConfig {
     const envPort = envConfig.get('DB_PORT');
     
     if (envHost && envUser && envDatabase) {
+        // For multi-GDPS setup: use GDPS ID as database suffix
+        // If DB_NAME is "gdps" and ID is "main", use "gdps_main"
+        // If DB_NAME is "gdps" and ID is "0001", use "gdps_0001"
+        const databaseName = id === 'main' ? envDatabase : `${envDatabase}_${id}`;
+        
         return {
             host: envHost,
             user: envUser,
             password: envPassword,
-            database: envDatabase,
+            database: databaseName,
             port: envPort
         };
     }
