@@ -1,7 +1,7 @@
 'package net.fimastgd.forevercore.api.comments.uploadAccountComment';
 import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ExploitPatch from '../lib/exploitPatch';
 import ApiLib from '../lib/apiLib';
 import GJPCheck from '../lib/GJPCheck';

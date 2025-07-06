@@ -1,7 +1,7 @@
 import { RowDataPacket } from 'mysql2/promise';
 import axios from 'axios';
 import ExploitPatch from '../lib/exploitPatch';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ApiLib from '../lib/apiLib';
 import ConsoleApi from '../../modules/console-api';
 import { apiURL } from '../../serverconf/api';

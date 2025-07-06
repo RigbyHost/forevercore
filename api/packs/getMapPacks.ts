@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ExploitPatch from '../lib/exploitPatch';
 import GenerateHash from '../lib/generateHash';
 import ConsoleApi from '../../modules/console-api';

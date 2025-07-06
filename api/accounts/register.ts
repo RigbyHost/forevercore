@@ -40,7 +40,7 @@ const registerAccount = async (gdpsid: string, userNameStr?: string, passwordStr
 		} else {
 			// Hash password
 			const hashpass = await bcrypt.hash(password, 10);
-			const gjp2 = await GeneratePass.GJP2hash(gdpsid, password);
+			const gjp2 = await GeneratePass.GJP2hash(password);
 			const registerDate = Math.floor(Date.now() / 1000);
 
 			// Create account

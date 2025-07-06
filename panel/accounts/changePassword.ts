@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import fs from 'fs/promises';
 import path from 'path';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import GeneratePass from '../../api/lib/generatePass';
 import ConsoleApi from '../../modules/console-api';
 

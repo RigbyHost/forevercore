@@ -2,7 +2,7 @@
 'package net.fimastgd.forevercore.panel.roles.roles';
 
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 import ApiLib from '../../api/lib/apiLib';
 

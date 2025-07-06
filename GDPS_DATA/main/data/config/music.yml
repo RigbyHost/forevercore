@@ -1,0 +1,2 @@
+# Music configuration for GDPS
+zemu: false  # Enable/disable Zemu music service

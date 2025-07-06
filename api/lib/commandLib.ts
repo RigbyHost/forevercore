@@ -1,7 +1,7 @@
 'package net.fimastgd.forevercore.api.lib.commandLib';
 
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ApiLib from './apiLib';
 import ExploitPatch from './exploitPatch';
 import fs from 'fs';

@@ -1,6 +1,7 @@
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getSettingsFromRedis } from './redis-config';
 
 interface ServerSettings {
     PORT: number; // уже не нужно
@@ -47,6 +48,20 @@ function loadServerSettings(id: string): ServerSettings {
     }
 }
 
-export function getSettings(id: string): ServerSettings {
+export async function getSettings(id: string): Promise<ServerSettings> {
+    try {
+        // Try Redis first, fallback to file system
+        return await getSettingsFromRedis(id);
+    } catch (error) {
+        console.warn(`Redis settings failed for ${id}, falling back to file system:`, error);
+        return loadServerSettings(id);
+    }
+}
+
+// Synchronous version for backward compatibility
+export function getSettingsSync(id: string): ServerSettings {
     return loadServerSettings(id);
 }
+
+// For backward compatibility - uses 'main' as default GDPS ID
+export const settings = loadServerSettings('main');

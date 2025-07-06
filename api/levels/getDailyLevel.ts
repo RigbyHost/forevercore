@@ -1,7 +1,7 @@
 'package net.fimastgd.forevercore.api.levels.getDailyLevel';
 
 import { RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 /**

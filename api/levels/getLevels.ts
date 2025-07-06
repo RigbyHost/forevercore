@@ -2,7 +2,7 @@
 
 import { Request } from 'express';
 import { Connection, RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ApiLib from '../lib/apiLib';
 import GeneratePass from '../lib/generatePass';
 import GenerateHash from '../lib/generateHash';

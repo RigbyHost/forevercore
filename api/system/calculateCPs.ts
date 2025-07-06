@@ -1,7 +1,7 @@
 'package net.fimastgd.forevercore.api.system.calculateCPs';
 
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 /**

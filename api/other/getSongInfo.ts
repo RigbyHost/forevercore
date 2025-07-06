@@ -1,6 +1,6 @@
 import { RowDataPacket } from 'mysql2/promise';
 import ExploitPatch from '../lib/exploitPatch';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 /**

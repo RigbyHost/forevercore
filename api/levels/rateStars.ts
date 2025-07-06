@@ -5,7 +5,7 @@ import ExploitPatch from '../lib/exploitPatch';
 import ApiLib from '../lib/apiLib';
 import GJPCheck from '../lib/GJPCheck';
 import DiffLib from '../lib/diffLib';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import { settings } from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 

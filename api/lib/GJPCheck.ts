@@ -2,13 +2,13 @@
 
 import { Request } from 'express';
 import { Connection, RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import XORCipher from './XORCipher';
 import ApiLib from './apiLib';
 import { settings } from '../../serverconf/settings';
 import ExploitPatch from './exploitPatch';
 import FixIp from './fixIp';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import ConsoleApi from '../../modules/console-api';
 

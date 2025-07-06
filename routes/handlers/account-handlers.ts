@@ -10,6 +10,23 @@ import getUserInfo from '../../api/accounts/getUserInfo';
 import updateSettings from '../../api/accounts/updateSettings';
 import ConsoleApi from '../../modules/console-api';
 import getAccountURL from '../../api/lib/getAccountURL';
+import { getSettings } from '../../serverconf/settings';
+
+// Helper function to get GDPS ID from request or use default
+function getGdpsId(req: Request): string {
+    // Try to get from URL params first (for routes like /:gdpsid/api/...)
+    if (req.params.gdpsid) {
+        return req.params.gdpsid;
+    }
+    
+    // Try to get from query params
+    if (req.query.gdpsid && typeof req.query.gdpsid === 'string') {
+        return req.query.gdpsid;
+    }
+    
+    // Use default GDPS ID
+    return 'main'; // или другой ID по умолчанию
+}
 
 /**
  * Handler for account registration endpoint
@@ -21,7 +38,9 @@ export class RegisterAccountHandler extends BaseApiHandler {
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
+            const gdpsid = getGdpsId(req);
             const result = await registerAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.password,
                 req.body.email
@@ -45,7 +64,9 @@ export class LoginAccountHandler extends BaseApiHandler {
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
+            const gdpsid = getGdpsId(req);
             const result = await loginAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.udid,
                 req.body.password,
@@ -73,7 +94,9 @@ export class BackupAccountHandler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Backup', `Attempt to backup account (standard): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await backupAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.password,
                 req.body.saveData,
@@ -102,7 +125,9 @@ export class BackupAccount20Handler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Backup', `Attempt to backup account (2.0): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await backupAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.password,
                 req.body.saveData,
@@ -131,7 +156,9 @@ export class BackupAccountNewHandler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Backup', `Attempt to backup account (new): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await backupAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.password,
                 req.body.saveData,
@@ -160,7 +187,9 @@ export class SyncAccountHandler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Sync', `Attempt to sync account (standard): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await syncAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.accountID,
                 req.body.password,
@@ -188,7 +217,9 @@ export class SyncAccount20Handler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Sync', `Attempt to sync account (2.0): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await syncAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.accountID,
                 req.body.password,
@@ -216,7 +247,9 @@ export class SyncAccountNewHandler extends BaseApiHandler {
         try {
             ConsoleApi.Log('Sync', `Attempt to sync account (new): username=${req.body.userName}, accountID=${req.body.accountID}`);
             
+            const gdpsid = getGdpsId(req);
             const result = await syncAccount(
+                gdpsid,
                 req.body.userName,
                 req.body.accountID,
                 req.body.password,
@@ -242,7 +275,9 @@ export class GetUserInfoHandler extends BaseApiHandler {
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
+            const gdpsid = getGdpsId(req);
             const result = await getUserInfo(
+                gdpsid,
                 req.body.targetAccountID,
                 req.body.accountID,
                 req.body.gjp2,
@@ -270,7 +305,9 @@ export class UpdateSettingsHandler extends BaseApiHandler {
         try {
             const x = req.body.twitter; // Twitter (x) handle
 
+            const gdpsid = getGdpsId(req);
             const result = await updateSettings(
+                gdpsid,
                 req.body.accountID,
                 req.body.gjp2,
                 req.body.gjp,

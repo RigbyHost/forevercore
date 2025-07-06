@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import GJPCheck from '../lib/GJPCheck';
 import ExploitPatch from '../lib/exploitPatch';
 import ConsoleApi from '../../modules/console-api';

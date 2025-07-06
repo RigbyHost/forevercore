@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
-import { smallChest, bigChest } from '../../serverconf/chests';
+import db from '../../serverconf/db-proxy';
+import { getSmallChest, getBigChest } from '../../serverconf/chests';
 import ApiLib from '../lib/apiLib';
 import ExploitPatch from '../lib/exploitPatch';
 import XORCipher from '../lib/XORCipher';
@@ -79,22 +79,25 @@ const getChests = async (
     let chest2diff = currenttime - chest2time;
 
     // Get chest settings
-    const chest1items = smallChest.items;
-    const chest2items = bigChest.items;
-    const chest1minOrbs = smallChest.minOrbs;
-    const chest1maxOrbs = smallChest.maxOrbs;
-    const chest1minDiamonds = smallChest.minDiamonds;
-    const chest1maxDiamonds = smallChest.maxDiamonds;
-    const chest1minKeys = smallChest.minKeys;
-    const chest1maxKeys = smallChest.maxKeys;
-    const chest2minOrbs = bigChest.minOrbs;
-    const chest2maxOrbs = bigChest.maxOrbs;
-    const chest2minDiamonds = bigChest.minDiamonds;
-    const chest2maxDiamonds = bigChest.maxDiamonds;
-    const chest2minKeys = bigChest.minKeys;
-    const chest2maxKeys = bigChest.maxKeys;
-    const chest1wait = smallChest.wait;
-    const chest2wait = bigChest.wait;
+    const smallChestConfig = getSmallChest('main'); // TODO: Get gdpsid from request
+    const bigChestConfig = getBigChest('main'); // TODO: Get gdpsid from request
+    
+    const chest1items = smallChestConfig.items;
+    const chest2items = bigChestConfig.items;
+    const chest1minOrbs = smallChestConfig.minOrbs;
+    const chest1maxOrbs = smallChestConfig.maxOrbs;
+    const chest1minDiamonds = smallChestConfig.minDiamonds;
+    const chest1maxDiamonds = smallChestConfig.maxDiamonds;
+    const chest1minKeys = smallChestConfig.minKeys;
+    const chest1maxKeys = smallChestConfig.maxKeys;
+    const chest2minOrbs = bigChestConfig.minOrbs;
+    const chest2maxOrbs = bigChestConfig.maxOrbs;
+    const chest2minDiamonds = bigChestConfig.minDiamonds;
+    const chest2maxDiamonds = bigChestConfig.maxDiamonds;
+    const chest2minKeys = bigChestConfig.minKeys;
+    const chest2maxKeys = bigChestConfig.maxKeys;
+    const chest1wait = smallChestConfig.wait;
+    const chest2wait = bigChestConfig.wait;
 
     // Generate random rewards
     const chest1stuff = `${Math.floor(Math.random() * (chest1maxOrbs - chest1minOrbs + 1) + chest1minOrbs)},${Math.floor(Math.random() * (chest1maxDiamonds - chest1minDiamonds + 1) + chest1minDiamonds)},${chest1items[Math.floor(Math.random() * chest1items.length)]},${Math.floor(Math.random() * (chest1maxKeys - chest1minKeys + 1) + chest1minKeys)}`;

@@ -2,10 +2,14 @@ import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ApiLib from './apiLib';
 import FixIp from './fixIp';
 import ConsoleApi from '../../modules/console-api';
+
+// Helper to get database connection
+// TODO: This should be refactored to accept gdpsid from request context
+const getDefaultDb = async () => db;
 
 /**
  * Utility class for password generation and validation
@@ -65,7 +69,7 @@ class GeneratePass {
   static async assignModIPs(accountID: number | string, ip: string, req?: Request): Promise<void> {
     const modipCategory = await ApiLib.getMaxValuePermission(accountID, "modipCategory");
     if (typeof modipCategory === 'number' && modipCategory > 0) {
-      const [rows] = await db.execute<RowDataPacket[]>(
+        const [rows] = await db.execute<RowDataPacket[]>(
         "SELECT count(*) as count FROM modips WHERE accountID = ?", 
         [accountID]
       );
@@ -145,7 +149,7 @@ class GeneratePass {
     const gjp2 = await this.GJP2hash(pass, req || {} as Request);
     
     try {
-      const [results] = await db.execute<ResultSetHeader>(query, [gjp2, accid]);
+      const results = await db.execute<ResultSetHeader>(query, [gjp2, accid]);
       return results;
     } catch (error) {
       ConsoleApi.Error("main", `assignGJP2Exception: ${error} at net.fimastgd.forevercore.api.lib.generatePass`);
@@ -162,7 +166,7 @@ class GeneratePass {
    */
   static async isGJP2ValidUsrname(userName: string, gjp2: string, req: Request): Promise<number> {
     try {
-      const [rows] = await db.execute<RowDataPacket[]>(
+        const [rows] = await db.execute<RowDataPacket[]>(
         "SELECT accountID FROM accounts WHERE userName LIKE ?", 
         [userName]
       );

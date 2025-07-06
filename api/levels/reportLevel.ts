@@ -2,7 +2,7 @@
 
 import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import FixIp from '../lib/fixIp';
 import ExploitPatch from '../lib/exploitPatch';
 import ConsoleApi from '../../modules/console-api';

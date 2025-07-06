@@ -4,7 +4,7 @@ import { Connection } from 'mysql2/promise';
 import fs from 'fs';
 import path from 'path';
 import ConsoleApi from '../modules/console-api';
-import db from '../serverconf/db';
+import db from '../serverconf/db-proxy';
 
 /**
  * Initializes TypeScript components and performs validation

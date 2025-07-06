@@ -1,0 +1,15 @@
+# GDPS Settings for main instance
+PORT: 3010
+serverName: "ForeverCore GDPS"
+GDPSID: "main"
+NodeName: "n01"
+sessionGrants: false
+unregisteredSubmissions: false
+topCount: 100
+objectLimitFU: true
+objectLimitCount: 100
+diffVote: true
+diffVoteLevel: 3
+hardDiffVote: false
+serverURL: "http://localhost:3010"
+maxAccountBackups: 1

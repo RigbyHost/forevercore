@@ -3,7 +3,7 @@
 import { ResultSetHeader } from 'mysql2/promise';
 import fs from 'fs/promises';
 import path from 'path';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 /**

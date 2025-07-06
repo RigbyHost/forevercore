@@ -11,7 +11,7 @@ import GJPCheck from '../lib/GJPCheck';
 import GenerateHash from '../lib/generateHash';
 import XORCipher from '../lib/XORCipher';
 import FixIp from '../lib/fixIp';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 interface LevelData {

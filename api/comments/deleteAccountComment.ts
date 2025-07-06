@@ -4,7 +4,7 @@ import { ResultSetHeader } from 'mysql2/promise';
 import ApiLib from '../lib/apiLib';
 import GJPCheck from '../lib/GJPCheck';
 import ExploitPatch from '../lib/exploitPatch';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ConsoleApi from '../../modules/console-api';
 
 /**

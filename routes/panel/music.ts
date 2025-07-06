@@ -12,7 +12,7 @@ import getSongLinkInfo from '../../panel/music/link';
 import getSongDropboxInfo from '../../panel/music/dropbox';
 import getSongYoutubeInfo from '../../panel/music/youtube';
 import getSongList from '../../panel/music/list';
-import { musicState } from '../../serverconf/music';
+import { getMusicState } from '../../serverconf/music';
 import ytdl from 'ytdl-core'; 
 import fs from 'fs';
 import { unlink, writeFile } from 'fs/promises';
@@ -124,7 +124,8 @@ router.get('/:route', async (req: express.Request, res: express.Response) => {
             return;
         }
         ConsoleApi.Log("Query thread", `Handled new session '/panel/music/zemu', opened by ${req.cookies.username}`);
-        if (musicState.zemu) {
+        const musicConfig = getMusicState('main'); // TODO: Get gdpsid from request
+        if (musicConfig.zemu) {
             const data = { GDPS: settings.serverName, GDPSID: settings.GDPSID };
             ConsoleApi.Log("Render thread", `Rendered page '/panel/music/zemu'`);
             res.render("panel/music/zemu", data);
@@ -187,7 +188,8 @@ router.post('/newgrounds', async (req: express.Request, res: express.Response) =
 });
 
 router.post('/zemu', async (req: express.Request, res: express.Response) => {
-    if (musicState.zemu) {
+    const musicConfig = getMusicState('main'); // TODO: Get gdpsid from request
+    if (musicConfig.zemu) {
         const result = await getZeMuInfo(req.body.songid);
         res.status(200).send(result);
     } else {

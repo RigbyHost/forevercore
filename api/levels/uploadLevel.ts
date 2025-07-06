@@ -8,7 +8,7 @@ import ExploitPatch from '../lib/exploitPatch';
 import ApiLib from '../lib/apiLib';
 import FixIp from '../lib/fixIp';
 import GJPCheck from '../lib/GJPCheck';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import { settings } from '../../serverconf/settings';
 import ConsoleApi from '../../modules/console-api';
 

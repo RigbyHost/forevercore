@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
 import fs from 'fs/promises';
 import path from 'path';
-import db from '../../serverconf/db';
+import db from '../../serverconf/db-proxy';
 import ExploitPatch from '../lib/exploitPatch';
 import GJPCheck from '../lib/GJPCheck';
 import ApiLib from '../lib/apiLib';
