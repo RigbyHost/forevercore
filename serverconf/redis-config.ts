@@ -30,15 +30,11 @@ interface ServerSettings {
 }
 
 class RedisConfigManager {
-    private client: RedisClientType | null = null;
-    private connected = false;
+    private clients: Map<string, RedisClientType> = new Map();
     private config: RedisConfig;
 
     constructor() {
         this.config = this.loadRedisConfig();
-        if (this.config.enabled) {
-            this.initializeClient();
-        }
     }
 
     private loadRedisConfig(): RedisConfig {
@@ -86,32 +82,50 @@ class RedisConfigManager {
         return defaultConfig;
     }
 
-    private async initializeClient(): Promise<void> {
+    private async getClientForGdps(gdpsId: string): Promise<RedisClientType | null> {
+        if (!this.config.enabled) {
+            return null;
+        }
+
+        if (this.clients.has(gdpsId)) {
+            return this.clients.get(gdpsId)!;
+        }
+
         try {
-            this.client = createClient({
+            // Calculate Redis database number based on GDPS ID
+            // main = 0, 0001 = 1, 0002 = 2, etc.
+            let databaseNumber = 0;
+            if (gdpsId !== 'main') {
+                const numericId = parseInt(gdpsId, 10);
+                if (!isNaN(numericId)) {
+                    databaseNumber = numericId % 16; // Redis has 16 databases (0-15)
+                }
+            }
+
+            const client = createClient({
                 socket: {
                     host: this.config.host,
                     port: this.config.port
                 },
                 password: this.config.password,
-                database: this.config.database || 0
+                database: databaseNumber
             });
 
-            this.client.on('error', (err) => {
-                ConsoleApi.Error('RedisConfig', `Redis client error: ${err}`);
-                this.connected = false;
+            client.on('error', (err) => {
+                ConsoleApi.Error('RedisConfig', `Redis client error for ${gdpsId}: ${err}`);
+                this.clients.delete(gdpsId);
             });
 
-            this.client.on('connect', () => {
-                ConsoleApi.Log('RedisConfig', 'Connected to Redis server');
-                this.connected = true;
+            client.on('connect', () => {
+                ConsoleApi.Log('RedisConfig', `Connected to Redis server for ${gdpsId} (db: ${databaseNumber})`);
             });
 
-            await this.client.connect();
+            await client.connect();
+            this.clients.set(gdpsId, client);
+            return client;
         } catch (error) {
-            ConsoleApi.Error('RedisConfig', `Failed to connect to Redis: ${error}`);
-            this.connected = false;
-            this.client = null;
+            ConsoleApi.Error('RedisConfig', `Failed to connect to Redis for ${gdpsId}: ${error}`);
+            return null;
         }
     }
 
@@ -119,9 +133,10 @@ class RedisConfigManager {
         const cacheKey = `gdps:${gdpsId}:settings`;
         
         // Try to get from Redis first
-        if (this.connected && this.client) {
+        const client = await this.getClientForGdps(gdpsId);
+        if (client) {
             try {
-                const cached = await this.client.get(cacheKey);
+                const cached = await client.get(cacheKey);
                 if (cached) {
                     ConsoleApi.Debug('RedisConfig', `Settings loaded from cache for ${gdpsId}`);
                     return JSON.parse(cached) as ServerSettings;
@@ -135,9 +150,9 @@ class RedisConfigManager {
         const settings = this.loadSettingsFromFile(gdpsId);
 
         // Cache in Redis for future use
-        if (this.connected && this.client) {
+        if (client) {
             try {
-                await this.client.setEx(cacheKey, 300, JSON.stringify(settings)); // Cache for 5 minutes
+                await client.setEx(cacheKey, 300, JSON.stringify(settings)); // Cache for 5 minutes
                 ConsoleApi.Debug('RedisConfig', `Settings cached for ${gdpsId}`);
             } catch (error) {
                 ConsoleApi.Warn('RedisConfig', `Failed to cache settings in Redis: ${error}`);
@@ -177,9 +192,10 @@ class RedisConfigManager {
     }
 
     async invalidateCache(gdpsId: string): Promise<void> {
-        if (this.connected && this.client) {
+        const client = await this.getClientForGdps(gdpsId);
+        if (client) {
             try {
-                await this.client.del(`gdps:${gdpsId}:settings`);
+                await client.del(`gdps:${gdpsId}:settings`);
                 ConsoleApi.Log('RedisConfig', `Cache invalidated for ${gdpsId}`);
             } catch (error) {
                 ConsoleApi.Warn('RedisConfig', `Failed to invalidate cache: ${error}`);
@@ -188,11 +204,15 @@ class RedisConfigManager {
     }
 
     async disconnect(): Promise<void> {
-        if (this.client) {
-            await this.client.disconnect();
-            this.connected = false;
-            ConsoleApi.Log('RedisConfig', 'Disconnected from Redis');
+        for (const [gdpsId, client] of this.clients) {
+            try {
+                await client.disconnect();
+                ConsoleApi.Log('RedisConfig', `Disconnected from Redis for ${gdpsId}`);
+            } catch (error) {
+                ConsoleApi.Warn('RedisConfig', `Failed to disconnect Redis client for ${gdpsId}: ${error}`);
+            }
         }
+        this.clients.clear();
     }
 }
 
