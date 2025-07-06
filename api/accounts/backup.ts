@@ -81,9 +81,9 @@ const backupAccount = async (
 		let pass = 0;
 		try {
 			if (passwordOr) {
-				pass = await GeneratePass.isValid(gdpsid, accountID, passwordOr, req);
+				pass = await GeneratePass.isValid(accountID, passwordOr, req);
 			} else if (gjp2Or) {
-				pass = await GeneratePass.isGJP2Valid(gdpsid, accountID, gjp2Or, req);
+				pass = await GeneratePass.isGJP2Valid(accountID, gjp2Or, req);
 			}
 
 			if (pass !== 1) {
@@ -188,7 +188,8 @@ const backupAccount = async (
 			/// <summary>
 			///     Нахера это, можно вопрос? Ну то есть хватит и перезаписи одного бэкапа
 			/// </summary>
-			const MAX_BACKUPS = getSettings(gdpsid).maxAccountBackups || 5;
+			const settings = await getSettings(gdpsid);
+			const MAX_BACKUPS = settings.maxAccountBackups || 5;
 			const files = await fs.readdir(userBackupDir);
 
 			// Фильтруем только файлы формата backup_*.dat

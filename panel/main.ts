@@ -4,7 +4,7 @@ import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { Request } from 'express';
-import db from '../serverconf/db';
+import threadConnection from '../serverconf/db';
 import ApiLib from '../api/lib/apiLib';
 import FixIp from '../api/lib/fixIp';
 import ConsoleApi from '../modules/console-api';
@@ -44,6 +44,7 @@ class Panel {
      * @returns Account ID or undefined
      */
     static async account(action: string, username: string): Promise<number | undefined> {
+        const db = await threadConnection('main');
         if (action === "activate") {
             const query = `
             UPDATE accounts 
@@ -92,6 +93,7 @@ class Panel {
      * @returns Number of attempts
      */
     static async attemptsFromIP(req: Request): Promise<number> {
+        const db = await threadConnection('main');
         const ip = await FixIp.getIP(req);
         const newtime = Math.floor(Date.now() / 1000) - (60 * 60);
 
@@ -119,6 +121,7 @@ class Panel {
      * @param req - Express request (optional)
      */
     static async assignModIPs(accountID: number | string, ip: string, req?: Request): Promise<void> {
+        const db = await threadConnection('main');
         const modipCategory = await ApiLib.getMaxValuePermission(accountID, "modipCategory");
 
         if (typeof modipCategory === 'number' && modipCategory > 0) {
@@ -147,6 +150,7 @@ class Panel {
      * @param req - Express request
      */
     static async logInvalidAttemptFromIP(accid: number | string, req: Request): Promise<void> {
+        const db = await threadConnection('main');
         const ip = await FixIp.getIP(req);
         const time = Math.floor(Date.now() / 1000);
 
@@ -164,6 +168,7 @@ class Panel {
      * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
      */
     static async isGJP2Valid(accid: number | string, gjp2: string, req: Request): Promise<number> {
+        const db = await threadConnection('main');
         if (await this.tooManyAttemptsFromIP(req)) {
             return -1;
         }
@@ -197,6 +202,7 @@ class Panel {
      * @returns Database result
      */
     static async assignGJP2(accid: number | string, pass: string, req: Request = {} as Request): Promise<any> {
+        const db = await threadConnection('main');
         const query = "UPDATE accounts SET gjp2 = ? WHERE accountID = ?";
         const gjp2 = await this.GJP2hash(pass, req);
 
@@ -217,6 +223,7 @@ class Panel {
      * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
      */
     static async isGJP2ValidUsrname(userName: string, gjp2: string, req: Request): Promise<number> {
+        const db = await threadConnection('main');
         try {
             const [rows] = await db.execute<RowDataPacket[]>(
                 "SELECT accountID FROM accounts WHERE userName LIKE ?",
@@ -243,6 +250,7 @@ class Panel {
      * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
      */
     static async isValid(accid: number | string, pass: string, req: Request): Promise<number> {
+        const db = await threadConnection('main');
         const [rows] = await db.execute<RowDataPacket[]>(
             "SELECT accountID, salt, password, isActive, gjp2 FROM accounts WHERE accountID = ?",
             [accid]
@@ -270,6 +278,7 @@ class Panel {
      * @returns 1 if valid, 0 if invalid, -1 if too many attempts, -2 if account inactive
      */
     static async isValidUsrname(userName: string, pass: string, req: Request): Promise<number> {
+        const db = await threadConnection('main');
         const [rows] = await db.execute<RowDataPacket[]>(
             "SELECT accountID FROM accounts WHERE userName LIKE ?",
             [userName]
@@ -287,6 +296,7 @@ class Panel {
      * @returns Success status and song ID
      */
     static async songReupNG(result: string): Promise<string> {
+        const db = await threadConnection('main');
         try {
             const resultarray = result.split('~|~');
             const uploadDate = Math.floor(Date.now() / 1000);
@@ -330,6 +340,7 @@ class Panel {
      * @returns Success status and song ID
      */
     static async songReupZM(result: string): Promise<string> {
+        const db = await threadConnection('main');
         // Helper to check if song already exists
         const checkSong = async (resultarray: string[]): Promise<number> => {
             const [rows] = await db.query<RowDataPacket[]>(
@@ -391,6 +402,7 @@ class Panel {
      * @returns Level name or "Unknown"
      */
     static async getLevelName(levelID: number | string): Promise<string> {
+        const db = await threadConnection('main');
         try {
             const [rows] = await db.query<RowDataPacket[]>(
                 "SELECT levelName FROM levels WHERE levelID = ?",
@@ -414,6 +426,7 @@ class Panel {
      * @returns Map pack data
      */
     static async getMappackData(packID: number | string): Promise<MapPackData> {
+        const db = await threadConnection('main');
         try {
             const [rows] = await db.query<RowDataPacket[]>(
                 "SELECT name, levels, stars, coins, difficulty, rgbcolors FROM mappacks WHERE ID = ?",
@@ -459,6 +472,7 @@ class Panel {
      */
     static async getGauntletData(packID: number | string): Promise<GauntletData> {
         try {
+            const db = await threadConnection('main');
             const [rows] = await db.query<RowDataPacket[]>(
                 "SELECT level1, level2, level3, level4, level5 FROM gauntlets WHERE ID = ?",
                 [packID]
@@ -500,6 +514,7 @@ class Panel {
      */
     static async getUsernameByID(accountID: number | string): Promise<string | undefined> {
         try {
+            const db = await threadConnection('main');
             const [rows] = await db.execute<RowDataPacket[]>(
                 'SELECT userName FROM accounts WHERE accountID = ?',
                 [accountID]
@@ -523,6 +538,7 @@ class Panel {
      */
     static async getIDbyUsername(userName: string): Promise<number | undefined> {
         try {
+            const db = await threadConnection('main');
             const [rows] = await db.execute<RowDataPacket[]>(
                 'SELECT accountID FROM accounts WHERE LOWER(userName) = LOWER(?)',
                 [userName]
@@ -546,6 +562,7 @@ class Panel {
      */
     static async checkAccountLegit(username: string): Promise<boolean> {
         try {
+            const db = await threadConnection('main');
             const [rows] = await db.execute<RowDataPacket[]>(
                 'SELECT LOWER(userName) FROM accounts WHERE LOWER(userName) = ?',
                 [username.toLowerCase()]

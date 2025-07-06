@@ -1,5 +1,5 @@
 import threadConnection from './db';
-import { Pool } from 'mysql2/promise';
+import { Pool, QueryResult, FieldPacket } from 'mysql2/promise';
 
 // Temporary proxy for backward compatibility
 // This creates a singleton connection for the default GDPS
@@ -16,14 +16,14 @@ async function getConnection(): Promise<Pool> {
 
 // Export a proxy object that mimics the old db interface
 const dbProxy = {
-    async execute(sql: string, values?: any) {
+    async execute<T extends QueryResult>(sql: string, values?: any): Promise<[T, FieldPacket[]]> {
         const conn = await getConnection();
-        return conn.execute(sql, values);
+        return conn.execute<T>(sql, values);
     },
     
-    async query(sql: string, values?: any) {
+    async query<T extends QueryResult>(sql: string, values?: any): Promise<[T, FieldPacket[]]> {
         const conn = await getConnection();
-        return conn.query(sql, values);
+        return conn.query<T>(sql, values);
     }
 };
 

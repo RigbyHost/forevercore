@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
-import db from '../../../serverconf/db';
+import threadConnection from '../../../serverconf/db';
 import ExploitPatch from '../../lib/exploitPatch';
 import ApiLib from '../../lib/apiLib';
 import GJPCheck from '../../lib/GJPCheck';
@@ -13,6 +13,7 @@ import ConsoleApi from '../../../modules/console-api';
  */
 const deleteList = async (req: Request): Promise<string> => {
   try {
+    const db = await threadConnection('main');
     // Authenticate user
     const accountID = await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req);
     const listID = await ExploitPatch.number(req.body.listID);

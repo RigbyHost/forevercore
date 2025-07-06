@@ -122,7 +122,7 @@ class RedisConfigManager {
         if (this.connected && this.client) {
             try {
                 const cached = await this.client.get(cacheKey);
-                if (cached) {
+                if (cached && typeof cached === 'string') {
                     ConsoleApi.Debug('RedisConfig', `Settings loaded from cache for ${gdpsId}`);
                     return JSON.parse(cached) as ServerSettings;
                 }

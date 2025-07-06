@@ -64,9 +64,9 @@ const syncAccount = async (
 		let pass = 0;
 		try {
 			if (passwordStr) {
-				pass = await GeneratePass.isValid(gdpsid, accountID, passwordStr, req);
+				pass = await GeneratePass.isValid(accountID, passwordStr, req);
 			} else if (gjp2Str) {
-				pass = await GeneratePass.isGJP2Valid(gdpsid, accountID, gjp2Str, req);
+				pass = await GeneratePass.isGJP2Valid(accountID, gjp2Str, req);
 			}
 
 			if (pass !== 1) {

@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../../serverconf/db';
+import threadConnection from '../../../serverconf/db';
 import ExploitPatch from '../../lib/exploitPatch';
 import GJPCheck from '../../lib/GJPCheck';
 import ConsoleApi from '../../../modules/console-api';
@@ -12,6 +12,7 @@ import ConsoleApi from '../../../modules/console-api';
  */
 const uploadList = async (req: Request): Promise<string> => {
   try {
+    const db = await threadConnection('main');
     // Authenticate user
     const accountID = await GJPCheck.getAccountIDOrDie(req.body.accountID, req.body.gjp2, req.body.gjp, req);
     const listID = parseInt(ExploitPatch.number(req.body.listID));

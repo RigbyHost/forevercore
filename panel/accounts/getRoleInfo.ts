@@ -1,5 +1,5 @@
 import { Connection, RowDataPacket } from 'mysql2/promise';
-import db from "../../serverconf/db";
+import threadConnection from "../../serverconf/db";
 import ConsoleApi from "../../modules/console-api";
 
 /**
@@ -43,6 +43,7 @@ const DEFAULT_ROLE: RoleInfo = {
  */
 async function getRoleInfo(accountID: number | string): Promise<RoleInfo> {
   try {
+    const db = await threadConnection('main');
     // Получаем ID роли из таблицы назначения ролей
     const [roleAssignRows] = await db.execute<RoleAssign[]>(
       'SELECT roleID FROM roleassign WHERE accountID = ?',
@@ -92,6 +93,7 @@ async function getRoleInfo(accountID: number | string): Promise<RoleInfo> {
  */
 export async function getAllUserRoles(accountID: number | string): Promise<RoleInfo[]> {
   try {
+    const db = await threadConnection('main');
     // Получаем все ID ролей пользователя
     const [roleAssignRows] = await db.execute<RoleAssign[]>(
       'SELECT roleID FROM roleassign WHERE accountID = ?',
