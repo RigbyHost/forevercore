@@ -169,68 +169,147 @@ EOF
             when {
                 expression { params.RUN_TESTS == true }
             }
-            steps {
-                script {
-                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
-                    container(containerName) {
-                        sh '''
-                        echo '>>> Running tests...'
-                        export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
-                        
-                        # TypeScript compilation check
-                        echo 'Checking TypeScript compilation...'
-                        if command -v bun >/dev/null 2>&1; then
-                            echo 'Using Bun for TypeScript compilation'
-                            if [ -f node_modules/.bin/tsc ]; then
-                                bun x tsc --noEmit
-                            else
-                                echo 'TypeScript not found, skipping compilation check'
-                            fi
-                        else
-                            echo 'Using npm for TypeScript compilation'
-                            if [ -f node_modules/.bin/tsc ]; then
-                                npx tsc --noEmit
-                            else
-                                echo 'TypeScript not found, skipping compilation check'
-                            fi
-                        fi
-                        
-                        # Run linting if available
-                        echo 'Checking for linting scripts...'
-                        if command -v bun >/dev/null 2>&1; then
-                            if bun run --silent lint >/dev/null 2>&1; then
-                                echo 'Running linting with Bun...'
-                                bun run lint
-                            else
-                                echo 'No lint script found'
-                            fi
-                        else
-                            if npm run lint --silent >/dev/null 2>&1; then
-                                echo 'Running linting with npm...'
-                                npm run lint
-                            else
-                                echo 'No lint script found'
-                            fi
-                        fi
-                        
-                        # Run unit tests if available
-                        echo 'Checking for test scripts...'
-                        if command -v bun >/dev/null 2>&1; then
-                            if bun run --silent test >/dev/null 2>&1; then
-                                echo 'Running tests with Bun...'
-                                bun run test
-                            else
-                                echo 'No test script found'
-                            fi
-                        else
-                            if npm run test --silent >/dev/null 2>&1; then
-                                echo 'Running tests with npm...'
-                                npm test
-                            else
-                                echo 'No test script found'
-                            fi
-                        fi
-                        '''
+            parallel {
+                stage('Test API') {
+                    steps {
+                        script {
+                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                            container(containerName) {
+                                sh '''
+                                echo '>>> Testing ForeverCore API...'
+                                export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
+                                
+                                # TypeScript compilation check for API only
+                                echo 'Checking API TypeScript compilation...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    echo 'Using Bun for TypeScript compilation'
+                                    if [ -f node_modules/.bin/tsc ]; then
+                                        bun x tsc --noEmit
+                                    else
+                                        echo 'TypeScript not found, skipping compilation check'
+                                    fi
+                                else
+                                    echo 'Using npm for TypeScript compilation'
+                                    if [ -f node_modules/.bin/tsc ]; then
+                                        npx tsc --noEmit
+                                    else
+                                        echo 'TypeScript not found, skipping compilation check'
+                                    fi
+                                fi
+                                
+                                # Run API linting if available
+                                echo 'Checking for API linting scripts...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    if bun run --silent lint >/dev/null 2>&1; then
+                                        echo 'Running API linting with Bun...'
+                                        bun run lint
+                                    else
+                                        echo 'No lint script found for API'
+                                    fi
+                                else
+                                    if npm run lint --silent >/dev/null 2>&1; then
+                                        echo 'Running API linting with npm...'
+                                        npm run lint
+                                    else
+                                        echo 'No lint script found for API'
+                                    fi
+                                fi
+                                
+                                # Run API unit tests if available
+                                echo 'Checking for API test scripts...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    if bun run --silent test >/dev/null 2>&1; then
+                                        echo 'Running API tests with Bun...'
+                                        bun run test
+                                    else
+                                        echo 'No test script found for API'
+                                    fi
+                                else
+                                    if npm run test --silent >/dev/null 2>&1; then
+                                        echo 'Running API tests with npm...'
+                                        npm test
+                                    else
+                                        echo 'No test script found for API'
+                                    fi
+                                fi
+                                '''
+                            }
+                        }
+                    }
+                }
+                
+                stage('Test Admin Panel') {
+                    steps {
+                        script {
+                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                            container(containerName) {
+                                sh '''
+                                echo '>>> Testing Admin Panel...'
+                                export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
+                                
+                                cd panelui
+                                
+                                # Install panelui dependencies
+                                echo 'Installing Admin Panel dependencies...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    echo 'Using Bun for panelui dependencies'
+                                    bun install --frozen-lockfile
+                                else
+                                    echo 'Using npm for panelui dependencies'
+                                    if [ ! -f package-lock.json ] || ! npm ci --dry-run >/dev/null 2>&1; then
+                                        echo 'Generating fresh package-lock.json for panelui...'
+                                        npm install
+                                    else
+                                        npm ci
+                                    fi
+                                fi
+                                
+                                # TypeScript compilation check for panelui
+                                echo 'Checking Admin Panel TypeScript compilation...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    if [ -f node_modules/.bin/tsc ]; then
+                                        bun x tsc --noEmit
+                                    else
+                                        echo 'TypeScript not found in panelui, skipping compilation check'
+                                    fi
+                                else
+                                    if [ -f node_modules/.bin/tsc ]; then
+                                        npx tsc --noEmit
+                                    else
+                                        echo 'TypeScript not found in panelui, skipping compilation check'
+                                    fi
+                                fi
+                                
+                                # Run panelui linting if available
+                                echo 'Checking for Admin Panel linting scripts...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    if bun run --silent lint >/dev/null 2>&1; then
+                                        echo 'Running Admin Panel linting with Bun...'
+                                        bun run lint
+                                    else
+                                        echo 'No lint script found for Admin Panel'
+                                    fi
+                                else
+                                    if npm run lint --silent >/dev/null 2>&1; then
+                                        echo 'Running Admin Panel linting with npm...'
+                                        npm run lint
+                                    else
+                                        echo 'No lint script found for Admin Panel'
+                                    fi
+                                fi
+                                
+                                # Build test for panelui
+                                echo 'Testing Admin Panel build...'
+                                if command -v bun >/dev/null 2>&1; then
+                                    echo 'Building Admin Panel with Bun...'
+                                    bun run build
+                                else
+                                    echo 'Building Admin Panel with npm...'
+                                    npm run build
+                                fi
+                                '''
+                            }
+                        }
                     }
                 }
             }
