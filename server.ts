@@ -12,6 +12,7 @@ import minimist from "minimist";
 
 import threadConnection from "./serverconf/db";
 import { getSettings } from "./serverconf/settings";
+import envConfig from "./serverconf/env-config";
 import ConsoleApi from "./modules/console-api";
 import ApiRouter from "./routes/api-router";
 import { createAllHandlers } from "./routes/handlers";
@@ -144,8 +145,13 @@ app.use((req, res) => {
 	res.status(404).render("errors/404", { url: req.originalUrl });
 });
 
+// Log environment configuration in development
+if (envConfig.isDevelopment()) {
+	envConfig.logConfiguration();
+}
+
 // Start server
-const PORT = 3010;
+const PORT = envConfig.get('PORT');
 
 app.listen(PORT, () => {
 	ConsoleApi.Log$LightGreen("main", `GDPS Engine started on port ${PORT}!`);

@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # ForeverCore GDPS Application
+  forevercore:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=development
+      - PORT=3010
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=gdps
+      - DB_PASSWORD=gdps_password
+      - DB_NAME=gdps
+      - REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GDPS_NAME=ForeverCore GDPS
+      - GDPS_ID=main
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+      - ./GDPS_DATA:/app/GDPS_DATA
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    networks:
+      - gdps-network
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: gdps
+      MYSQL_USER: gdps
+      MYSQL_PASSWORD: gdps_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    command: redis-server --appendonly yes
+
+  # phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: gdps
+      PMA_PASSWORD: gdps_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    networks:
+      - gdps-network
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - gdps-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  gdps-network:
+    driver: bridge

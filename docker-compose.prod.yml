@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # ForeverCore GDPS Application (Production)
+  forevercore:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-gdps}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-gdps}
+      - REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GDPS_NAME=${GDPS_NAME:-ForeverCore GDPS}
+      - GDPS_ID=${GDPS_ID:-main}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - LOG_LEVEL=warn
+    volumes:
+      - ./logs:/app/logs
+      - ./GDPS_DATA:/app/GDPS_DATA
+      - ./config:/app/config
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ForeverCore with Bun (Alternative)
+  forevercore-bun:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: bun-production
+    ports:
+      - "3011:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-gdps}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-gdps}
+      - REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GDPS_NAME=${GDPS_NAME:-ForeverCore GDPS}
+      - GDPS_ID=${GDPS_ID:-main}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - LOG_LEVEL=warn
+    volumes:
+      - ./logs:/app/logs
+      - ./GDPS_DATA:/app/GDPS_DATA
+      - ./config:/app/config
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    profiles:
+      - bun
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.15'
+
+  # MySQL Database (Production)
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-gdps}
+      MYSQL_USER: ${DB_USER:-gdps}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/backups:/backups
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    command: --default-authentication-plugin=mysql_native_password
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Redis Cache (Production)
+  redis:
+    image: redis:7-alpine
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - forevercore
+    restart: unless-stopped
+    networks:
+      - gdps-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+
+  # Database backup service
+  db-backup:
+    image: mysql:8.0
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${DB_USER:-gdps}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-gdps}
+    volumes:
+      - ./database/backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    depends_on:
+      - mysql
+    restart: "no"
+    networks:
+      - gdps-network
+    profiles:
+      - backup
+    command: /bin/bash /backup.sh
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  gdps-network:
+    driver: bridge
