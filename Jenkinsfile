@@ -46,14 +46,15 @@ spec:
         NODE_ENV = "production"
         
         // Database configuration
-        DB_HOST = "mysql"
+        DB_HOST = "mysql.mysql.svc.cluster.local"
         DB_USER = "gdps"
         DB_NAME = "gdps"
         DB_PORT = "3306"
         
         // Redis configuration
-        REDIS_HOST = "redis"
+        REDIS_HOST = "redis.default.svc.cluster.local"
         REDIS_PORT = "6379"
+        REDIS_DATABASE = "7"
         REDIS_ENABLED = "true"
         
         // Sensitive credentials (should be stored in Jenkins credentials)
@@ -256,6 +257,7 @@ data:
   DB_PORT: "${DB_PORT}"
   REDIS_HOST: "${REDIS_HOST}"
   REDIS_PORT: "${REDIS_PORT}"
+  REDIS_DATABASE: "${REDIS_DATABASE}"
   REDIS_ENABLED: "${REDIS_ENABLED}"
 EOF
 """
