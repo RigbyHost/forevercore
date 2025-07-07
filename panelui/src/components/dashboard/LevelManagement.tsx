@@ -46,7 +46,7 @@ interface Level {
 export default function LevelManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
-  const [filterDifficulty, setFilterDifficulty] = useState("all")
+  const [filterDifficulty] = useState("all")
 
   // Mock data
   const levels: Level[] = [

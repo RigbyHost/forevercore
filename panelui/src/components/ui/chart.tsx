@@ -125,6 +125,11 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
+    payload?: unknown[]
+    label?: string
+    labelFormatter?: (value: unknown) => string
+    formatter?: (value: unknown) => string
+    color?: string
   }) {
   const { config } = useChart()
 
@@ -134,7 +139,7 @@ function ChartTooltipContent({
     }
 
     const [item] = payload
-    const key = `${labelKey || item?.dataKey || item?.name || "value"}`
+    const key = `${labelKey || (item as any)?.dataKey || (item as any)?.name || "value"}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
       !labelKey && typeof label === "string"

@@ -1,6 +1,5 @@
 // src/app/layout.tsx
 import { Unbounded as FontSans } from "next/font/google";
-import { Inter as FontBody } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";

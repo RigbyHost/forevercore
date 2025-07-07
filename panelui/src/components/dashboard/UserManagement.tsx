@@ -45,7 +45,7 @@ interface User {
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRole, setFilterRole] = useState("all")
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [filterStatus] = useState("all")
 
   // Mock data
   const users: User[] = [

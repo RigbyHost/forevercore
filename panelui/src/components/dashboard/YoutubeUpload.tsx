@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Youtube, Music, CheckCircle2, AlertTriangle, Copy, Search } from 'lucide-react';
+import { Youtube, Music, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Toaster, toast } from 'react-hot-toast';
-import { Skeleton } from '@/components/ui/skeleton';
 
 // Схема валидации формы
 const formSchema = z.object({
@@ -96,7 +96,7 @@ export default function YoutubeUploadForm({ captchaKey }: YoutubeUploadProps) {
         }
       }
     };
-  }, [captchaKey]);
+  }, [captchaKey, initCaptcha]);
 
   // Получение информации о видео для автозаполнения
   const getVideoInfo = async (url: string) => {
@@ -293,10 +293,11 @@ export default function YoutubeUploadForm({ captchaKey }: YoutubeUploadProps) {
               {videoThumbnail && (
                 <div className="rounded-md overflow-hidden border border-zinc-800 bg-zinc-800/50">
                   <div className="relative pb-9/16">
-                    <img 
+                    <Image 
                       src={videoThumbnail} 
                       alt="Предпросмотр видео" 
                       className="absolute inset-0 w-full h-full object-cover"
+                      fill
                     />
                   </div>
                   <div className="p-2 text-xs text-zinc-300 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -424,7 +425,7 @@ export default function YoutubeUploadForm({ captchaKey }: YoutubeUploadProps) {
 declare global {
   interface Window {
     hcaptcha: {
-      render: (containerId: string, options: any) => void;
+      render: (containerId: string, options: Record<string, unknown>) => void;
       reset: () => void;
     };
   }

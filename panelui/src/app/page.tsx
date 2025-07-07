@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { 
-  Activity, 
-  BarChart3, 
   Users, 
   Music, 
   Layers, 
@@ -14,7 +12,6 @@ import {
   UserCog, 
   Key,
   Trash2,
-  LogOut,
   ChevronRight,
   Download,
   Upload
@@ -23,8 +20,6 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 import Sidebar from "@/components/dashboard/SideBar";
@@ -41,61 +36,30 @@ import DeleteAccount from "@/components/dashboard/DeleteAccount";
 import SongList from "@/components/dashboard/MusicorIdk";
 import YoutubeUploadForm from "@/components/dashboard/YoutubeUpload";
 
-interface DashboardProps {
-  userName: string;
-  accountID: string;
-  captchaKey: string;
-  gdpsName: string;
-  advancedPanel: number;
-  adminPanel: number;
-  roleName: string;
-  zemuAvailable: number;
-  serverMemory: {
-    allocatedMemory: number;
-    usedMemory: number;
-    heapTotal: number;
-    heapUsed: number;
-    bufferMemory: number;
-    machineTotalMemory: number;
+export default function Dashboard() {
+  // Mock data - in a real app this would come from API/server state
+  const userName = "Admin";
+  const accountID = "1";
+  const captchaKey = "demo-key";
+  const gdpsName = "GDPS Server";
+  const advancedPanel = 1;
+  const adminPanel = 1;
+  const roleName = "Admin";
+  const zemuAvailable = 1;
+  const serverMemory = {
+    allocatedMemory: 512,
+    usedMemory: 256,
+    heapTotal: 1024,
+    heapUsed: 512,
+    bufferMemory: 64,
+    machineTotalMemory: 8192,
   };
-}
-
-export default function Dashboard({
-  userName,
-  accountID,
-  captchaKey,
-  gdpsName,
-  advancedPanel,
-  adminPanel,
-  roleName,
-  zemuAvailable,
-  serverMemory
-}: DashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [activeAccountTab, setActiveAccountTab] = useState("profile");
   const [activeMusicTab, setActiveMusicTab] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
   
   // Демо-данные для графиков
-  const userActivityData = [
-    { name: "Янв", value: 400 },
-    { name: "Фев", value: 300 },
-    { name: "Мар", value: 600 },
-    { name: "Апр", value: 800 },
-    { name: "Май", value: 700 },
-    { name: "Июн", value: 900 },
-    { name: "Июл", value: 1100 },
-  ];
-
-  const levelUploadData = [
-    { name: "Янв", value: 240 },
-    { name: "Фев", value: 180 },
-    { name: "Мар", value: 320 },
-    { name: "Апр", value: 280 },
-    { name: "Май", value: 450 },
-    { name: "Июн", value: 380 },
-    { name: "Июл", value: 520 },
-  ];
 
   // Демо-данные для списка музыки
   const demoSongs = [

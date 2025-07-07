@@ -79,7 +79,7 @@ export default function DeleteAccount({ accountID, userName, captchaKey }: Delet
         }
       }
     };
-  }, [captchaKey]);
+  }, [captchaKey, initCaptcha]);
 
   // Эффект для обратного отсчёта перед перенаправлением
   React.useEffect(() => {
@@ -273,7 +273,7 @@ export default function DeleteAccount({ accountID, userName, captchaKey }: Delet
 declare global {
   interface Window {
     hcaptcha: {
-      render: (containerId: string, options: any) => void;
+      render: (containerId: string, options: Record<string, unknown>) => void;
       reset: () => void;
     };
   }

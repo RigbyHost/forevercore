@@ -26,7 +26,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ChangePasswordForm({ accountID, userName }) {
+export default function ChangePasswordForm({ accountID, userName }: { accountID: string; userName: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);

@@ -21,7 +21,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ChangeUsernameForm({ currentUsername }) {
+export default function ChangeUsernameForm({ currentUsername }: { currentUsername: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'error-too-long' | 'error-too-short'>('idle');
 

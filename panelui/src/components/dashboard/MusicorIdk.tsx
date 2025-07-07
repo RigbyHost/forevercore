@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Music, Play, Pause, ExternalLink, Download, Info } from 'lucide-react';
+import { Music, Play, Pause, Download, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface Song {
@@ -109,7 +108,7 @@ export default function SongList({ songs, currentPage, totalPages }: SongListPro
     const maxVisiblePages = 5;
     
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);

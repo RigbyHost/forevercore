@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -19,7 +21,8 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function LoginPage({ gdpsName = 'GDPS Server' }) {
+export default function LoginPage() {
+  const gdpsName = 'GDPS Server';
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
