@@ -1,5 +1,5 @@
 # Multi-stage build for ForeverCore GDPS
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -51,13 +51,14 @@ COPY . .
 # RUN npm run build
 
 # ===== PRODUCTION STAGE =====
-FROM node:18-alpine AS production
+FROM node:22 AS production
 
 # Install runtime dependencies only
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     curl \
     tzdata \
-    dumb-init
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set timezone
 ENV TZ=UTC
