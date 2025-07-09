@@ -100,13 +100,14 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "-r", "ts-node/register", "-r", "tsconfig-paths/register", "server.ts"]
 
 # ===== BUN VARIANT =====
-FROM oven/bun:1.0-alpine AS bun-production
+FROM oven/bun:1.1-alpine AS bun-production
 
-# Install system dependencies
+# Install system dependencies including bash/sh
 RUN apk add --no-cache \
     curl \
     tzdata \
-    dumb-init
+    dumb-init \
+    bash
 
 # Set timezone
 ENV TZ=UTC

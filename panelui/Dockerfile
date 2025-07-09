@@ -15,7 +15,6 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY bun.lock* ./
 
 # ===== DEPENDENCIES STAGE =====
 FROM base AS deps
@@ -105,10 +104,10 @@ RUN adduser -S nextjs -u 1001
 WORKDIR /app
 
 # Copy package files
-COPY package*.json bun.lock* ./
+COPY package*.json ./
 
 # Install dependencies with Bun
-RUN bun install --frozen-lockfile --production
+RUN bun install --production
 
 # Copy source code
 COPY . .
