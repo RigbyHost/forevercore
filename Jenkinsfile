@@ -289,7 +289,7 @@ EOF
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = '--no-cache'
+                                def cacheFlag = '--cache=false'
                                 
                                 sh """
                                 echo '>>> Building Docker image with Node.js runtime...'
@@ -314,7 +314,7 @@ EOF
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = '--no-cache'
+                                def cacheFlag = '--cache=false'
                                 
                                 sh """
                                 echo '>>> Building Admin Panel Docker image...'
