@@ -41,9 +41,9 @@ spec:
         DOCKER_REGISTRY = "registry.forever-gdps.host"
         IMAGE_NAME = "forevercore-gdps"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        NAMESPACE = "gdps"
+        NAMESPACE = "apps"
         APP_NAME = "forevercore"
-        DOMAIN = "gdps.forever-gdps.host"
+        DOMAIN = "n01.forever-gdps.host"
         
         // Application configuration
         GDPS_NAME = "ForeverCore GDPS"
@@ -71,28 +71,6 @@ spec:
         ADMIN_EMAIL = credentials('gdps-admin-email')
     }
 
-    parameters {
-        choice(
-            name: 'DEPLOYMENT_TARGET',
-            choices: ['development', 'staging', 'production'],
-            description: 'Select deployment target'
-        )
-        choice(
-            name: 'RUNTIME',
-            choices: ['node', 'bun'],
-            description: 'Select JavaScript runtime'
-        )
-        booleanParam(
-            name: 'RUN_TESTS',
-            defaultValue: true,
-            description: 'Run tests before deployment'
-        )
-        booleanParam(
-            name: 'SKIP_CACHE',
-            defaultValue: false,
-            description: 'Skip Docker build cache'
-        )
-    }
 
     stages {
         stage('Checkout') {
@@ -108,8 +86,7 @@ spec:
         stage('Setup Environment') {
             steps {
                 script {
-                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
-                    container(containerName) {
+                    container('node') {
                         sh '''
                         echo '>>> Setting up environment...'
                         if command -v bun >/dev/null 2>&1; then
@@ -136,13 +113,9 @@ EOF
         }
 
         stage('Install Dependencies') {
-            when {
-                expression { params.RUN_TESTS == true }
-            }
             steps {
                 script {
-                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
-                    container(containerName) {
+                    container('node') {
                         sh '''
                         echo '>>> Installing dependencies...'
                         export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
@@ -166,15 +139,11 @@ EOF
         }
 
         stage('Run Tests') {
-            when {
-                expression { params.RUN_TESTS == true }
-            }
             parallel {
                 stage('Test API') {
                     steps {
                         script {
-                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
-                            container(containerName) {
+                            container('node') {
                                 sh '''
                                 echo '>>> Testing ForeverCore API...'
                                 export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
@@ -241,8 +210,7 @@ EOF
                 stage('Test Admin Panel') {
                     steps {
                         script {
-                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
-                            container(containerName) {
+                            container('node') {
                                 sh '''
                                 echo '>>> Testing Admin Panel...'
                                 export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
@@ -318,13 +286,10 @@ EOF
         stage('Build Docker Images') {
             parallel {
                 stage('Build Node.js API') {
-                    when {
-                        expression { params.RUNTIME == 'node' || params.RUNTIME == 'both' }
-                    }
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = params.SKIP_CACHE ? '--no-cache' : '--cache=true'
+                                def cacheFlag = '--cache=true'
                                 
                                 sh """
                                 echo '>>> Building Docker image with Node.js runtime...'
@@ -345,47 +310,18 @@ EOF
                     }
                 }
                 
-                stage('Build Bun API') {
-                    when {
-                        expression { params.RUNTIME == 'bun' }
-                    }
-                    steps {
-                        container('kaniko') {
-                            script {
-                                def cacheFlag = params.SKIP_CACHE ? '--no-cache' : '--cache=true'
-                                
-                                sh """
-                                echo '>>> Building Docker image with Bun runtime...'
-                                
-                                /kaniko/executor --context=dir://. \\
-                                  --dockerfile=Dockerfile \\
-                                  --target=bun-production \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-bun \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-bun \\
-                                  ${cacheFlag} \\
-                                  --verbosity=info \\
-                                  --build-arg NODE_ENV=${NODE_ENV} \\
-                                  --build-arg BUILD_NUMBER=${BUILD_NUMBER} \\
-                                  --build-arg GIT_COMMIT=${GIT_COMMIT_SHORT}
-                                """
-                            }
-                        }
-                    }
-                }
-                
                 stage('Build Admin Panel') {
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = params.SKIP_CACHE ? '--no-cache' : '--cache=true'
-                                def adminRuntime = params.RUNTIME == 'bun' ? 'bun-production' : 'production'
+                                def cacheFlag = '--cache=true'
                                 
                                 sh """
                                 echo '>>> Building Admin Panel Docker image...'
                                 
                                 /kaniko/executor --context=dir://panelui \\
                                   --dockerfile=panelui/Dockerfile \\
-                                  --target=${adminRuntime} \\
+                                  --target=production \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG} \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:latest \\
                                   ${cacheFlag} \\
@@ -405,17 +341,16 @@ EOF
             steps {
                 container('kubectl') {
                     script {
-                        def imageTag = params.RUNTIME == 'bun' ? "${IMAGE_TAG}-bun" : "${IMAGE_TAG}-node"
-                        def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
+                        def imageTag = "${IMAGE_TAG}-node"
+                        def targetNamespace = "${NAMESPACE}"
                         
-                        // Ensure namespaces exist
+                        // Verify namespace access
                         sh """
-                        echo '>>> Setting up namespaces and RBAC...'
-                        kubectl apply -f k8s/namespaces.yaml || echo 'Namespaces may already exist'
+                        echo '>>> Setting up RBAC...'
                         kubectl apply -f k8s/jenkins-rbac.yaml || echo 'RBAC may already exist'
                         
                         echo '>>> Verifying namespace access...'
-                        kubectl get namespace ${targetNamespace} || kubectl create namespace ${targetNamespace}
+                        kubectl get namespace ${targetNamespace}
                         kubectl auth can-i get pods -n ${targetNamespace} || echo 'Warning: Limited permissions'
                         """
 
@@ -434,8 +369,7 @@ data:
   BUILD_NUMBER: "${BUILD_NUMBER}"
   GIT_COMMIT: "${GIT_COMMIT_SHORT}"
   BUILD_TIME: "${BUILD_TIME}"
-  DEPLOYMENT_TARGET: "${params.DEPLOYMENT_TARGET}"
-  RUNTIME: "${params.RUNTIME}"
+  DEPLOYMENT_TARGET: "production"
   DB_HOST: "${DB_HOST}"
   DB_USER: "${DB_USER}"
   DB_NAME: "${DB_NAME}"
@@ -477,7 +411,6 @@ metadata:
   labels:
     app: ${APP_NAME}
     version: "${IMAGE_TAG}"
-    runtime: "${params.RUNTIME}"
 spec:
   replicas: 2
   selector:
@@ -659,8 +592,7 @@ EOF
 """
 
                         // Create Ingress
-                        def domainSuffix = params.DEPLOYMENT_TARGET == 'production' ? '' : "-${params.DEPLOYMENT_TARGET}"
-                        def fullDomain = "${params.DEPLOYMENT_TARGET == 'production' ? 'gdps' : params.DEPLOYMENT_TARGET + '-gdps'}.forever-gdps.host"
+                        def fullDomain = "n01.forever-gdps.host"
                         
                         sh """
 cat <<EOF | kubectl apply -f -
@@ -710,7 +642,7 @@ EOF
             steps {
                 container('kubectl') {
                     script {
-                        def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
+                        def targetNamespace = "${NAMESPACE}"
                         
                         sh """
                         echo '>>> Waiting for deployments to be ready...'
@@ -734,7 +666,7 @@ EOF
             steps {
                 container('kubectl') {
                     script {
-                        def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
+                        def targetNamespace = "${NAMESPACE}"
                         def fullDomain = "${params.DEPLOYMENT_TARGET == 'production' ? 'gdps' : params.DEPLOYMENT_TARGET + '-gdps'}.forever-gdps.host"
                         
                         sh """
@@ -777,16 +709,15 @@ EOF
         
         success {
             script {
-                def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
-                def fullDomain = "${params.DEPLOYMENT_TARGET == 'production' ? 'gdps' : params.DEPLOYMENT_TARGET + '-gdps'}.forever-gdps.host"
+                def targetNamespace = "${NAMESPACE}"
+                def fullDomain = "n01.forever-gdps.host"
                 
                 echo """
 🎉 ForeverCore GDPS deployed successfully!
 
 📊 Deployment Details:
-   • Environment: ${params.DEPLOYMENT_TARGET}
-   • Runtime: ${params.RUNTIME}
-   • API Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+   • Environment: production
+   • API Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-node
    • Admin Image: ${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG}
    • Namespace: ${targetNamespace}
    • GDPS URL: https://${fullDomain}
