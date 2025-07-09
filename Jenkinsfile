@@ -289,7 +289,7 @@ EOF
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = '--cache=true'
+                                def cacheFlag = '--no-cache'
                                 
                                 sh """
                                 echo '>>> Building Docker image with Node.js runtime...'
@@ -314,7 +314,7 @@ EOF
                     steps {
                         container('kaniko') {
                             script {
-                                def cacheFlag = '--cache=true'
+                                def cacheFlag = '--no-cache'
                                 
                                 sh """
                                 echo '>>> Building Admin Panel Docker image...'
@@ -667,7 +667,7 @@ EOF
                 container('kubectl') {
                     script {
                         def targetNamespace = "${NAMESPACE}"
-                        def fullDomain = "${params.DEPLOYMENT_TARGET == 'production' ? 'gdps' : params.DEPLOYMENT_TARGET + '-gdps'}.forever-gdps.host"
+                        def fullDomain = "n01.forever-gdps.host"
                         
                         sh """
                         echo '>>> Running health checks...'
@@ -737,7 +737,7 @@ EOF
             // Collect debug information
             container('kubectl') {
                 script {
-                    def targetNamespace = "${NAMESPACE}-${params.DEPLOYMENT_TARGET}"
+                    def targetNamespace = "${NAMESPACE}"
                     
                     sh """
                     echo '>>> Collecting debug information...'
