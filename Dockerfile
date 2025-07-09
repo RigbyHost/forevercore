@@ -64,8 +64,8 @@ RUN apt-get update && apt-get install -y \
 ENV TZ=UTC
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S gdps -u 1001
+RUN groupadd -g 1001 nodejs
+RUN useradd -m -u 1001 -g nodejs gdps
 
 # Create app directory
 WORKDIR /app
