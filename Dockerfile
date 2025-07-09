@@ -1,15 +1,14 @@
 # Multi-stage build for ForeverCore GDPS
-FROM node:22-slim AS base
+FROM node:22-alpine AS base
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     python3 \
     make \
     g++ \
     git \
     curl \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    tzdata
 
 # Set timezone
 ENV TZ=UTC
@@ -52,21 +51,20 @@ COPY . .
 # RUN npm run build
 
 # ===== PRODUCTION STAGE =====
-FROM node:22-slim AS production
+FROM node:22-alpine AS production
 
 # Install runtime dependencies only
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     curl \
     tzdata \
-    dumb-init \
-    && rm -rf /var/lib/apt/lists/*
+    dumb-init
 
 # Set timezone
 ENV TZ=UTC
 
 # Create non-root user
-RUN groupadd -g 1001 nodejs
-RUN useradd -m -u 1001 -g nodejs gdps
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S gdps -u 1001
 
 # Create app directory
 WORKDIR /app

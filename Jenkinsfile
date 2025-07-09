@@ -421,7 +421,7 @@ spec:
       labels:
         app: ${APP_NAME}
         version: "${IMAGE_TAG}"
-        runtime: "${params.RUNTIME}"
+        runtime: "node"
     spec:
       containers:
       - name: ${APP_NAME}
