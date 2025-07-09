@@ -52,7 +52,7 @@ COPY . .
 # RUN npm run build
 
 # ===== PRODUCTION STAGE =====
-FROM node:22 AS production
+FROM node:22-slim AS production
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y \
