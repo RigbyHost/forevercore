@@ -63,7 +63,9 @@ WORKDIR /app
 # Copy package.json for production dependencies
 COPY package*.json ./
 ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
-RUN npm ci --only=production && npm cache clean --force
+RUN rm -rf node_modules package-lock.json && \
+    npm ci --only=production && \
+    npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
