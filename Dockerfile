@@ -1,10 +1,12 @@
-# Simple Bun production build for ForeverCore GDPS
+# ForeverCore GDPS Hosting Platform - Modern TypeScript with Fastify
 FROM oven/bun:1.2-alpine AS production
 
-# Install only essential system dependencies with retry logic
+# Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
             python3 \
+            mysql-client \
+            redis \
             curl \
             tzdata \
             dumb-init && break || \
@@ -16,27 +18,39 @@ ENV TZ=UTC
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S gdps -u 1001
+RUN adduser -S forevercore -u 1001
 
 # Create app directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
+# Copy new package configuration
+COPY package.remake.json ./package.json
+COPY tsconfig.remake.json ./tsconfig.json
+COPY drizzle.config.ts ./
+
+# Install dependencies
 ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 RUN bun install --production
 
 # Copy source code
-COPY . .
+COPY src/ ./src/
+COPY panelui/ ./panelui/
 
-# Create necessary directories
-RUN mkdir -p logs data/levels data/accounts GDPS_DATA config
+# Build admin panel
+WORKDIR /app/panelui
+RUN bun install && bun run build
+
+# Back to main app
+WORKDIR /app
+
+# Create necessary directories for hosting
+RUN mkdir -p logs data config drizzle
 
 # Set proper ownership
-RUN chown -R gdps:nodejs /app
+RUN chown -R forevercore:nodejs /app
 
 # Switch to non-root user
-USER gdps
+USER forevercore
 
 # Expose port
 EXPOSE 3010
@@ -45,8 +59,12 @@ EXPOSE 3010
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3010/ || exit 1
 
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=3010
+
 # Use dumb-init for proper signal handling
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the application
-CMD ["bun", "run", "-r", "tsconfig-paths/register", "server.ts"]
+# Start the modern Fastify server
+CMD ["bun", "run", "src/server.ts"]

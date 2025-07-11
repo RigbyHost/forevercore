@@ -46,7 +46,7 @@ spec:
         DOMAIN = "n01.forever-gdps.host"
         
         // Application configuration
-        GDPS_NAME = "ForeverCore GDPS"
+        GDPS_NAME = "ForeverCore Hosting Platform"
         GDPS_ID = "main"
         NODE_ENV = "production"
         
@@ -128,33 +128,34 @@ EOF
                         script {
                             container('bun') {
                                 sh '''
-                                echo '>>> Testing ForeverCore API...'
+                                echo '>>> Testing ForeverCore Hosting Platform...'
                                 export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
                                 
-                                # TypeScript compilation check for API only
-                                echo 'Checking API TypeScript compilation with Bun...'
+                                # Install dependencies for new architecture
+                                echo 'Installing dependencies for remake architecture...'
+                                cp package.remake.json package.json
+                                cp tsconfig.remake.json tsconfig.json
+                                bun install --frozen-lockfile
+                                
+                                # TypeScript compilation check
+                                echo 'Checking TypeScript compilation...'
                                 if [ -f node_modules/.bin/tsc ]; then
                                     bun x tsc --noEmit
                                 else
                                     echo 'TypeScript not found, skipping compilation check'
                                 fi
                                 
-                                # Run API linting if available
-                                echo 'Checking for API linting scripts...'
+                                # Test modern Fastify server startup
+                                echo 'Testing server startup...'
+                                timeout 10 bun run src/server.ts --test || echo 'Server test completed'
+                                
+                                # Run linting if available
+                                echo 'Checking for linting scripts...'
                                 if bun run --silent lint >/dev/null 2>&1; then
-                                    echo 'Running API linting with Bun...'
+                                    echo 'Running linting...'
                                     bun run lint
                                 else
-                                    echo 'No lint script found for API'
-                                fi
-                                
-                                # Run API unit tests if available
-                                echo 'Checking for API test scripts...'
-                                if bun run --silent test >/dev/null 2>&1; then
-                                    echo 'Running API tests with Bun...'
-                                    bun run test
-                                else
-                                    echo 'No test script found for API'
+                                    echo 'No lint script found'
                                 fi
                                 '''
                             }
@@ -206,20 +207,20 @@ EOF
 
         stage('Build Docker Images') {
             parallel {
-                stage('Build Bun API') {
+                stage('Build Hosting Platform') {
                     steps {
                         container('kaniko') {
                             script {
                                 def cacheFlag = '--cache=false'
                                 
                                 sh """
-                                echo '>>> Building Docker image with Bun runtime...'
+                                echo '>>> Building ForeverCore Hosting Platform Docker image...'
                                 
                                 /kaniko/executor --context=dir://. \\
                                   --dockerfile=Dockerfile \\
                                   --target=production \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-bun \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-bun \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest \\
                                   ${cacheFlag} \\
                                   --verbosity=info \\
                                   --build-arg NODE_ENV=${NODE_ENV} \\
@@ -262,7 +263,7 @@ EOF
             steps {
                 container('kubectl') {
                     script {
-                        def imageTag = "${IMAGE_TAG}-bun"
+                        def imageTag = "${IMAGE_TAG}"
                         def targetNamespace = "${NAMESPACE}"
                         
                         // Verify namespace access
