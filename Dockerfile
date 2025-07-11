@@ -77,6 +77,7 @@ WORKDIR /app
 
 # Copy package files and install production dependencies
 COPY package*.json ./
+ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application
@@ -131,6 +132,7 @@ WORKDIR /app
 COPY package*.json bun.lockb* ./
 
 # Install dependencies with Bun
+ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 RUN bun install --frozen-lockfile --production
 
 # Copy source code

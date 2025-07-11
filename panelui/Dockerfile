@@ -62,6 +62,7 @@ WORKDIR /app
 
 # Copy package.json for production dependencies
 COPY package*.json ./
+ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder
@@ -116,6 +117,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies with Bun
+ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 RUN bun install --production
 
 # Copy source code
