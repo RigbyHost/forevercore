@@ -284,7 +284,7 @@ EOF
         }
 
         stage('Build Docker Images') {
-            stages {
+            parallel {
                 stage('Build Node.js API') {
                     steps {
                         container('kaniko') {
@@ -317,8 +317,6 @@ EOF
                                 def cacheFlag = '--cache=false'
                                 
                                 sh """
-                                echo '>>> Waiting for API build to complete...'
-                                sleep 10
                                 echo '>>> Building Admin Panel Docker image...'
                                 
                                 /kaniko/executor --context=dir://panelui \\
