@@ -1,5 +1,5 @@
 # Multi-stage build for ForeverCore GDPS
-FROM node:22-alpine AS base
+FROM oven/bun:1.1-alpine AS base
 
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -24,13 +24,13 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN bun install --production
 
 # ===== DEVELOPMENT STAGE =====
 FROM base AS development
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN bun install
 
 # Copy source code
 COPY . .
@@ -39,22 +39,22 @@ COPY . .
 EXPOSE 3010
 
 # Start development server
-CMD ["npm", "run", "boot"]
+CMD ["bun", "run", "boot"]
 
 # ===== BUILD STAGE =====
 FROM base AS builder
 
 # Install all dependencies for building
-RUN npm ci
+RUN bun install
 
 # Copy source code
 COPY . .
 
 # Build TypeScript (if you have a build script)
-# RUN npm run build
+# RUN bun run build
 
 # ===== PRODUCTION STAGE =====
-FROM node:22-alpine AS production
+FROM oven/bun:1.1-alpine AS production
 
 # Install runtime dependencies only with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -78,9 +78,7 @@ WORKDIR /app
 # Copy package files and install production dependencies
 COPY package*.json ./
 ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
-RUN rm -rf node_modules package-lock.json && \
-    npm ci --only=production && \
-    npm cache clean --force
+RUN bun install --production
 
 # Copy built application
 COPY --from=builder /app .
@@ -105,7 +103,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["node", "-r", "ts-node/register", "-r", "tsconfig-paths/register", "server.ts"]
+CMD ["bun", "run", "-r", "tsconfig-paths/register", "server.ts"]
 
 # ===== BUN VARIANT =====
 FROM oven/bun:1.1-alpine AS bun-production
