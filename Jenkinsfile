@@ -217,7 +217,7 @@ EOF
                                 
                                 /kaniko/executor --context=dir://. \\
                                   --dockerfile=Dockerfile \\
-                                  --target=bun-production \\
+                                  --target=production \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-bun \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-bun \\
                                   ${cacheFlag} \\
@@ -242,7 +242,7 @@ EOF
                                 
                                 /kaniko/executor --context=dir://panelui \\
                                   --dockerfile=panelui/Dockerfile \\
-                                  --target=bun-production \\
+                                  --target=production \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG} \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:latest \\
                                   ${cacheFlag} \\
