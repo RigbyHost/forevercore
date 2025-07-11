@@ -1,5 +1,5 @@
 # Multi-stage build for ForeverCore Admin Panel (Next.js)
-FROM oven/bun:1.1-alpine AS base
+FROM oven/bun:1.2-alpine AS base
 
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -39,7 +39,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run build
 
 # ===== PRODUCTION STAGE =====
-FROM oven/bun:1.1-alpine AS production
+FROM oven/bun:1.2-alpine AS production
 
 # Install runtime dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -92,7 +92,7 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
 
 # ===== BUN VARIANT =====
-FROM oven/bun:1.1-alpine AS bun-production
+FROM oven/bun:1.2-alpine AS bun-production
 
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \

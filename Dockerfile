@@ -1,5 +1,5 @@
 # Multi-stage build for ForeverCore GDPS
-FROM oven/bun:1.1-alpine AS base
+FROM oven/bun:1.2-alpine AS base
 
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -54,7 +54,7 @@ COPY . .
 # RUN bun run build
 
 # ===== PRODUCTION STAGE =====
-FROM oven/bun:1.1-alpine AS production
+FROM oven/bun:1.2-alpine AS production
 
 # Install runtime dependencies only with retry logic
 RUN for i in 1 2 3 4 5; do \
@@ -106,7 +106,7 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["bun", "run", "-r", "tsconfig-paths/register", "server.ts"]
 
 # ===== BUN VARIANT =====
-FROM oven/bun:1.1-alpine AS bun-production
+FROM oven/bun:1.2-alpine AS bun-production
 
 # Install system dependencies including bash/sh with retry logic
 RUN for i in 1 2 3 4 5; do \

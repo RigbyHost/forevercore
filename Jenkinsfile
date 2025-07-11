@@ -28,7 +28,7 @@ spec:
     args: ['-c', 'trap : TERM INT; sleep infinity & wait']
     tty: true
   - name: bun
-    image: oven/bun:1.1-alpine
+    image: oven/bun:1.2-alpine
     command: ['/bin/sh']
     args: ['-c', 'trap : TERM INT; sleep infinity & wait']
     tty: true
