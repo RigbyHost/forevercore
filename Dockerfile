@@ -5,6 +5,7 @@ FROM oven/bun:1.2-alpine AS base
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
             python3 \
+            py3-pip \
             make \
             g++ \
             git \
@@ -59,6 +60,7 @@ FROM oven/bun:1.2-alpine AS production
 # Install runtime dependencies only with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
+            python3 \
             curl \
             tzdata \
             dumb-init && break || \
@@ -111,6 +113,7 @@ FROM oven/bun:1.2-alpine AS bun-production
 # Install system dependencies including bash/sh with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
+            python3 \
             curl \
             tzdata \
             dumb-init \

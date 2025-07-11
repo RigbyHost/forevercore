@@ -4,6 +4,7 @@ FROM oven/bun:1.2-alpine AS base
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
+            python3 \
             libc6-compat \
             curl \
             tzdata && break || \
@@ -44,6 +45,7 @@ FROM oven/bun:1.2-alpine AS production
 # Install runtime dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
+            python3 \
             curl \
             tzdata \
             dumb-init && break || \
@@ -97,6 +99,7 @@ FROM oven/bun:1.2-alpine AS bun-production
 # Install system dependencies with retry logic
 RUN for i in 1 2 3 4 5; do \
         apk add --no-cache \
+            python3 \
             curl \
             tzdata \
             dumb-init && break || \
