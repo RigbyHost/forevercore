@@ -1,11 +1,14 @@
 # Multi-stage build for ForeverCore Admin Panel (Next.js)
 FROM node:22-alpine AS base
 
-# Install system dependencies
-RUN apk add --no-cache \
-    libc6-compat \
-    curl \
-    tzdata
+# Install system dependencies with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            libc6-compat \
+            curl \
+            tzdata && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC
@@ -38,11 +41,14 @@ RUN npm run build
 # ===== PRODUCTION STAGE =====
 FROM node:22-alpine AS production
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init
+# Install runtime dependencies with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            curl \
+            tzdata \
+            dumb-init && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC
@@ -87,11 +93,14 @@ CMD ["node", "server.js"]
 # ===== BUN VARIANT =====
 FROM oven/bun:1.1-alpine AS bun-production
 
-# Install system dependencies
-RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init
+# Install system dependencies with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            curl \
+            tzdata \
+            dumb-init && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC

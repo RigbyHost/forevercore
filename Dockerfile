@@ -1,14 +1,17 @@
 # Multi-stage build for ForeverCore GDPS
 FROM node:22-alpine AS base
 
-# Install system dependencies
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    git \
-    curl \
-    tzdata
+# Install system dependencies with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            python3 \
+            make \
+            g++ \
+            git \
+            curl \
+            tzdata && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC
@@ -53,11 +56,14 @@ COPY . .
 # ===== PRODUCTION STAGE =====
 FROM node:22-alpine AS production
 
-# Install runtime dependencies only
-RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init
+# Install runtime dependencies only with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            curl \
+            tzdata \
+            dumb-init && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC
@@ -101,12 +107,15 @@ CMD ["node", "-r", "ts-node/register", "-r", "tsconfig-paths/register", "server.
 # ===== BUN VARIANT =====
 FROM oven/bun:1.1-alpine AS bun-production
 
-# Install system dependencies including bash/sh
-RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init \
-    bash
+# Install system dependencies including bash/sh with retry logic
+RUN for i in 1 2 3 4 5; do \
+        apk add --no-cache \
+            curl \
+            tzdata \
+            dumb-init \
+            bash && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done
 
 # Set timezone
 ENV TZ=UTC
