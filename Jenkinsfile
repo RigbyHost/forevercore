@@ -285,20 +285,20 @@ EOF
 
         stage('Build Docker Images') {
             parallel {
-                stage('Build Node.js API') {
+                stage('Build Bun API') {
                     steps {
                         container('kaniko') {
                             script {
                                 def cacheFlag = '--cache=false'
                                 
                                 sh """
-                                echo '>>> Building Docker image with Node.js runtime...'
+                                echo '>>> Building Docker image with Bun runtime...'
                                 
                                 /kaniko/executor --context=dir://. \\
                                   --dockerfile=Dockerfile \\
-                                  --target=production \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-node \\
-                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-node \\
+                                  --target=bun-production \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-bun \\
+                                  --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}:latest-bun \\
                                   ${cacheFlag} \\
                                   --verbosity=info \\
                                   --build-arg NODE_ENV=${NODE_ENV} \\
@@ -317,11 +317,11 @@ EOF
                                 def cacheFlag = '--cache=false'
                                 
                                 sh """
-                                echo '>>> Building Admin Panel Docker image...'
+                                echo '>>> Building Admin Panel Docker image with Bun...'
                                 
                                 /kaniko/executor --context=dir://panelui \\
                                   --dockerfile=panelui/Dockerfile \\
-                                  --target=production \\
+                                  --target=bun-production \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:${IMAGE_TAG} \\
                                   --destination=${DOCKER_REGISTRY}/${IMAGE_NAME}-admin:latest \\
                                   ${cacheFlag} \\
@@ -341,7 +341,7 @@ EOF
             steps {
                 container('kubectl') {
                     script {
-                        def imageTag = "${IMAGE_TAG}-node"
+                        def imageTag = "${IMAGE_TAG}-bun"
                         def targetNamespace = "${NAMESPACE}"
                         
                         // Verify namespace access

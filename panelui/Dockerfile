@@ -115,22 +115,10 @@ RUN adduser -S nextjs -u 1001
 # Create app directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies with Bun
-ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
-RUN bun install --production
-
-# Copy source code
-COPY . .
-
-# Build Next.js application with Bun
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN bun run build
-
-# Set proper ownership
-RUN chown -R nextjs:nodejs /app
+# Copy package files and dependencies from builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Switch to non-root user
 USER nextjs
@@ -150,5 +138,5 @@ ENV HOSTNAME="0.0.0.0"
 # Use dumb-init for proper signal handling
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start with Bun
-CMD ["bun", "run", "start"]
+# Start with Node.js (standalone Next.js doesn't need Bun at runtime)
+CMD ["node", "server.js"]
