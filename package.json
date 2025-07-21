@@ -13,7 +13,7 @@
     "build:panel:bun": "cd panelui && bun run build",
     "dev:full": "concurrently \"npm run boot\" \"npm run dev:panel\"",
     "dev:install": "npm install && cd panelui && npm install",
-    "build:core": "tsc"
+    "build:core": "tsc && echo \"Production build: success\""
   },
   "keywords": [],
   "author": "FimastGD, Syvarinth",
