@@ -12,10 +12,11 @@
     "build:panel": "cd panelui && npm run build",
     "build:panel:bun": "cd panelui && bun run build",
     "dev:full": "concurrently \"npm run boot\" \"npm run dev:panel\"",
-    "dev:install": "npm install && cd panelui && npm install"
+    "dev:install": "npm install && cd panelui && npm install",
+    "build:core": "tsc"
   },
   "keywords": [],
-  "author": "Fimast Arc.",
+  "author": "FimastGD, Syvarinth",
   "license": "ISC",
   "description": "ForeverHost GDPS Core",
   "dependencies": {
