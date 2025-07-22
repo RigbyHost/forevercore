@@ -1,7 +1,7 @@
 # Multi-stage build for ForeverCore GDPS
 FROM node:18-alpine AS base
 
-# Install system dependencies
+# Install system dependencies (Alpine uses apk)
 RUN apk add --no-cache \
     python3 \
     make \
@@ -47,13 +47,13 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build TypeScript (if you have a build script)
+# Build TypeScript (if needed)
 # RUN npm run build
 
-# ===== PRODUCTION STAGE =====
+# ===== PRODUCTION STAGE (Node.js) =====
 FROM node:18-alpine AS production
 
-# Install runtime dependencies only
+# Install runtime dependencies
 RUN apk add --no-cache \
     curl \
     tzdata \
@@ -63,87 +63,82 @@ RUN apk add --no-cache \
 ENV TZ=UTC
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S gdps -u 1001
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S gdps -u 1001
 
-# Create app directory
 WORKDIR /app
 
-# Copy package files and install production dependencies
+# Copy package files and install production deps
 COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application
 COPY --from=builder /app .
 
-# Create necessary directories
-RUN mkdir -p logs data/levels data/accounts GDPS_DATA config
+# Create directories and set permissions
+RUN mkdir -p logs data/levels data/accounts GDPS_DATA config && \
+    chown -R gdps:nodejs /app
 
-# Set proper ownership
-RUN chown -R gdps:nodejs /app
-
-# Switch to non-root user
 USER gdps
 
-# Expose port
 EXPOSE 3010
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3010/ || exit 1
 
-# Use dumb-init for proper signal handling
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start the application
 CMD ["node", "-r", "ts-node/register", "-r", "tsconfig-paths/register", "server.ts"]
 
-# ===== BUN VARIANT =====
+# ===== PRODUCTION STAGE (Bun) =====
 FROM oven/bun:1.0-alpine AS bun-production
 
-# Install system dependencies
+# Installing Python
 RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init
+    python3 \
+    py3-pip \
+    build-base \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
+    && python --version
 
-# Set timezone
-ENV TZ=UTC
+RUN apk add --no-cache dumb-init
+# Check Python
+RUN which python && python -c "import sys; print(sys.executable)"
+# Install youtube-dl
+RUN pip install --no-cache-dir youtube-dl
+# костыль, хз почему никак не исправляется
+ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S gdps -u 1001
+# Set ENV
+ENV PYTHON=/usr/bin/python
 
-# Create app directory
+# Add user
+RUN addgroup -S nodejs -g 1001 && \
+    adduser -S gdps -u 1001 -G nodejs
+
+# Set workdir
 WORKDIR /app
 
-# Copy package files
+# Copy packages
 COPY package*.json bun.lockb* ./
 
-# Install dependencies with Bun
+# Install dependencies
 RUN bun install --frozen-lockfile --production
+RUN bun add -g tsconfig-paths
 
-# Copy source code
+# Copy data
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p logs data/levels data/accounts GDPS_DATA config
+# Make dir with rules
+RUN mkdir -p logs data/levels data/accounts GDPS_DATA config && \
+    chown -R gdps:nodejs /app
 
-# Set proper ownership
-RUN chown -R gdps:nodejs /app
-
-# Switch to non-root user
+# Switch to 'gdps' user
 USER gdps
 
-# Expose port
 EXPOSE 3010
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3010/ || exit 1
 
-# Use dumb-init for proper signal handling
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start with Bun
 CMD ["bun", "run", "-r", "tsconfig-paths/register", "server.ts"]
