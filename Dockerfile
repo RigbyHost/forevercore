@@ -1,144 +1,43 @@
-# Multi-stage build for ForeverCore GDPS
-FROM node:18-alpine AS base
-
-# Install system dependencies (Alpine uses apk)
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    git \
-    curl \
-    tzdata
-
-# Set timezone
-ENV TZ=UTC
-
-# Create app directory
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Using Node 23
+FROM node:23
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# ===== DEVELOPMENT STAGE =====
-FROM base AS development
-
-# Install all dependencies (including dev)
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Expose port
-EXPOSE 3010
-
-# Start development server
-CMD ["npm", "run", "boot"]
-
-# ===== BUILD STAGE =====
-FROM base AS builder
-
-# Install all dependencies for building
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build TypeScript (if needed)
-# RUN npm run build
-
-# ===== PRODUCTION STAGE (Node.js) =====
-FROM node:18-alpine AS production
-
-# Install runtime dependencies
-RUN apk add --no-cache \
-    curl \
-    tzdata \
-    dumb-init
-
-# Set timezone
-ENV TZ=UTC
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S gdps -u 1001
-
-WORKDIR /app
-
-# Copy package files and install production deps
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy built application
-COPY --from=builder /app .
-
-# Create directories and set permissions
-RUN mkdir -p logs data/levels data/accounts GDPS_DATA config && \
-    chown -R gdps:nodejs /app
-
-USER gdps
-
-EXPOSE 3010
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3010/ || exit 1
-
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "-r", "ts-node/register", "-r", "tsconfig-paths/register", "server.ts"]
-
-# ===== PRODUCTION STAGE (Bun) =====
-FROM oven/bun:1.0-alpine AS bun-production
-
-# Installing Python
-RUN apk add --no-cache \
+RUN apt-get update && \
+    apt-get install -y \
     python3 \
-    py3-pip \
-    build-base \
-    && ln -sf /usr/bin/python3 /usr/bin/python \
-    && python --version
+    python3-venv \
+    python3-pip \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apk add --no-cache dumb-init
-# Check Python
-RUN which python && python -c "import sys; print(sys.executable)"
-# Install youtube-dl
+# Set python env
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+#Install youtube-dl
 RUN pip install --no-cache-dir youtube-dl
-# костыль, хз почему никак не исправляется
-ENV YOUTUBE_DL_SKIP_PYTHON_CHECK=1
 
-# Set ENV
-ENV PYTHON=/usr/bin/python
-
-# Add user
-RUN addgroup -S nodejs -g 1001 && \
-    adduser -S gdps -u 1001 -G nodejs
-
-# Set workdir
+# Create workdir
 WORKDIR /app
 
-# Copy packages
-COPY package*.json bun.lockb* ./
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# Install dependencies
-RUN bun install --frozen-lockfile --production
-RUN bun add -g tsconfig-paths
+# Install Node.js dependencies
+RUN npm install
 
-# Copy data
+# Copy other files
 COPY . .
 
-# Make dir with rules
-RUN mkdir -p logs data/levels data/accounts GDPS_DATA config && \
-    chown -R gdps:nodejs /app
+# Build project
+RUN npm run build:core
 
-# Switch to 'gdps' user
-USER gdps
-
+# Open port
 EXPOSE 3010
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3010/ || exit 1
+# Run app
+RUN chown -R node:node /app
+USER node
+CMD ["npm", "run", "boot"] # dev boot, fix later
 
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["bun", "run", "-r", "tsconfig-paths/register", "server.ts"]
+## not full dockerfile ...
