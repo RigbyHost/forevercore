@@ -1,12 +1,12 @@
-'package net.fimastgd.forevercore.api.communication.uploadMessage';
+"package net.fimastgd.forevercore.api.communication.uploadMessage";
 
-import { Request } from 'express';
-import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import db from '../../serverconf/db-proxy';
-import ExploitPatch from '../lib/exploitPatch';
-import ApiLib from '../lib/apiLib';
-import GJPCheck from '../lib/GJPCheck';
-import ConsoleApi from '../../modules/console-api';
+import { Request } from "express";
+import { Connection, RowDataPacket } from "mysql2/promise";
+import threadConnection from "../../serverconf/db";
+import ExploitPatch from "../lib/exploitPatch";
+import ApiLib from "../lib/apiLib";
+import GJPCheck from "../lib/GJPCheck";
+import ConsoleApi from "../../modules/console-api";
 
 /**
  * Upload a message to another user
@@ -23,6 +23,7 @@ import ConsoleApi from '../../modules/console-api';
  * @returns "1" on success, "-1" on failure
  */
 const uploadMessage = async (
+	gdpsid: string,
 	gameVersionStr?: string,
 	binaryVersionStr?: string,
 	secretStr?: string,
@@ -35,6 +36,7 @@ const uploadMessage = async (
 	req?: Request
 ): Promise<string> => {
 	try {
+		const db = await threadConnection(gdpsid);
 		// Process and validate input parameters
 		const gameVersion = await ExploitPatch.remove(gameVersionStr);
 		const binaryVersion = await ExploitPatch.remove(binaryVersionStr);
@@ -44,7 +46,7 @@ const uploadMessage = async (
 		const body = await ExploitPatch.remove(bodyStr);
 
 		// Authenticate sender
-		const accID = await GJPCheck.getAccountIDOrDie(accountIDStr, gjp2Str, gjpStr, req);
+		const accID = await GJPCheck.getAccountIDOrDie(gdpsid, accountIDStr, gjp2Str, gjpStr, req);
 
 		// Can't message yourself
 		if (accID == toAccountID) {
@@ -52,27 +54,18 @@ const uploadMessage = async (
 		}
 
 		// Get sender's username
-		const [userNameRows] = await db.query<RowDataPacket[]>(
-			"SELECT userName FROM users WHERE extID = ? ORDER BY userName DESC",
-			[accID]
-		);
+		const [userNameRows] = await db.query<RowDataPacket[]>("SELECT userName FROM users WHERE extID = ? ORDER BY userName DESC", [accID]);
 
 		const userName = userNameRows[0].userName;
 		const id = await ExploitPatch.remove(accountIDStr);
-		const userID = await ApiLib.getUserID(id);
+		const userID = await ApiLib.getUserID(gdpsid, id);
 		const uploadDate = Math.floor(Date.now() / 1000);
 
 		// Check if sender is blocked by recipient
-		const [blockedRows] = await db.query<RowDataPacket[]>(
-			"SELECT ID FROM `blocks` WHERE person1 = ? AND person2 = ?",
-			[toAccountID, accID]
-		);
+		const [blockedRows] = await db.query<RowDataPacket[]>("SELECT ID FROM `blocks` WHERE person1 = ? AND person2 = ?", [toAccountID, accID]);
 
 		// Check recipient's message settings
-		const [mSOnlyRows] = await db.query<RowDataPacket[]>(
-			"SELECT mS FROM `accounts` WHERE accountID = ? AND mS > 0",
-			[toAccountID]
-		);
+		const [mSOnlyRows] = await db.query<RowDataPacket[]>("SELECT mS FROM `accounts` WHERE accountID = ? AND mS > 0", [toAccountID]);
 
 		// Check if users are friends
 		const [friendRows] = await db.query<RowDataPacket[]>(
@@ -82,9 +75,10 @@ const uploadMessage = async (
 
 		// Friends-only messages check
 		if (mSOnlyRows.length > 0 && mSOnlyRows[0].mS == 2) {
-			ConsoleApi.Warn("main",
+			ConsoleApi.Warn(
+				"main",
 				"Failed to upload message: mSOnlyRows length more '0' and mSOnlyRows[0].mS equal '2' " +
-				"at net.fimastgd.forevercore.api.communication.uploadMessage"
+					"at net.fimastgd.forevercore.api.communication.uploadMessage"
 			);
 			return "-1";
 		} else {
@@ -93,13 +87,13 @@ const uploadMessage = async (
 				// Insert message
 				await db.query(
 					"INSERT INTO messages (subject, body, accID, userID, userName, toAccountID, secret, timestamp) " +
-					"VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+						"VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 					[subject, body, id, userID, userName, toAccountID, secret, uploadDate]
 				);
 
 				return "1";
 			} else {
-				throw new Error('Failed to upload message: submission requirements not met');
+				throw new Error("Failed to upload message: submission requirements not met");
 			}
 		}
 	} catch (error) {
