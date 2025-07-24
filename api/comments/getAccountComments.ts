@@ -1,7 +1,7 @@
 'package net.fimastgd.forevercore.api.comments.getAccountComments';
 
 import { Connection, RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db-proxy';
+import threadConnection from '../../serverconf/db';
 import ExploitPatch from '../lib/exploitPatch';
 import ApiLib from '../lib/apiLib';
 import ConsoleApi from '../../modules/console-api';
@@ -26,13 +26,16 @@ interface AccountComment {
  * @returns Formatted comments string
  */
 const getAccountComments = async (
+	gdpsid: string,
     accountIDStr: string | string[],
     pageStr: string,
     req?: any
 ): Promise<string> => {
     try {
+    	const db = await threadConnection(gdpsid);
         let accountID: string;
-
+		
+		// Robert Lopata moment
         // ВАЖНО: Обработка краевого случая с массивом
         if (Array.isArray(accountIDStr)) {
             ConsoleApi.Warn("main", "Array instead of Int detected, trying to offset array...");
@@ -46,7 +49,7 @@ const getAccountComments = async (
         const commentpage = parseInt(page) * 10;
 
         // Get user ID for the account
-        const userID = await ApiLib.getUserID(accountID);
+        const userID = await ApiLib.getUserID(gdpsid, accountID);
         const userIDInt = parseInt(userID.toString(), 10);
         const commentpageInt = parseInt(commentpage.toString(), 10);
 
