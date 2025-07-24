@@ -1,8 +1,8 @@
-'package net.fimastgd.forevercore.api.levels.getDailyLevel';
+"package net.fimastgd.forevercore.api.levels.getDailyLevel";
 
-import { RowDataPacket } from 'mysql2/promise';
-import db from '../../serverconf/db-proxy';
-import ConsoleApi from '../../modules/console-api';
+import { RowDataPacket } from "mysql2/promise";
+import threadConnection from "../../serverconf/db";
+import ConsoleApi from "../../modules/console-api";
 
 /**
  * Gets current daily or weekly level info
@@ -10,43 +10,39 @@ import ConsoleApi from '../../modules/console-api';
  * @param weeklyStr - Alternative weekly flag
  * @returns Formatted daily level string, "-1" if failed
  */
-const getDailyLevel = async (
-  typeStr?: string,
-  weeklyStr?: string
-): Promise<string> => {
-  try {
-    // Determine if this is a daily or weekly request
-    const type = typeStr || weeklyStr || "0";
-    
-    // Calculate when the level will reset
-    const midnight = type == "1" 
-      ? getNextMonday() 
-      : getTomorrow();
-    
-    const current = Math.floor(Date.now() / 1000);
-    
-    // Query database for current featured level
-    const [rows] = await db.execute<RowDataPacket[]>(
-      "SELECT feaID FROM dailyfeatures WHERE timestamp < ? AND type = ? ORDER BY timestamp DESC LIMIT 1", 
-      [current, type]
-    );
-    
-    if (rows.length === 0) {
-      return "-1";
-    }
-    
-    // Calculate remaining time and feature ID
-    let dailyID = rows[0].feaID;
-    if (type == "1") dailyID += 100001;
-    
-    const timeleft = Math.floor(midnight.getTime() / 1000) - current;
-    
-    ConsoleApi.Log("main", `Received daily level. ID: ${dailyID}, timeleft: ${timeleft}`);
-    return `${dailyID}|${timeleft}`;
-  } catch (error) {
-    ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.api.levels.getDailyLevel`);
-    return "-1";
-  }
+const getDailyLevel = async (gdpsid: string, typeStr?: string, weeklyStr?: string): Promise<string> => {
+	try {
+		const db = await threadConnection(gdpsid);
+		// Determine if this is a daily or weekly request
+		const type = typeStr || weeklyStr || "0";
+
+		// Calculate when the level will reset
+		const midnight = type == "1" ? getNextMonday() : getTomorrow();
+
+		const current = Math.floor(Date.now() / 1000);
+
+		// Query database for current featured level
+		const [rows] = await db.execute<RowDataPacket[]>(
+			"SELECT feaID FROM dailyfeatures WHERE timestamp < ? AND type = ? ORDER BY timestamp DESC LIMIT 1",
+			[current, type]
+		);
+
+		if (rows.length === 0) {
+			return "-1";
+		}
+
+		// Calculate remaining time and feature ID
+		let dailyID = rows[0].feaID;
+		if (type == "1") dailyID += 100001;
+
+		const timeleft = Math.floor(midnight.getTime() / 1000) - current;
+
+		ConsoleApi.Log("main", `Received daily level. ID: ${dailyID}, timeleft: ${timeleft}`);
+		return `${dailyID}|${timeleft}`;
+	} catch (error) {
+		ConsoleApi.Error("main", `${error} at net.fimastgd.forevercore.api.levels.getDailyLevel`);
+		return "-1";
+	}
 };
 
 /**
@@ -54,10 +50,10 @@ const getDailyLevel = async (
  * @returns Date object for next Monday at midnight
  */
 function getNextMonday(): Date {
-  const date = new Date();
-  date.setDate(date.getDate() + ((1 + 7 - date.getDay()) % 7));
-  date.setHours(0, 0, 0, 0);
-  return date;
+	const date = new Date();
+	date.setDate(date.getDate() + ((1 + 7 - date.getDay()) % 7));
+	date.setHours(0, 0, 0, 0);
+	return date;
 }
 
 /**
@@ -65,10 +61,10 @@ function getNextMonday(): Date {
  * @returns Date object for tomorrow at midnight
  */
 function getTomorrow(): Date {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  date.setHours(0, 0, 0, 0);
-  return date;
+	const date = new Date();
+	date.setDate(date.getDate() + 1);
+	date.setHours(0, 0, 0, 0);
+	return date;
 }
 
 export default getDailyLevel;
