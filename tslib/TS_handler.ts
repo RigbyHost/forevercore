@@ -4,13 +4,14 @@ import { Connection } from 'mysql2/promise';
 import fs from 'fs';
 import path from 'path';
 import ConsoleApi from '../modules/console-api';
-import db from '../serverconf/db-proxy';
+// import db from '../serverconf/db-proxy'; TODO: add control to all DBs
 
 /**
  * Initializes TypeScript components and performs validation
  * @returns Promise that resolves when initialization is complete
  */
 async function TS_handler(): Promise<void> {
+	/* [ Temporarily skipped ]
 	try {
 		// Ensure directories exist
 		const directories = [
@@ -37,7 +38,8 @@ async function TS_handler(): Promise<void> {
 		ConsoleApi.Log('TS_handler', 'TypeScript initialization complete');
 	} catch (error) {
 		ConsoleApi.Error('TS_handler', `Error during initialization: ${error}`);
-	}
+	} */
+	ConsoleApi.Warn("TS_handler", "Directory check temporarily skipped. Ready to multi-GDPS system realisation*");
 
 	return;
 }
@@ -46,6 +48,7 @@ async function TS_handler(): Promise<void> {
  * Validates database connection and required tables
  */
 async function validateDatabaseConnection(): Promise<void> {
+	/* Temporarily skipped 
 	try {
 		// Check connection
 		await db.execute('SELECT 1');
@@ -71,7 +74,9 @@ async function validateDatabaseConnection(): Promise<void> {
 	} catch (error) {
 		ConsoleApi.Error('TS_handler', `Database validation failed: ${error}`);
 		throw error;
-	}
+	} */
+	ConsoleApi.Warn("TS_handler", "Database check temporarily skipped. Ready to multi-GDPS system realisation*")
+	return;
 }
 
 /**
@@ -96,7 +101,7 @@ function validateRoutes(): void {
 
 	// Check if essential route directories exist
 	const requiredRouteDirs = [
-		'panel', 'cmd'
+		'panel'
 	];
 
 	const missingRouteDirs = requiredRouteDirs.filter(dir => !fs.existsSync(path.join(routesDirectory, dir)));
