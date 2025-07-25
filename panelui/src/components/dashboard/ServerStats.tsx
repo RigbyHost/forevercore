@@ -84,14 +84,15 @@ const ServerStats: React.FC<ServerStatsProps> = ({ isLoading, serverMemory }) =>
                       {serverMemory.usedMemory} МБ / {serverMemory.allocatedMemory || '∞'} МБ
                     </div>
                   </div>
-                  <Progress 
-                    value={memoryUsagePercent} 
-                    className="h-2 bg-zinc-800" 
-                    indicatorClassName={`${
-                      memoryUsagePercent > 80 ? 'bg-red-500' : 
-                      memoryUsagePercent > 60 ? 'bg-yellow-500' : 'bg-blue-500'
-                    }`}
-                  />
+                  <div className={`${
+                    memoryUsagePercent > 80 ? '[&_[data-slot=progress-indicator]]:bg-red-500' : 
+                    memoryUsagePercent > 60 ? '[&_[data-slot=progress-indicator]]:bg-yellow-500' : '[&_[data-slot=progress-indicator]]:bg-blue-500'
+                  }`}>
+                    <Progress 
+                      value={memoryUsagePercent} 
+                      className="h-2 bg-zinc-800" 
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
@@ -101,14 +102,15 @@ const ServerStats: React.FC<ServerStatsProps> = ({ isLoading, serverMemory }) =>
                       {serverMemory.heapUsed} МБ / {serverMemory.heapTotal} МБ
                     </div>
                   </div>
-                  <Progress 
-                    value={heapUsagePercent} 
-                    className="h-2 bg-zinc-800" 
-                    indicatorClassName={`${
-                      heapUsagePercent > 80 ? 'bg-red-500' : 
-                      heapUsagePercent > 60 ? 'bg-yellow-500' : 'bg-blue-500'
-                    }`}
-                  />
+                  <div className={`${
+                    heapUsagePercent > 80 ? '[&_[data-slot=progress-indicator]]:bg-red-500' : 
+                    heapUsagePercent > 60 ? '[&_[data-slot=progress-indicator]]:bg-yellow-500' : '[&_[data-slot=progress-indicator]]:bg-blue-500'
+                  }`}>
+                    <Progress 
+                      value={heapUsagePercent} 
+                      className="h-2 bg-zinc-800" 
+                    />
+                  </div>
                 </div>
               </div>
             </>
@@ -140,7 +142,9 @@ const ServerStats: React.FC<ServerStatsProps> = ({ isLoading, serverMemory }) =>
                     <div className="text-zinc-400 text-sm">Активные запросы</div>
                     <div className="text-zinc-200">12</div>
                   </div>
-                  <Progress value={12} max={100} className="h-2 bg-zinc-800" indicatorClassName="bg-blue-500" />
+                  <div className="[&_[data-slot=progress-indicator]]:bg-blue-500">
+                    <Progress value={12} max={100} className="h-2 bg-zinc-800" />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
@@ -148,7 +152,9 @@ const ServerStats: React.FC<ServerStatsProps> = ({ isLoading, serverMemory }) =>
                     <div className="text-zinc-400 text-sm">Обработка (CPU)</div>
                     <div className="text-zinc-200">24%</div>
                   </div>
-                  <Progress value={24} className="h-2 bg-zinc-800" indicatorClassName="bg-blue-500" />
+                  <div className="[&_[data-slot=progress-indicator]]:bg-blue-500">
+                    <Progress value={24} className="h-2 bg-zinc-800" />
+                  </div>
                 </div>
                 
                 <div className="text-zinc-400 text-xs mt-2">
