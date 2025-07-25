@@ -79,7 +79,7 @@ spec:
         )
         choice(
             name: 'RUNTIME',
-            choices: ['node', 'bun'],
+            choices: ['bun', 'node'],
             description: 'Select JavaScript runtime'
         )
         booleanParam(
@@ -108,7 +108,7 @@ spec:
         stage('Setup Environment') {
             steps {
                 script {
-                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                    def containerName = 'bun'
                     container(containerName) {
                         sh '''
                         echo '>>> Setting up environment...'
@@ -141,24 +141,13 @@ EOF
             }
             steps {
                 script {
-                    def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                    def containerName = 'bun'
                     container(containerName) {
                         sh '''
                         echo '>>> Installing dependencies...'
                         export YOUTUBE_DL_SKIP_PYTHON_CHECK=1
-                        if command -v bun >/dev/null 2>&1; then
-                            echo 'Using Bun for dependency installation'
-                            bun install --frozen-lockfile
-                        else
-                            echo 'Using npm for dependency installation'
-                            # Generate package-lock.json if missing or outdated
-                            if [ ! -f package-lock.json ] || ! npm ci --dry-run >/dev/null 2>&1; then
-                                echo 'Generating fresh package-lock.json...'
-                                npm install
-                            else
-                                npm ci
-                            fi
-                        fi
+                        echo 'Using Bun for dependency installation'
+                        bun install --frozen-lockfile
                         '''
                     }
                 }
@@ -173,7 +162,7 @@ EOF
                 stage('Test API') {
                     steps {
                         script {
-                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                            def containerName = 'bun'
                             container(containerName) {
                                 sh '''
                                 echo '>>> Testing ForeverCore API...'
@@ -241,7 +230,7 @@ EOF
                 stage('Test Admin Panel') {
                     steps {
                         script {
-                            def containerName = params.RUNTIME == 'bun' ? 'bun' : 'node'
+                            def containerName = 'bun'
                             container(containerName) {
                                 sh '''
                                 echo '>>> Testing Admin Panel...'
@@ -251,57 +240,30 @@ EOF
                                 
                                 # Install panelui dependencies
                                 echo 'Installing Admin Panel dependencies...'
-                                if command -v bun >/dev/null 2>&1; then
-                                    echo 'Using Bun for panelui dependencies'
-                                    bun install --frozen-lockfile
-                                else
-                                    echo 'Using npm for panelui dependencies'
-                                    npm install
-                                fi
+                                echo 'Using Bun for panelui dependencies'
+                                bun install --frozen-lockfile
                                 
                                 # TypeScript compilation check for panelui
                                 echo 'Checking Admin Panel TypeScript compilation...'
-                                if command -v bun >/dev/null 2>&1; then
-                                    if [ -f node_modules/.bin/tsc ]; then
-                                        bun x tsc --noEmit
-                                    else
-                                        echo 'TypeScript not found in panelui, skipping compilation check'
-                                    fi
+                                if [ -f node_modules/.bin/tsc ]; then
+                                    bun x tsc --noEmit
                                 else
-                                    if [ -f node_modules/.bin/tsc ]; then
-                                        npx tsc --noEmit
-                                    else
-                                        echo 'TypeScript not found in panelui, skipping compilation check'
-                                    fi
+                                    echo 'TypeScript not found in panelui, skipping compilation check'
                                 fi
                                 
                                 # Run panelui linting if available
                                 echo 'Checking for Admin Panel linting scripts...'
-                                if command -v bun >/dev/null 2>&1; then
-                                    if bun run --silent lint >/dev/null 2>&1; then
-                                        echo 'Running Admin Panel linting with Bun...'
-                                        bun run lint
-                                    else
-                                        echo 'No lint script found for Admin Panel'
-                                    fi
+                                if bun run --silent lint >/dev/null 2>&1; then
+                                    echo 'Running Admin Panel linting with Bun...'
+                                    bun run lint
                                 else
-                                    if npm run lint --silent >/dev/null 2>&1; then
-                                        echo 'Running Admin Panel linting with npm...'
-                                        npm run lint
-                                    else
-                                        echo 'No lint script found for Admin Panel'
-                                    fi
+                                    echo 'No lint script found for Admin Panel'
                                 fi
                                 
                                 # Build test for panelui
                                 echo 'Testing Admin Panel build...'
-                                if command -v bun >/dev/null 2>&1; then
-                                    echo 'Building Admin Panel with Bun...'
-                                    bun run build
-                                else
-                                    echo 'Building Admin Panel with npm...'
-                                    npm run build
-                                fi
+                                echo 'Building Admin Panel with Bun...'
+                                bun run build
                                 '''
                             }
                         }
