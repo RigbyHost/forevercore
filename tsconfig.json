@@ -95,7 +95,10 @@
 			"net.fimastgd.forevercore:root": ["__root"], // TODO: change
 			"net.fimastgd.forevercore.modules.*": ["./modules/*"], // TODO: change
 			"@/*": ["./*"],
-			"@api/*": ["./api/*"]
+			"@api/*": ["./api/*"],
+			// modules
+			"@console-api": ["./modules/console-api"],
+			"@RedisController": ["./modules/RedisController"]
 		}
 	},
 	"exclude": [
