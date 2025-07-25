@@ -20,6 +20,9 @@ COPY bun.lock* ./
 # ===== DEPENDENCIES STAGE =====
 FROM base AS deps
 
+# Install Bun
+RUN npm install -g bun
+
 # Install dependencies
 RUN bun install --frozen-lockfile
 
@@ -54,6 +57,9 @@ RUN adduser -S nextjs -u 1001
 
 # Create app directory
 WORKDIR /app
+
+# Install Bun
+RUN npm install -g bun
 
 # Copy package.json for production dependencies
 COPY package*.json ./
