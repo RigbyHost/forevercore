@@ -43,7 +43,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
 			const roles = new Roles();
 			const username: string = command_array[1];
 
-			roles.setRole(username, 1)
+			roles.setRole("", username, 1)
 				.then(opuser => {
 					if (opuser) {
 						ConsoleApi.Log("main", `${username} opped`);
@@ -59,7 +59,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
 			const roles = new Roles();
 			const username: string = command_array[1];
 
-			roles.unsetRole(username, 1)
+			roles.unsetRole("", username, 1)
 				.then(opuser => {
 					if (opuser) {
 						ConsoleApi.Log("main", `${username} deopped`);
