@@ -21,7 +21,7 @@ COPY bun.lock* ./
 FROM base AS deps
 
 # Install dependencies
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 # ===== BUILDER STAGE =====
 FROM base AS builder
@@ -57,7 +57,7 @@ WORKDIR /app
 
 # Copy package.json for production dependencies
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN bun install --frozen-lockfile
 
 # Copy built application from builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -108,7 +108,7 @@ WORKDIR /app
 COPY package*.json bun.lock* ./
 
 # Install dependencies with Bun
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .

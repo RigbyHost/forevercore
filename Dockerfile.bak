@@ -21,7 +21,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN bun install --frozen-lockfile
 
 # ===== DEVELOPMENT STAGE =====
 FROM base AS development
@@ -70,7 +70,7 @@ WORKDIR /app
 
 # Copy package files and install production deps
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN bun install --frozen-lockfile
 
 # Copy built application
 COPY --from=builder /app .
@@ -122,7 +122,7 @@ WORKDIR /app
 COPY package*.json bun.lockb* ./
 
 # Install dependencies
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile
 RUN bun add -g tsconfig-paths
 
 # Copy data
