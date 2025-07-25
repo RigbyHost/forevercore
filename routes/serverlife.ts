@@ -1,10 +1,8 @@
-'package net.fimastgd.forevercore.routes.serverlife';
+/*'package net.fimastgd.forevercore.routes.serverlife';
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { settings } from '../serverconf/settings';
-import banUser from '../panel/leaderboard/ban';
-import unbanUser from '../panel/leaderboard/unban';
+import { getSettings } from '../serverconf/settings';
 import Panel from '../panel/main';
 import getRoleInfo from '../panel/accounts/getRoleInfo';
 import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
@@ -12,7 +10,6 @@ import ConsoleApi from '../modules/console-api';
 import os from 'os';
  
 const db: Connection = require("../serverconf/db");
-const GDPSID: string = settings.GDPSID.toString();
 
 const router = express.Router();
 router.use(cookieParser());
@@ -20,7 +17,7 @@ router.use(cookieParser());
 type int = number;
 type double = number;
 
-async function getServerLife(): Promise<object> {
+async function getServerLife(GDPSID: string): Promise<object> {
     const usedMemory = process.memoryUsage();
     const totalMemory = os.totalmem();
 
@@ -63,7 +60,8 @@ router.get('/', async (req: express.Request, res: express.Response) => {
 });
 /* router.get('/d', async (req: express.Request, res: express.Response) => {
     res.render('debugWindow', { GDPSID: GDPSID });
-}); */
+}); 
 
 export default router;
 
+*/
