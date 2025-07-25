@@ -49,21 +49,21 @@ function createDBThread(id: string): DatabaseConfig {
 			return {
 				host: config.host,
 				user: config.user,
-				password: config.password || envPassword,
+				password: config.password,
 				database: config.database,
-				port: config.port || envPort
+				port: config.port
 			};
 		}
 	}
 
-	// Last resort: use environment variables with defaults
+	/* Last resort: use environment variables with defaults
 	return {
 		host: envHost,
 		user: envUser,
 		password: envPassword,
 		database: envDatabase,
 		port: envPort
-	};
+	}; */
 }
 
 export default createDBThread;
