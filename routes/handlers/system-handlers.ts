@@ -5,12 +5,12 @@ import ConsoleApi from '../../modules/console-api';
 
 export class CalculateCPsHandler extends BaseApiHandler {
     constructor() {
-        super('/calculateCPs.php');
+        super('/:gdpsid/calculateCPs.php');
     }
 
     async handle(req: Request, res: Response): Promise<void> {
         try {
-            const result = await calculate();
+            const result = await calculate(req.params.gdpsid.toString());
             res.status(200).send(result);
         } catch (error) {
             ConsoleApi.Error('CalculateCPsHandler', `Error calculating creator points: ${error}`);
