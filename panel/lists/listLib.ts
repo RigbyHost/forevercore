@@ -1,91 +1,106 @@
-'package net.fimastgd.forevercore.panel.lists.listLib';
+"package net.fimastgd.forevercore.panel.lists.listLib";
 
-import { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-const db: Connection = require("../../serverconf/db");
-const ConsoleApi = require("../../modules/console-api");
-const c = require('ansi-colors');
-const ApiLib = require("../../api/lib/apiLib");
+import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import threadConnection from "../../serverconf/db";
+import ConsoleApi from "net.fimastgd.forevercore.modules.console-api";
+import * as c from "ansi-colors";
+import ApiLib from "../../api/lib/apiLib";
+import { Numbers } from "number-utils-all";
 
 interface Suggest {
-  suggestBy: number | string;
-  suggestLevelId: number;
-  suggestDifficulty: number;
-  suggestStars: number;
-  suggestFeatured: number;
-  suggestAuto: number;
-  suggestDemon: number;
-  timestamp: number;
+	suggestBy: number | string;
+	suggestLevelId: number;
+	suggestDifficulty: number;
+	suggestStars: number;
+	suggestFeatured: number;
+	suggestAuto: number;
+	suggestDemon: number;
+	timestamp: number;
 }
 
 type int = number;
+const Num = new Numbers();
 
 class ListLib {
-    public static async getReportList(): Promise<RowDataPacket[]> {
-        try {
-            const [rows] = await db.query<RowDataPacket[]>(`SELECT * FROM reports ORDER BY id DESC`);
-            ConsoleApi.Log("main", `Panel action: received report list`);
-            return rows;
-        } catch (error) {
+	public static async getReportList(gdpsid: string): Promise<RowDataPacket[]> {
+		try {
+			const db = await threadConnection(gdpsid);
+			const [rows] = await db.query<RowDataPacket[]>(`SELECT * FROM reports ORDER BY id DESC`);
+			ConsoleApi.Log("main", `Panel action: received report list`);
+			return rows;
+		} catch (error) {
 			ConsoleApi.Error("main", `getReportListException -> public: ${error} at net.fimastgd.forevercore.panel.lists.listLib`);
-            return [];
-        }
-    }
-    public static async getSuggestList(offset: int): Promise<Suggest[]> {
-        try {
-            if (offset > 0) {
-                offset = offset * 2;
-                offset = parseInt(`${offset}0`, 10);
-            }
-            const [rows] = await db.execute<RowDataPacket[]>(
-                `SELECT suggestBy, suggestLevelId, suggestDifficulty, suggestStars, suggestFeatured, suggestAuto, suggestDemon, timestamp FROM suggest ORDER BY timestamp DESC LIMIT 20 OFFSET ${offset}`
-            );
+			return [];
+		}
+	}
+	public static async getSuggestList(gdpsid: string, offset: int): Promise<Suggest[]> {
+		try {
+			const db = await threadConnection(gdpsid);
+			if (!Num.Int(offset)) {
+				throw "Offset can be only integer type";
+			}
+			if (offset > 0) {
+				offset = offset * 2;
+				offset = parseInt(`${offset}0`, 10);
+			}
+			const [rows] = await db.execute<RowDataPacket[]>(
+				`SELECT suggestBy, suggestLevelId, suggestDifficulty, suggestStars, suggestFeatured, suggestAuto, suggestDemon, timestamp FROM suggest ORDER BY timestamp DESC LIMIT 20 OFFSET ${offset}`
+			);
 
-            const result: Suggest[] = await Promise.all(rows.map(async (row: any) => {
-                const accountName = await ApiLib.getAccountName(row.suggestBy);
-                return {
-                    ...row,
-                    suggestBy: accountName,
-                    formattedDate: this.formatDate(row.timestamp), 
-                    difficulty: await ApiLib.getDifficulty(row.suggestDifficulty, row.suggestAuto, row.suggestDemon)
-                };
-            }));
-            ConsoleApi.Log("main", "Panel action: received suggest list");
-            return result;
-        } catch (error) {
-			ConsoleApi.Error("main", `getSuggestListException -> public: ${error} at net.fimastgd.forevercore.panel.lists.listLib`); 
-            return [];
-        }
-    }
-    
-    public static async getUnlistedList(offset: int) {
-        try {
-            if (offset > 250) {
-                return [];
-            }
-            if (offset > 0) {
-                offset = parseInt(`${offset}0`, 10);
-            } else if (offset < 0) {
-                offset = 0
-            } else {
-                offset = 0;
-            }
-            const [rows] = await db.query<RowDataPacket[]>(`SELECT * FROM (SELECT * FROM levels WHERE unlisted != 0 LIMIT 50 OFFSET ${offset * 5}) AS subquery ORDER BY levelID DESC`);
-            ConsoleApi.Log("main", "Received unlisted list");
-            return rows;
-        } catch (error) {
+			const result: Suggest[] = await Promise.all(
+				rows.map(async (row: any) => {
+					const accountName = await ApiLib.getAccountName(gdpsid, row.suggestBy);
+					return {
+						...row,
+						suggestBy: accountName,
+						formattedDate: this.formatDate(row.timestamp),
+						difficulty: await ApiLib.getDifficulty(row.suggestDifficulty, row.suggestAuto, row.suggestDemon)
+					};
+				})
+			);
+			ConsoleApi.Log("main", "Panel action: received suggest list");
+			return result;
+		} catch (error) {
+			ConsoleApi.Error("main", `getSuggestListException -> public: ${error} at net.fimastgd.forevercore.panel.lists.listLib`);
+			return [];
+		}
+	}
+
+	public static async getUnlistedList(gdpsid: string, offset: int) {
+		try {
+			const db = await threadConnection(gdpsid);
+			if (!Num.Int(offset)) {
+				throw "Offset can be only integer type";
+			}
+			if (offset > 250) {
+				return [];
+			}
+			if (offset > 0) {
+				offset = parseInt(`${offset}0`, 10);
+			} else if (offset < 0) {
+				offset = 0;
+			} else {
+				offset = 0;
+			}
+			const [rows] = await db.query<RowDataPacket[]>(
+				`SELECT * FROM (SELECT * FROM levels WHERE unlisted != 0 LIMIT 50 OFFSET ${offset * 5}) AS subquery ORDER BY levelID DESC`
+			);
+			ConsoleApi.Log("main", "Received unlisted list");
+			return rows;
+		} catch (error) {
 			ConsoleApi.Error("main", `getUnlistedListException -> public: ${error} at net.fimastgd.forevercore.panel.lists.listLib`);
-            return [];
-        }
-    }
-    
-    private static formatDate(timestamp: int): string {
-        const date = new Date(timestamp * 1000);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
-} 
+			return [];
+		}
+	}
+
+	private static formatDate(timestamp: int): string {
+		const date = new Date(timestamp * 1000);
+		const day = String(date.getDate()).padStart(2, "0");
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const year = date.getFullYear();
+		const hours = String(date.getHours()).padStart(2, "0");
+		const minutes = String(date.getMinutes()).padStart(2, "0");
+		return `${day}/${month}/${year} ${hours}:${minutes}`;
+	}
+}
 export default ListLib;
