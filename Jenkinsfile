@@ -256,12 +256,7 @@ EOF
                                     bun install --frozen-lockfile
                                 else
                                     echo 'Using npm for panelui dependencies'
-                                    if [ ! -f package-lock.json ] || ! npm ci --dry-run >/dev/null 2>&1; then
-                                        echo 'Generating fresh package-lock.json for panelui...'
-                                        npm install
-                                    else
-                                        npm ci
-                                    fi
+                                    npm install
                                 fi
                                 
                                 # TypeScript compilation check for panelui
