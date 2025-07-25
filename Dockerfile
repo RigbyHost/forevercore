@@ -1,5 +1,5 @@
 # Multi-stage build for ForeverCore API (Bun)
-FROM oven/bun:1.1-alpine AS base
+FROM oven/bun:1.2-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -44,7 +44,7 @@ COPY . .
 RUN bun run build:core
 
 # ===== PRODUCTION STAGE =====
-FROM oven/bun:1.1-alpine AS production
+FROM oven/bun:1.2-alpine AS production
 
 # Install runtime dependencies
 RUN apk add --no-cache \

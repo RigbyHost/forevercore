@@ -86,7 +86,7 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
 
 # ===== BUN VARIANT =====
-FROM oven/bun:1.1-alpine AS bun-production
+FROM oven/bun:1.2-alpine AS bun-production
 
 # Install system dependencies
 RUN apk add --no-cache \
