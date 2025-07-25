@@ -31,9 +31,9 @@ const getUserInfo = async (
 
 		// Authenticate user
 		if (gjp2Str) {
-			me = accountIDStr ? await GJPCheck.getAccountIDOrDie(accountIDStr, gjp2Str, undefined, req) : 0;
+			me = accountIDStr ? await GJPCheck.getAccountIDOrDie(gdpsid, accountIDStr, gjp2Str, undefined, req) : 0;
 		} else {
-			me = accountIDStr ? await GJPCheck.getAccountIDOrDie(accountIDStr, undefined, gjpStr, req) : 0;
+			me = accountIDStr ? await GJPCheck.getAccountIDOrDie(gdpsid, accountIDStr, undefined, gjpStr, req) : 0;
 		}
 
 		// Check if blocked
@@ -72,7 +72,7 @@ const getUserInfo = async (
 		let reqsstate = accinfo.frS;
 		let msgstate = accinfo.mS;
 		let commentstate = accinfo.cS;
-		let badge = await ApiLib.getMaxValuePermission(extid, "modBadgeLevel");
+		let badge = await ApiLib.getMaxValuePermission(gdpsid, extid, "modBadgeLevel");
 
 		// Handle friendship state
 		let friendstate = 0;

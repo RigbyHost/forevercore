@@ -57,9 +57,9 @@ const loginAccount = async (
 		// Validate credentials
 		let pass = 0;
 		if (passwordOr) {
-			pass = await GeneratePass.isValidUsrname(userName, passwordOr, req);
+			pass = await GeneratePass.isValidUsrname(gdpsid, userName, passwordOr, req);
 		} else if (gjp2Or) {
-			pass = await GeneratePass.isGJP2ValidUsrname(userName, gjp2Or, req);
+			pass = await GeneratePass.isGJP2ValidUsrname(gdpsid, userName, gjp2Or, req);
 		}
 
 		if (pass === 1) {

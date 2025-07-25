@@ -1,5 +1,5 @@
 "package net.fimastgd.forevercore.api.accounts.updateSettings";
-
+// сука кто package поудалял
 import { Request } from "express";
 import { ResultSetHeader } from "mysql2/promise";
 import threadConnection from "../../serverconf/db";
@@ -39,7 +39,7 @@ const updateSettings = async (
 		if (!accountIDStr) throw new Error("accountID is not defined");
 
 		// Authenticate user
-		const accountID = await GJPCheck.getAccountIDOrDie(accountIDStr, gjp2Str, gjpStr, req);
+		const accountID = await GJPCheck.getAccountIDOrDie(gdpsid, accountIDStr, gjp2Str, gjpStr, req);
 
 		// Process parameters
 		const mS = mSStr ? await ExploitPatch.remove(mSStr) : 0;
