@@ -161,14 +161,6 @@ router.post("/link", async (req: express.Request, res: express.Response) => {
 
 router.post("/dropbox", async (req: express.Request, res: express.Response) => {
 	const gdpsid: string = req.params.gdpsid.toString();
-	
-	// Проверка captcha
-	const captchaValid = await verifyCaptcha(req.body.captchaResponse);
-	if (!captchaValid) {
-		res.status(200).send("CapchaIsNotCompleted:0");
-		return;
-	}
-
 	// Проверка размера файла
 	const fileSize = await checkFile(req.body.songurl);
 	const SIZE = fileSize !== "Undefined" ? fileSize : "Unknown";
