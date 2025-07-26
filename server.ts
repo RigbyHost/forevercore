@@ -10,15 +10,16 @@ import readline from "readline";
 import * as c from "ansi-colors";
 import minimist from "minimist";
 
-import threadConnection from "./serverconf/db";
-import { getSettings } from "./serverconf/settings";
-import envConfig from "./serverconf/env-config";
-import ConsoleApi from "./modules/console-api";
-import ApiRouter from "./routes/api-router";
-import { createAllHandlers } from "./routes/handlers";
-import TS_handler from "./tslib/TS_handler";
-import { Roles } from "./panel/roles/roles";
+import threadConnection from "@/serverconf/db";
+import { getSettings } from "@/serverconf/settings";
+import envConfig from "@/serverconf/env-config";
+import ConsoleApi from "@/modules/console-api";
+import ApiRouter from "@/routes/api-router";
+import { createAllHandlers } from "@/routes/handlers";
+import TS_handler from "@/tslib/TS_handler";
+import { Roles } from "@/panel/roles/roles";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import RedisController from "@RedisController";
 
 // Parse command line arguments
 const args = minimist(process.argv.slice(2));
@@ -27,11 +28,14 @@ let versionSwitcher: boolean = false;
 if (args.versionSwitcher && args.versionSwitcher === "basic") {
 	async function checkVersionSwitcher(): Promise<null> {
 		try {
-			await fs.promises.access(path.join(__dirname, 'VersionSwitcher.jsc'));
+			await fs.promises.access(path.join(__dirname, "VersionSwitcher.jsc"));
 			versionSwitcher = true;
 			return null;
 		} catch (IOException) {
-			ConsoleApi.Warn("VersionSwitcher", "Could not find or load class VersionSwitcher from net.fimastgd.forevercore.VersionSwitcher at net.fimastgd.forevercore");
+			ConsoleApi.Warn(
+				"VersionSwitcher",
+				"Could not find or load class VersionSwitcher from net.fimastgd.forevercore.VersionSwitcher at net.fimastgd.forevercore"
+			);
 			return null;
 		}
 	}
@@ -150,12 +154,47 @@ if (envConfig.isDevelopment()) {
 	envConfig.logConfiguration();
 }
 
+// Redis connection
+const checkRedis = async (): Promise<true | string> => {
+	try {
+		const redis = new RedisController({
+			host: envConfig.get("REDIS_HOST"),
+			port: envConfig.get("REDIS_PORT"),
+			keyPrefix: envConfig.get("REDIS_NAMESPACE"),
+			password: envConfig.get("REDIS_PASSWORD")
+		});
+		const PING: string = await redis.ping();
+		if (PING === "PONG") {
+			return true;
+		} else {
+			return PING;
+		}
+	} catch (e) {
+		ConsoleApi.FatalError("main", "Failed to handle redis connection: " + e + " at net.fimastgd.forevercore");
+		process.exit(1);
+		return "RedisException*";
+	}
+};
+
 // Start server
-const PORT = envConfig.get('PORT');
+const PORT = envConfig.get("PORT");
 
 app.listen(PORT, () => {
 	ConsoleApi.Log$LightGreen("main", `GDPS Engine started on port ${PORT}!`);
-
+	if (envConfig.get("REDIS_ENABLED")) {
+		ConsoleApi.Log("RedisController", "Redis is enabled on this node");
+		checkRedis()
+			.then(val => {
+				if (String(val) == "true") {
+					ConsoleApi.Log("main", "Successful connection to Redis");
+				} else {
+					ConsoleApi.Error("main", "Failed to connect to Redis. Check the .env configuration for mistakes");
+				}
+			})
+			.catch(() => {
+				process.exit(1);
+			});
+	}
 	// Setup command line interface if not in NOGUI mode
 	if (!NOGUI) {
 		const rl = readline.createInterface({
@@ -171,7 +210,7 @@ app.listen(PORT, () => {
 				ConsoleApi.Log("main", "Stopping server...");
 				ConsoleApi.Log("Server thread", "----- [ SERVER STOPPED ] -----");
 				process.exit(0);
-			} else if (command === "") {
+			} else if (command.trim() === "") {
 				// Do nothing for empty command
 			} else {
 				ConsoleApi.Write(`> ${command}`, true, false);

@@ -40,6 +40,7 @@
     "get-video-duration": "^4.1.0",
     "http": "^0.0.1-security",
     "http-proxy-middleware": "^3.0.3",
+    "ioredis": "^5.6.1",
     "js-yaml": "^4.1.0",
     "minimist": "^1.2.8",
     "mock-aws-s3": "^4.0.2",

@@ -256,7 +256,7 @@ class ConsoleApi {
 		deleteOldLogs();
 
 		const SEND = `[${dateNow()}] [${thread}/INFO]: ${args}`;
-		console.log(c.greenBright(SEND));
+		console.log(c.bold.greenBright(SEND));
 
 		if (logsave) {
 			const LOGFILE = `${dateFile()}.log`;

@@ -22,12 +22,12 @@ export default class RedisController {
 			port: options.port || 6379,
 			password: options.password,
 			db: options.db || 0,
-			retryDelayOnFailover: 100,
-			enableReadyCheck: false,
-			maxRetriesPerRequest: null
+			//retryDelayOnFailover: 100,
+			//enableReadyCheck: false,
+			//maxRetriesPerRequest: null
 		});
 
-		this.keyPrefix = options.keyPrefix || "config";
+		this.keyPrefix = options.keyPrefix || "foreverhost";
 	}
 
 	/**

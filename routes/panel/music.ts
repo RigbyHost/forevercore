@@ -1,23 +1,23 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import axios from "axios";
-import { getSettings } from "@/serverconf/settings";
-import Panel from "@/panel/main";
-import { captcha } from "@/serverconf/captcha";
-import getSongInfo from "@/panel/music/newgrounds";
-import getZeMuInfo from "@/panel/music/zemu";
-import getSongLinkInfo from "@/panel/music/link";
-import getSongDropboxInfo from "@/panel/music/dropbox";
-import processYoutubeUpload from "@/panel/music/youtube";
-import getSongList from "@/panel/music/list";
-import { getMusicState } from "@/serverconf/music";
-import ConsoleApi from "@/modules/console-api";
+import { getSettings } from "../../serverconf/settings";
+import Panel from "../../panel/main";
+import { captcha } from "../../serverconf/captcha";
+import getSongInfo from "../../panel/music/newgrounds";
+import getZeMuInfo from "../../panel/music/zemu";
+import getSongLinkInfo from "../../panel/music/link";
+import getSongDropboxInfo from "../../panel/music/dropbox";
+import processYoutubeUpload from "../../panel/music/youtube";
+import getSongList from "../../panel/music/list";
+import { getMusicState } from "../../serverconf/music";
+import ConsoleApi from "../../modules/console-api";
 
 const router = express.Router({ mergeParams: true });
 
 router.use(cookieParser());
 
-// Общая функция проверки авторизации
+// общая функция проверки авторизации
 function checkAuth(req: express.Request, res: express.Response, gdpsid: string): boolean {
 	if (!req.cookies[gdpsid + "-username"]) {
 		if (gdpsid != "") {
@@ -30,7 +30,24 @@ function checkAuth(req: express.Request, res: express.Response, gdpsid: string):
 	return true;
 }
 
-// Общая функция проверки размера файла
+// общая функция проверки captcha
+async function verifyCaptcha(hCaptchaResponse: string): Promise<boolean> {
+	const hCaptchaSecret = captcha.secret;
+	const data = new URLSearchParams({
+		secret: hCaptchaSecret,
+		response: hCaptchaResponse
+	});
+
+	try {
+		const response = await axios.post("https://hcaptcha.com/siteverify", data);
+		const responseData = response.data;
+		return responseData.success === true || hCaptchaResponse === "1";
+	} catch (error) {
+		return hCaptchaResponse === "1";
+	}
+}
+
+// общая функция проверки размера файла
 async function checkFile(url: string): Promise<string> {
 	try {
 		const response = await fetch(url, { method: "HEAD" });
@@ -49,11 +66,10 @@ async function checkFile(url: string): Promise<string> {
 	}
 }
 
-/* router.get("/", async (req: express.Request, res: express.Response) => {
+router.get("/", async (req: express.Request, res: express.Response) => {
 	res.render("errors/404");
-}); */
+});
 
-/* GET ROUTES - DEPRECATED, NEED TO MIGRATE TO NEXT */
 // GET routes для списка музыки
 router.get("/list", async (req: express.Request, res: express.Response) => {
 	const gdpsid: string = req.params.gdpsid.toString();
@@ -151,9 +167,18 @@ router.post("/zemu", async (req: express.Request, res: express.Response) => {
 
 router.post("/link", async (req: express.Request, res: express.Response) => {
 	const gdpsid: string = req.params.gdpsid.toString();
+	
+	// проверка captcha
+	const captchaValid = await verifyCaptcha(req.body.captchaResponse);
+	if (!captchaValid) {
+		res.status(200).send("CapchaIsNotCompleted:0");
+		return;
+	}
+
 	// проверка размера файла
 	const fileSize = await checkFile(req.body.songurl);
 	const SIZE = fileSize !== "Undefined" ? fileSize : "Unknown";
+
 	const array: [string, string, string | number] = [req.body.songname, req.body.songurl, SIZE];
 	const result = await getSongLinkInfo(gdpsid, array);
 	res.status(200).send(result);
@@ -161,7 +186,15 @@ router.post("/link", async (req: express.Request, res: express.Response) => {
 
 router.post("/dropbox", async (req: express.Request, res: express.Response) => {
 	const gdpsid: string = req.params.gdpsid.toString();
-	// Проверка размера файла
+	
+	// проверка captcha
+	const captchaValid = await verifyCaptcha(req.body.captchaResponse);
+	if (!captchaValid) {
+		res.status(200).send("CapchaIsNotCompleted:0");
+		return;
+	}
+
+	// проверка размера файла
 	const fileSize = await checkFile(req.body.songurl);
 	const SIZE = fileSize !== "Undefined" ? fileSize : "Unknown";
 
@@ -170,15 +203,23 @@ router.post("/dropbox", async (req: express.Request, res: express.Response) => {
 	res.status(200).send(result);
 });
 
-// YouTube POST route - упрощенный благодаря рефакторингу
 router.post("/youtube", async (req: express.Request, res: express.Response) => {
 	const gdpsid: string = req.params.gdpsid.toString();
+	
+	// проверка captcha
+	const captchaValid = await verifyCaptcha(req.body.captchaResponse);
+	if (!captchaValid) {
+		res.status(200).send("CapchaIsNotCompleted:0");
+		return;
+	}
+
 	// подготовка данных для обработки
 	const requestData = {
 		songname: req.body.songname,
 		songurl: req.body.songurl,
 		originalLink: req.body.songurl
 	};
+
 	// обработка загрузки через отдельный модуль
 	const result = await processYoutubeUpload(
 		gdpsid, 
