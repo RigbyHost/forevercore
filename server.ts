@@ -1,4 +1,4 @@
-"package net.fimastgd.forevercore";
+`package net.fimastgd.forevercore`;
 
 import express from "express";
 import bodyParser from "body-parser";
