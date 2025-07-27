@@ -10,7 +10,7 @@ import envConfig from "@/serverconf/env-config";
 	});
 
 	// Сохранение конфигурации
-	await redis.setConfig("3002", "settings", {
+	 await redis.setConfig("3002", "settings", {
 		serverName: "GDPS",
 		sessionGrants: false,
 		unregisteredSubmissions: false,
@@ -23,11 +23,12 @@ import envConfig from "@/serverconf/env-config";
 	});
 
 	// Получение конфигурации
-	const config = await redis.getConfig("3002", "settings");
+	let config = await redis.getConfig("3002", "settings");
 	console.log(config);
-	/* Обновление части конфигурации
-await redisConfig.updateConfig("user123", "settings", {
-	theme: "light"
-});
-*/
+	await redis.updateConfig("3002", "settings", {
+		topCount: 42
+	});
+	config = await redis.getConfig("3002", "settings");
+	console.log(config.topCount);
+	console.log(await redis.getAllConfigs("3002"));
 })();
