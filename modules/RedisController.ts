@@ -21,10 +21,7 @@ export default class RedisController {
 			host: options.host || "localhost",
 			port: options.port || 6379,
 			password: options.password,
-			db: options.db || 0,
-			//retryDelayOnFailover: 100,
-			//enableReadyCheck: false,
-			//maxRetriesPerRequest: null
+			db: options.db || 0
 		});
 
 		this.keyPrefix = options.keyPrefix || "foreverhost";
