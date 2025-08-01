@@ -1,221 +1,114 @@
-import { Request } from "express";
-import path from "path";
-import fs from "fs/promises";
-import threadConnection from "../../serverconf/db";
-import ExploitPatch from "../lib/exploitPatch";
-import GeneratePass from "../lib/generatePass";
-import ConsoleApi from "../../modules/console-api";
-import { getSettings } from "../../serverconf/settings";
+import * as path from "path";
+import * as fs from "fs/promises";
+import * as zlib from "zlib";
+import { promisify } from "util";
+import threadConnection from "@/serverconf/db";
+import ExploitPatch from "@api/lib/exploitPatch";
+import GeneratePass from "@api/lib/generatePass";
+import ConsoleApi from "@/console-api";
+import __root from "@/root";
 
-/**
- * Структура для разбора данных сохранения
- */
-interface SaveData {
-	orbs: string;
-	levels: string;
-	password?: string;
-}
+const gunzip = promisify(zlib.gunzip);
+const gzip = promisify(zlib.gzip);
 
-/**
- * Бэкапит аккаунт Geometry Dash в базу данных и на диск
- * @param gdpsid - ID GDPS
- * @param userNameOr - Имя пользователя
- * @param passwordOr - Пароль
- * @param saveDataOr - Данные сохранения
- * @param accountIDOr - ID аккаунта
- * @param gjp2Or - GJP2 хеш
- * @param req - Express запрос
- * @returns "1" если успешно, "-1" если ошибка
- */
 const backupAccount = async (
 	gdpsid: string,
-	userNameOr?: string,
-	passwordOr?: string,
-	saveDataOr?: string,
-	accountIDOr?: string,
-	gjp2Or?: string,
-	req?: Request
+	userNameOr: string | undefined,
+	passwordOr: string | undefined,
+	saveDataOr: string,
+	accountIDOr: string | undefined,
+	gjp2Or: string | undefined,
+	req: any
 ): Promise<string> => {
-	const db = await threadConnection(gdpsid);
 	try {
-		// Логируем запрос
-		ConsoleApi.Log("main", `Backup request received for account ${accountIDOr || userNameOr}`);
-
-		// Базовая валидация входных данных
-		if (!saveDataOr || (!userNameOr && !accountIDOr)) {
-			ConsoleApi.Error("main", `Failed to backup account: missing required parameters`);
-			return "-1";
-		}
-
-		// Получить имя пользователя, если не предоставлено
+		const db = await threadConnection(gdpsid);
 		let userName: string | null = null;
-		let accountID: string | number | null = null;
+		let accountID: string | null = null;
+		let extID: string | null = null;
+		let userNameFin: string | null = null;
 
-		// Получение accountID и userName
-		try {
-			if (!userNameOr) {
-				accountID = await ExploitPatch.remove(accountIDOr);
-				const [rows] = await db.execute<any[]>("SELECT userName FROM accounts WHERE accountID = ?", [accountID]);
-				userName = rows.length ? rows[0].userName : null;
-			} else {
-				userName = await ExploitPatch.remove(userNameOr);
-				if (!accountIDOr) {
-					const [rows] = await db.execute<any[]>("SELECT accountID FROM accounts WHERE userName = ?", [userName]);
-					accountID = rows.length ? rows[0].accountID : null;
-				} else {
-					accountID = ExploitPatch.remove(accountIDOr);
-				}
-			}
+		// handle missing userNameOr
+		if (!userNameOr && accountIDOr) {
+			const [rows] = await db.execute("SELECT userName FROM accounts WHERE accountID = ?", [accountIDOr]);
+			userNameOr = rows.length ? rows[0].userName : null;
+		}
 
-			// Проверить ID аккаунта
-			if (!accountID || !isFinite(Number(accountID))) {
-				ConsoleApi.Log("main", `Failed to backup account: ${accountID} - invalid ID`);
-				return "-1";
-			}
-		} catch (err) {
-			ConsoleApi.Error("main", `Error getting account info: ${err}`);
+		// sanitize username
+		if (userNameOr) {
+			userName = await ExploitPatch.remove(userNameOr);
+		}
+
+		const password = passwordOr || "";
+		const saveData = await ExploitPatch.remove(saveDataOr);
+
+		// resolve account ID
+		if (!accountIDOr && userName) {
+			const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName = ?", [userName]);
+			accountID = rows.length ? String(rows[0].accountID) : null;
+		} else if (accountIDOr) {
+			accountID = await ExploitPatch.remove(accountIDOr);
+		}
+
+		if (!accountID || !isFinite(Number(accountID))) {
+			ConsoleApi.Log("main", `Failed to backup account: ${accountID}`);
 			return "-1";
 		}
 
-		// Проверить пароль
+		// validate credentials
 		let pass = 0;
-		try {
-			if (passwordOr) {
-				pass = await GeneratePass.isValid(gdpsid, accountID, passwordOr, req);
-			} else if (gjp2Or) {
-				pass = await GeneratePass.isGJP2Valid(gdpsid, accountID, gjp2Or, req);
-			}
+		if (passwordOr) {
+			pass = await GeneratePass.isValid(accountID, passwordOr, req);
+		} else if (gjp2Or) {
+			pass = await GeneratePass.isGJP2Valid(accountID, gjp2Or, req);
+		}
 
-			if (pass !== 1) {
-				ConsoleApi.Log("main", `Failed to backup account. ID: ${accountID} - authentication failed`);
-				return "-1";
-			}
-		} catch (err) {
-			ConsoleApi.Error("main", `Error in authentication: ${err}`);
+		if (pass !== 1) {
+			ConsoleApi.Log("main", `Failed to backup account. ID: ${accountID}`);
 			return "-1";
 		}
 
-		// Обработка данных сохранения
-		let saveDataArr: string[] = [];
-		let saveDataDecoded: string = "";
-		let orbs: string = "0";
-		let lvls: string = "0";
+		// process save data
+		const saveDataArr = saveDataOr.split(";");
+		let saveDataDecoded = saveDataArr[0].replace(/-/g, "+").replace(/_/g, "/");
+		saveDataDecoded = Buffer.from(saveDataDecoded, "base64");
+		saveDataDecoded = (await gunzip(saveDataDecoded)).toString();
 
-		try {
-			saveDataArr = saveDataOr.split(";");
-			saveDataDecoded = Buffer.from(saveDataArr[0].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString();
+		const orbs = saveDataDecoded.split("</s><k>14</k><s>")[1].split("</s>")[0];
+		const lvls = saveDataDecoded.split("<k>GS_value</k>")[1].split("</s><k>4</k><s>")[1].split("</s>")[0];
 
-			// Извлечь сферы и уровни из данных сохранения
-			const saveDataParsed: SaveData = {
-				orbs: "0",
-				levels: "0"
-			};
+		// anonymize password in save data
+		const anonymizedSaveData = saveDataDecoded.replace(`<k>GJA_002</k><s>${passwordOr}</s>`, "<k>GJA_002</k><s>password</s>");
 
-			// Безопасно извлекаем данные
-			const orbsMatch = saveDataDecoded.match(/<k>14<\/k><s>([^<]+)<\/s>/);
-			if (orbsMatch && orbsMatch[1]) {
-				saveDataParsed.orbs = orbsMatch[1];
-			}
+		// compress and format save data
+		const compressedData = await gzip(Buffer.from(anonymizedSaveData));
+		const finalSaveData = compressedData.toString("base64").replace(/\+/g, "-").replace(/\//g, "_") + ";" + saveDataArr[1];
 
-			const lvlsMatch = saveDataDecoded.match(/<k>GS_value<\/k>.*?<k>4<\/k><s>([^<]+)<\/s>/);
-			if (lvlsMatch && lvlsMatch[1]) {
-				saveDataParsed.levels = lvlsMatch[1];
-			}
+		// write account files
+		const accountsPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts`, `backup_${accountID}.dat`);
+		const accountsKeyPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts/keys`, `${accountID}`);
+		await fs.writeFile(accountsPath, finalSaveData);
+		await fs.writeFile(accountsKeyPath, "");
 
-			orbs = saveDataParsed.orbs;
-			lvls = saveDataParsed.levels;
-
-			// Маскировать пароль в данных сохранения
-			if (passwordOr) {
-				saveDataDecoded = saveDataDecoded.replace(new RegExp(`<k>GJA_002</k><s>${passwordOr}</s>`, "g"), "<k>GJA_002</k><s>password</s>");
-			}
-		} catch (err) {
-			ConsoleApi.Error("main", `Error parsing save data: ${err}`);
-			// Продолжаем выполнение с дефолтными значениями
+		// resolve user identifier for update
+		if (userName) {
+			const [rows] = await db.execute("SELECT extID FROM users WHERE userName = ? LIMIT 1", [userName]);
+			extID = rows.length ? rows[0].extID : null;
+		} else {
+			const [rows] = await db.execute("SELECT userName FROM users WHERE extID = ? LIMIT 1", [accountID]);
+			userNameFin = rows.length ? rows[0].userName : null;
 		}
 
-		// Сохранить данные в БД
-		try {
-			const query = `UPDATE accounts SET saveData = ?, lastBackup = ? WHERE accountID = ?`;
-			await db.execute(query, [saveDataOr, Math.floor(Date.now() / 1000), accountID]);
-		} catch (err) {
-			ConsoleApi.Error("main", `Error updating account data in DB: ${err}`);
-			return "-1";
+		// update user stats
+		if (extID) {
+			await db.execute("UPDATE users SET orbs = ?, completedLvls = ? WHERE extID = ?", [orbs, lvls, extID]);
+		} else if (userNameFin) {
+			await db.execute("UPDATE users SET orbs = ?, completedLvls = ? WHERE userName = ?", [orbs, lvls, userNameFin]);
 		}
 
-		// Обновить статистику пользователя (сферы и уровни)
-		try {
-			if (userNameOr) {
-				const [rows] = await db.execute<any[]>("SELECT extID FROM users WHERE userName = ? LIMIT 1", [userNameOr]);
-				if (rows.length > 0) {
-					const extID = rows[0].extID;
-					await db.execute("UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE extID = ?", [orbs, lvls, extID]);
-				}
-			} else {
-				const [rows] = await db.execute<any[]>("SELECT userName FROM users WHERE extID = ? LIMIT 1", [accountID]);
-				if (rows.length > 0) {
-					const userNameFin = rows[0].userName;
-					await db.execute("UPDATE `users` SET `orbs` = ?, `completedLvls` = ? WHERE userName = ?", [orbs, lvls, userNameFin]);
-				}
-			}
-		} catch (err) {
-			ConsoleApi.Error("main", `Error updating user stats: ${err}`);
-			// Продолжаем даже если не удалось обновить статистику
-		}
-
-		// Сохранить данные на диск
-		try {
-			// Создать директорию для бэкапов, если не существует
-			const backupDir = path.join(__dirname, "..", "..", "data", "backups");
-			await fs.mkdir(backupDir, { recursive: true });
-
-			// Создать поддиректорию для пользователя
-			const userBackupDir = path.join(backupDir, `${accountID}`);
-			await fs.mkdir(userBackupDir, { recursive: true });
-
-			// Сохранить данные
-			const timestamp = Math.floor(Date.now() / 1000);
-			const backupFile = path.join(userBackupDir, `backup_${timestamp}.dat`);
-
-			// Сохраняем исходные данные
-			await fs.writeFile(backupFile, saveDataOr);
-
-			// Сохраняем декодированные данные для отладки
-			const decodedBackupFile = path.join(userBackupDir, `backup_decoded_${timestamp}.dat`);
-			await fs.writeFile(decodedBackupFile, saveDataDecoded);
-
-			// Удаляем старые бэкапы, если превышено максимальное количество
-			/// <summary>
-			///     Нахера это, можно вопрос? Ну то есть хватит и перезаписи одного бэкапа
-			/// </summary>
-			const MAX_BACKUPS = getSettings(gdpsid).maxAccountBackups || 5;
-			const files = await fs.readdir(userBackupDir);
-
-			// Фильтруем только файлы формата backup_*.dat
-			const backupFiles = files
-				.filter(file => file.match(/^backup_\d+\.dat$/))
-				.map(file => ({
-					name: file,
-					path: path.join(userBackupDir, file),
-					time: parseInt(file.replace("backup_", "").replace(".dat", ""))
-				}))
-				.sort((a, b) => b.time - a.time); // Сортируем по времени (самые новые первые)
-
-			// Удаляем все бэкапы после максимального допустимого количества
-			if (backupFiles.length > MAX_BACKUPS) {
-				for (let i = MAX_BACKUPS; i < backupFiles.length; i++) {
-					await fs.unlink(backupFiles[i].path);
-				}
-			}
-		} catch (err) {
-			ConsoleApi.Error("main", `Error saving backup to disk: ${err}`);
-			// Не прерываем выполнение, так как данные уже сохранены в БД
-		}
-
-		ConsoleApi.Log("main", `Account backed up successfully. ID: ${accountID}`);
+		ConsoleApi.Log("main", `Account backuped. ID: ${accountID}`);
 		return "1";
 	} catch (err) {
-		ConsoleApi.Error("main", `${err} at net.fimastgd.forevercore.api.accounts.backup`);
+		ConsoleApi.Error("main", `${(err as Error).message} at net.fimastgd.forevercore.api.accounts.backup`);
 		return "-1";
 	}
 };
