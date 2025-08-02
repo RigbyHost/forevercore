@@ -59,9 +59,9 @@ const backupAccount = async (
 		// validate credentials
 		let pass = 0;
 		if (passwordOr) {
-			pass = await GeneratePass.isValid(accountID, passwordOr, req);
+			pass = await GeneratePass.isValid(gdpsid, accountID, passwordOr, req);
 		} else if (gjp2Or) {
-			pass = await GeneratePass.isGJP2Valid(accountID, gjp2Or, req);
+			pass = await GeneratePass.isGJP2Valid(gdpsid, accountID, gjp2Or, req);
 		}
 
 		if (pass !== 1) {
