@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import threadConnection from "../../serverconf/db";
 import ConsoleApi from "../../modules/console-api";
+import __root from "@/__root";
 
 /**
  * Deletes a user account
@@ -26,8 +27,8 @@ const deleteAccount = async (gdpsid: string, accountID: string | number): Promis
 		}
 
 		// Delete account save data files
-		const accountPath = path.join(__dirname, "../../data/accounts", `${accountID.toString()}.dat`);
-		const keysPath = path.join(__dirname, "../../data/accounts/keys", `${accountID.toString()}`);
+		const accountPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts`, `backup_${accountID}.dat`);
+		const keysPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts/keys`, `${accountID.toString()}`);
 
 		// Delete files (ignoring if they don't exist)
 		await fs.unlink(accountPath).catch(err => {
