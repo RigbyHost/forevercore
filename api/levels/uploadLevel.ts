@@ -167,13 +167,13 @@ const uploadLevel = async (
 		let ts = tsStr ? await ExploitPatch.number(tsStr) : "0";
 
 		// Check object limit if enabled
-		if (getSettings(gdpsid).objectLimitFU === true) {
-			if (getSettings(gdpsid).objectLimitCount < 5 || getSettings(gdpsid).objectLimitCount > 500) {
-				ConsoleApi.FatalError("main", "Config error: getSettings(<string>gdpsid).objectLimitCount must be more than 5 and less than 500");
+		if (await getSettings(gdpsid).objectLimitFU === true) {
+			if (await getSettings(gdpsid).objectLimitCount < 5 || await getSettings(gdpsid).objectLimitCount > 500) {
+				ConsoleApi.FatalError("main", "Config error: await getSettings(<string>gdpsid).objectLimitCount must be more than 5 and less than 500");
 				return "-1";
 			}
 
-			if (parseInt(objects) < getSettings(gdpsid).objectLimitCount) {
+			if (parseInt(objects) < await getSettings(gdpsid).objectLimitCount) {
 				ConsoleApi.Log("main", `Level ${levelName} could not be uploaded by object limit`);
 				return "-1";
 			}
