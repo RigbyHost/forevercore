@@ -1,7 +1,7 @@
 import { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import threadConnection from "@/serverconf/db";
 import ConsoleApi from "@/modules/console-api";
-import { exec } from "youtube-dl-exec";
+import { exec as youtube_exec } from "youtube-dl-exec";
 import path from "path";
 
 interface YoutubeUploadRequest {
@@ -60,7 +60,7 @@ async function downloadYoutubeAudio(videoUrl: string, gdpsid: string, filename: 
 	
 	try {
 		await new Promise<void>((resolve, reject) => {
-			exec(videoUrl, {
+			youtube_exec(videoUrl, {
 				output: outputPath,
 				extractAudio: true,
 				audioFormat: "mp3",
