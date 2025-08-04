@@ -1,19 +1,32 @@
-"package net.fimastgd.forevercore.api.accounts.sync";
+`package net.fimastgd.forevercore.api.accounts`;
 
-const crypto = require("crypto");
-const fs = require("fs").promises;
-const threadConnection = require("../../serverconf/db").default;
-const path = require("path");
-const GeneratePass = require("../lib/generatePass").default;
-const ExploitPatch = require("../lib/exploitPatch").default;
-const c = require("ansi-colors");
-const ConsoleApi = require("../../modules/console-api").default;
-const __root = require("../../__root").default;
+import * as crypto from "crypto";
+import * as fs from "fs/promises";
+import threadConnection from "@/serverconf/db";
+import * as path from "path";
+import GeneratePass from "@api/lib/generatePass";
+import ExploitPatch from "@api/lib/exploitPatch";
+import * as c from "ansi-colors";
+import ConsoleApi from "@console-api";
+import __root from "@/__root";
+import { KeyProtectedByPassword } from "defuse";
 
-const syncAccount = async (gdpsid, userNameStr, accountIDStr, passwordStr, gjp2Str, req) => {
+interface DatabaseRow {
+	accountID: number;
+}
+
+const syncAccount = async (
+	gdpsid: string | number,
+	userNameStr: string,
+	accountIDStr: string,
+	passwordStr: string,
+	gjp2Str: string,
+	req: any
+): Promise<string> => {
 	try {
 		const db = await threadConnection(gdpsid);
-		function dateNow() {
+		
+		function dateNow(): string {
 			const currentDate = new Date();
 			const fDate = `${currentDate.getDate().toString().padStart(2, "0")}/${(currentDate.getMonth() + 1)
 				.toString()
@@ -23,51 +36,52 @@ const syncAccount = async (gdpsid, userNameStr, accountIDStr, passwordStr, gjp2S
 				.padStart(2, "0")}`;
 			return fDate;
 		}
-		const password = passwordStr || "";
-		let accountID = accountIDStr || "";
-
-		const accountsPath = await path.join(__root, "/data/accounts", `backup_${accountIDStr}.dat`);
-		const accountsKeyPath = await path.join(__root, "/data/accounts/keys", `${accountIDStr}`);
-
-		async function getAccountID(userName) {
-			const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName = ?", [userName]);
+		
+		const password: string = passwordStr || "";
+		let accountID: string = accountIDStr || "";
+		const accountsPath: string = await path.join(__root, "/data/accounts", `backup_${accountIDStr}.dat`);
+		const accountsKeyPath: string = await path.join(__root, "/data/accounts/keys", `${accountIDStr}`);
+		
+		async function getAccountID(userName: string): Promise<number | null> {
+			const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName = ?", [userName]) as [DatabaseRow[], any];
 			return rows.length ? rows[0].accountID : null;
 		}
-
-		function isNumeric(value) {
+		
+		function isNumeric(value: string): boolean {
 			return /^\d+$/.test(value);
 		}
-
-		async function fileExists(path) {
+		
+		async function fileExists(Path: string): Promise<boolean> {
 			try {
-				await fs.access(path);
+				await fs.access(Path);
 				return true;
 			} catch {
 				return false;
 			}
 		}
-
-		function decrypt(data, key) {
+		
+		function decrypt(data: string, key: Buffer): string {
 			const decipher = crypto.createDecipheriv("aes-256-cbc", key, Buffer.alloc(16, 0));
 			let decrypted = decipher.update(data, "base64", "utf8");
 			decrypted += decipher.final("utf8");
 			return decrypted;
 		}
-
+		
 		if (!accountID) {
-			const userName = await ExploitPatch.remove(userNameStr);
-			accountID = await getAccountID(userName);
+			const userName: string = await ExploitPatch.remove(userNameStr);
+			const fetchedAccountID = await getAccountID(userName);
+			accountID = fetchedAccountID ? fetchedAccountID.toString() : "";
 		} else {
 			accountID = await ExploitPatch.remove(accountIDStr);
 		}
-
-		let pass = 0;
+		
+		let pass: number = 0;
 		if (passwordStr) {
 			pass = await GeneratePass.isValid(gdpsid, accountID, passwordStr, req);
 		} else if (gjp2Str) {
 			pass = await GeneratePass.isGJP2Valid(gdpsid, accountID, gjp2Str, req);
 		}
-
+		
 		if (pass == 1) {
 			if (!(await fileExists(accountsPath))) {
 				// console.log("-1");
@@ -75,13 +89,14 @@ const syncAccount = async (gdpsid, userNameStr, accountIDStr, passwordStr, gjp2S
 				ConsoleApi.Log("main", `Failed to sync account ${accountIDStr}: save data not found`);
 				return "-1";
 			}
-
-			let saveData = await fs.readFile(accountsPath, "utf8");
+			
+			let saveData: string = await fs.readFile(accountsPath, "utf8");
+			
 			if ((await fileExists(accountsKeyPath)) && !saveData.startsWith("H4s")) {
-				const protectedKeyEncoded = await fs.readFile(accountsKeyPath, "utf8");
+				const protectedKeyEncoded: string = await fs.readFile(accountsKeyPath, "utf8");
 				const protectedKey = KeyProtectedByPassword.loadFromAsciiSafeString(protectedKeyEncoded);
-				const userKey = protectedKey.unlockKey(password);
-
+				const userKey: Buffer = protectedKey.unlockKey(password);
+				
 				try {
 					saveData = decrypt(saveData, userKey);
 					await fs.writeFile(accountsPath, saveData);
@@ -91,6 +106,7 @@ const syncAccount = async (gdpsid, userNameStr, accountIDStr, passwordStr, gjp2S
 					return "-3";
 				}
 			}
+			
 			// console.log(`${saveData};21;30;a;a`);
 			ConsoleApi.Log("main", `Synced account: ${accountIDStr}`);
 			return `${saveData};21;30;a;a`;
@@ -108,4 +124,4 @@ const syncAccount = async (gdpsid, userNameStr, accountIDStr, passwordStr, gjp2S
 	}
 };
 
-module.exports = syncAccount;
+export default syncAccount;

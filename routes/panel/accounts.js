@@ -136,11 +136,13 @@ router.post("/exit", async (req, res) => {
 	return;
 });
 router.post("/changeUsername", async (req, res) => {
+	// "1" если успешно, "-2" если имя слишком длинное, "-3" если имя слишком короткое, "-4" при системной ошибке, "-5" если имя уже занято 
 	const result = await changeUsername(req.params.gdpsid.toString(), req.body.newusr, req.cookies[req.params.gdpsid.toString() + "-username"]);
 	res.status(200).send(result);
 	return;
 });
 router.post("/changePassword", async (req, res) => {
+	// "1" / "-1"
 	const result = await changePassword(req.params.gdpsid.toString(), req);
 	res.status(200).send(result);
 	return;
@@ -168,6 +170,7 @@ router.post("/delete", async (req, res) => {
 			return;
 		}
 		const accountID = req.body.accountID;
+		// "1" / "-1"
 		const deleteAcc = await deleteAccount(req.params.gdpsid.toString(), accountID);
 		if (deleteAcc == "1") {
 			res.status(200).send("1");
