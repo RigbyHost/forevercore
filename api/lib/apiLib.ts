@@ -96,7 +96,7 @@ class ApiLib {
 	): Promise<string> {
 		try {
 			if (gjpStr) {
-				if (udidStr && gameVersionStr && parseInt(gameVersionStr) < 20 && getSettings(gdpsid).unregisteredSubmissions) {
+				if (udidStr && gameVersionStr && parseInt(gameVersionStr) < 20 && await getSettings(gdpsid).unregisteredSubmissions) {
 					const id = await ExploitPatch.remove(udidStr);
 					if (this.isNumeric(id)) {
 						return "-1";
@@ -109,7 +109,7 @@ class ApiLib {
 					return "-1";
 				}
 			} else if (gjp2Str) {
-				if (udidStr && gameVersionStr && parseInt(gameVersionStr) < 20 && getSettings(gdpsid).unregisteredSubmissions) {
+				if (udidStr && gameVersionStr && parseInt(gameVersionStr) < 20 && await getSettings(gdpsid).unregisteredSubmissions) {
 					const id = await ExploitPatch.remove(udidStr);
 					if (this.isNumeric(id)) {
 						return "-1";
@@ -708,7 +708,7 @@ class ApiLib {
 	 */
 	public static async check(gdpsid: string, gjp: string, accountID: number | string, req?: Request): Promise<number> {
 		const db = await threadConnection(gdpsid);
-		if (getSettings(gdpsid).sessionGrants) {
+		if (await getSettings(gdpsid).sessionGrants) {
 			const ip = FixIp.getIP(req);
 			const [rows] = await db.execute<RowDataPacket[]>(
 				"SELECT count(*) as count FROM actions WHERE type = 16 AND value = ? AND value2 = ? AND timestamp > ?",
@@ -726,7 +726,7 @@ class ApiLib {
 
 		const validationResult = await this.isValid(gdpsid, accountID, gjpdecode, req);
 
-		if (validationResult === 1 && getSettings(gdpsid).sessionGrants && req) {
+		if (validationResult === 1 && await getSettings(gdpsid).sessionGrants && req) {
 			const ip = await FixIp.getIP(req);
 			await db.execute("INSERT INTO actions (type, value, value2, timestamp) VALUES (16, ?, ?, ?)", [
 				accountID,
