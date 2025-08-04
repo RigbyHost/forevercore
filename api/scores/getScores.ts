@@ -100,7 +100,7 @@ const getScores = async (
 			if (type == "top") {
 				// Top leaderboard - sort by stars
 				query = `SELECT * FROM users WHERE isBanned = '0' AND gameVersion ${sign} AND stars > 0 ORDER BY stars DESC LIMIT ${
-					await getSettings(gdpsid).topCount
+					(await getSettings(gdpsid)).topCount
 				}`;
 				await db.query(query);
 			} else if (type == "creators") {

@@ -49,9 +49,9 @@ const rateStars = async (
 			return "1";
 		} else {
 			// Handle user voting system if enabled
-			if (await getSettings(gdpsid).diffVote === true) {
+			if ((await getSettings(gdpsid)).diffVote === true) {
 				// Validate vote level settings
-				if (await getSettings(gdpsid).diffVoteLevel < 2 || await getSettings(gdpsid).diffVoteLevel > 50) {
+				if ((await getSettings(gdpsid)).diffVoteLevel < 2 || (await getSettings(gdpsid)).diffVoteLevel > 50) {
 					ConsoleApi.Error("main", "diffVoteLevel must be >=2 and <=50");
 					return "1";
 				}
@@ -62,12 +62,12 @@ const rateStars = async (
 					await DiffLib.vote(gdpsid, levelID, accountID, stars);
 
 					// Check if enough votes to change difficulty
-					if ((await DiffLib.votesCount(gdpsid, levelID)) >= await getSettings(gdpsid).diffVoteLevel) {
+					if ((await DiffLib.votesCount(gdpsid, levelID)) >= (await getSettings(gdpsid)).diffVoteLevel) {
 						const avgVote = await DiffLib.getAverageVote(gdpsid, levelID);
 						let AVERAGE = typeof avgVote === "number" ? avgVote : 0;
 
 						// Adjust ratings for auto/demon like RobTop server
-						if (await getSettings(gdpsid).hardDiffVote === false) {
+						if ((await getSettings(gdpsid)).hardDiffVote === false) {
 							if (AVERAGE == 1) AVERAGE = 2;
 							else if (AVERAGE == 10) AVERAGE = 9;
 						}

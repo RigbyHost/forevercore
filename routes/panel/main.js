@@ -12,7 +12,9 @@ const ConsoleApi = require("../../modules/console-api").default;
 
 router.use(cookieParser());
 
-router.get('/', async (req, res) => {
+/* deprecated */
+
+router.get('/724r637', async (req, res) => {
 	// ConsoleApi.Debug("Render thread", req.params.gdpsid)
 	const gdpsid = req.params.gdpsid.toString();
 	if (!req.cookies[gdpsid + "-username"] || req.cookies[gdpsid + "-username"] == "") {
@@ -24,12 +26,12 @@ router.get('/', async (req, res) => {
 		return;
 	} 
 	ConsoleApi.Log("Query thread", `Handled new session '/panel', opened by ${req.cookies[gdpsid + "-username"]}`);
-	const zemuAvailable = getMusicState(gdpsid).zemu ? 1 : 0;
+	const zemuAvailable = await getMusicState(gdpsid).zemu ? 1 : 0;
 	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
 	// const acc = JSON.stringify(accountID, null, 2);
 	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, parseInt(accountID));
 	const data = {
-		GDPS: getSettings(gdpsid).serverName,
+		GDPS: await getSettings(gdpsid).serverName,
 		username: req.cookies[gdpsid + "-username"],
 		accountID: accountID, 
 		GDPSID: gdpsid,

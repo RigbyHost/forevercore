@@ -1,10 +1,10 @@
-"package net.fimastgd.forevercore.routes.panel.packs";
+`package net.fimastgd.forevercore.routes.panel.packs`;
 
-import express from "express";
+import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import { getSettings } from "../../serverconf/settings";
 import Panel from "../../panel/main";
-const getRoleInfo = require("../../panel/accounts/getRoleInfo").default;
+import getRoleInfo from "../../panel/accounts/getRoleInfo";
 import { RowDataPacket, ResultSetHeader, FieldPacket } from "mysql2/promise";
 import getMapPacks from "../../panel/packs/mappacks";
 import ConsoleApi from "../../modules/console-api";
@@ -15,530 +15,309 @@ import threadConnection from "../../serverconf/db";
 const router = express.Router({ mergeParams: true });
 router.use(cookieParser());
 
-type int = number;
-type ustring = string | undefined;
-type uint = number | string | undefined;
+const checkAdminPermissions = async (req: express.Request, res: express.Response) => {
+	const gdpsid: string = req.params.gdpsid.toString();
+	const username = req.cookies[gdpsid + "-username"];
 
-interface GetData {
-	GDPS: string;
-	GDPSID: string | number;
-	data: any;
-	username: string;
-	packData: (string | undefined | number)[] | undefined;
-}
-interface MappackData {
-	packName: string | undefined;
-	levels: string | undefined;
-	stars: number | undefined;
-	coins: number | undefined;
-	difficulty: number | undefined;
-	rgbcolors: string | undefined;
-}
-interface GauntletData {
-	ID: number | undefined;
-	level1: number | string | undefined;
-	level2: number | undefined;
-	level3: number | undefined;
-	level4: number | undefined;
-	level5: number | undefined;
-}
+	if (!username) {
+		return {
+			status: false,
+			response: {
+				status: "error",
+				code: -1,
+				server_status: 401,
+				message: "Unauthorized"
+			}
+		};
+	}
 
-router.get("/", async (req: express.Request, res: express.Response) => {
-	res.render("errors/404");
-});
+	const accountID = await Panel.account(gdpsid, "getID", username);
+	const { adminPanel } = await getRoleInfo(gdpsid, accountID);
 
+	if (adminPanel == 0) {
+		return {
+			status: false,
+			response: {
+				status: "error",
+				code: -3,
+				server_status: 403,
+				message: "Forbidden: insufficient permissions"
+			}
+		};
+	}
+
+	return {
+		status: true,
+		username
+	};
+};
+
+// GET /mappacks
 router.get("/mappacks", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
+
+	try {
+		ConsoleApi.Log("API Request", `${gdpsid}* GET /panel/packs/mappacks by ${permission.username}`);
+		const mapPacks = await getMapPacks(gdpsid);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Map packs retrieved successfully",
+			data: mapPacks
+		});
+	} catch (error) {
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to get map packs: ${error}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to retrieve map packs"
+		});
 	}
-	ConsoleApi.Log("Query thread", `Handled new session '/panel/packs/mappacks', opened by ${req.cookies[gdpsid + "-username"]}`);
-	const mapPacks = await getMapPacks(gdpsid);
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: mapPacks,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: undefined
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/mappacks'`);
-	res.render("panel/packs/mappacks", data);
-	return;
 });
 
-// редактор мап паков
-router.get("/mappacks/edit/:id", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
-	}
-	ConsoleApi.Log(
-		"Query thread",
-		`Handled new session '/panel/packs/mappacks/edit/${req.params.id}', opened by ${req.cookies[gdpsid + "-username"]}`
-	);
-	const packID = req.params.id;
-	const mappackData: MappackData = await Panel.getMappackData(gdpsid, packID);
-
-	const map: ustring[] = [
-		mappackData.packName,
-		mappackData.levels,
-		mappackData.stars == undefined ? undefined : mappackData.stars.toString(),
-		mappackData.coins == undefined ? undefined : mappackData.coins.toString(),
-		mappackData.difficulty == undefined ? undefined : mappackData.difficulty.toString(),
-		mappackData.rgbcolors,
-		packID
-	];
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: undefined,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: map
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/mappacks/edit/${packID}'`);
-	res.render("panel/packs/mappacks-edit", data);
-	return;
-});
-router.get("/mappacks/create", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
-	}
-	ConsoleApi.Log("Query thread", `Handled new session '/panel/packs/mappacks/create', opened by ${req.cookies[gdpsid + "-username"]}`);
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: undefined,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: undefined
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/mappacks/create'`);
-	res.render("panel/packs/mappacks-create", data);
-	return;
-});
-
-// ГАУНТЛЕТЫ
+// GET /gauntlets
 router.get("/gauntlets", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
+
+	try {
+		ConsoleApi.Log("API Request", `${gdpsid}* GET /panel/packs/gauntlets by ${permission.username}`);
+		const gauntlets = await getGauntlets(gdpsid);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Gauntlets retrieved successfully",
+			data: gauntlets
+		});
+	} catch (error) {
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to get gauntlets: ${error}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to retrieve gauntlets"
+		});
 	}
-	ConsoleApi.Log("Query thread", `Handled new session '/panel/packs/gauntlets', opened by ${req.cookies[gdpsid + "-username"]}`);
-	const gauntlets = await getGauntlets(gdpsid);
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: gauntlets,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: undefined
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/gauntlets'`);
-	res.render("panel/packs/gauntlets", data);
-	return;
 });
 
-router.get("/gauntlets/create", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
-	}
-	ConsoleApi.Log("Query thread", `Handled new session '/panel/packs/gauntlets/create', opened by ${req.cookies[gdpsid + "-username"]}`);
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: undefined,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: undefined
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/gauntlets/create'`);
-	res.render("panel/packs/gauntlets-create", data);
-	return;
-});
-
-// редактор гаунтлетов
-router.get("/gauntlets/edit/:id", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		if (gdpsid != "") {
-			res.redirect(`${gdpsid}/panel/accounts/login`);
-		} else {
-			res.redirect(`/panel/accounts/login`);
-		}
-		return;
-	}
-
-	const packID = req.params.id;
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/gauntlets/edit/${packID}'`);
-
-	const gauntletData = await Panel.getGauntletData(gdpsid, packID);
-
-	const map: uint[] = [packID, gauntletData.level1, gauntletData.level2, gauntletData.level3, gauntletData.level4, gauntletData.level5];
-	const data: GetData = {
-		GDPS: getSettings(gdpsid).serverName,
-		GDPSID: gdpsid,
-		data: undefined,
-		username: req.cookies[gdpsid + "-username"].toString(),
-		packData: map
-	};
-	ConsoleApi.Log("Render thread", `Rendered page '/panel/packs/gauntlets/edit/${packID}'`);
-	res.render("panel/packs/gauntlets-edit", data);
-	return;
-});
-
-// POST
+// POST /mappacks/create
 router.post("/mappacks/create", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-	const query = "INSERT INTO mappacks (ID, name, levels, stars, coins, difficulty, rgbcolors) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
 
+	const db = await threadConnection(gdpsid);
 	const { packName, levels, difficulty, stars, coins, color } = req.body;
-	// console.log(ID, packName, levels, difficulty, stars, coins, color);
-	const userName = req.cookies[gdpsid + "-username"];
 
 	try {
+		const query = "INSERT INTO mappacks (ID, name, levels, stars, coins, difficulty, rgbcolors) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		await db.execute(query, [null, packName, levels, stars, coins, difficulty, color]);
-		ConsoleApi.Log("main", `Panel action: created mappack ${packName}. Executed by: ${userName}`);
-		res.status(200).send("1");
-		return;
+
+		ConsoleApi.Log("API Request", `${gdpsid}* POST /panel/packs/mappacks/create by ${permission.username}: Created pack '${packName}'`);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Map pack created successfully"
+		});
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: mappack creation error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to create map pack: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to create map pack"
+		});
 	}
 });
 
+// POST /mappacks/edit
 router.post("/mappacks/edit", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-	const query = "UPDATE mappacks SET name = ?, levels = ?, stars = ?, coins = ?, difficulty = ?, rgbcolors = ? WHERE ID = ?";
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
 
+	const db = await threadConnection(gdpsid);
 	const { ID, packName, levels, difficulty, stars, coins, color } = req.body;
-	// console.log(ID, packName, levels, difficulty, stars, coins, color);
-	const userName = req.cookies[gdpsid + "-username"];
 
 	try {
+		const query = "UPDATE mappacks SET name = ?, levels = ?, stars = ?, coins = ?, difficulty = ?, rgbcolors = ? WHERE ID = ?";
 		await db.execute(query, [packName, levels, stars, coins, difficulty, color, ID]);
-		ConsoleApi.Log("main", `Panel action: edited mappack ${packName} (${ID}). Executed by: ${userName}`);
-		res.status(200).send("1");
-		return;
+
+		ConsoleApi.Log("API Request", `${gdpsid}* POST /panel/packs/mappacks/edit by ${permission.username}: Edited pack ${ID} '${packName}'`);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Map pack updated successfully"
+		});
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: mappack editing error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to edit map pack: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to update map pack"
+		});
 	}
 });
 
+// POST /mappacks/delete
 router.post("/mappacks/delete", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
+
 	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-
-	const ID: int = parseInt(req.body.ID);
-	const packName: string = req.body.packName;
-	const userName: string = req.body.userName;
-
-	const query = "DELETE FROM mappacks WHERE ID = ?";
+	const { ID, packName } = req.body;
 
 	try {
+		const query = "DELETE FROM mappacks WHERE ID = ?";
 		const [result]: [ResultSetHeader, FieldPacket[]] = await db.execute(query, [ID]);
+
 		if (result.affectedRows > 0) {
-			ConsoleApi.Log("main", `Panel action: deleted mappack ${packName} (${ID}). Executed by: ${userName}`);
-			res.status(200).send("1");
-			return;
+			ConsoleApi.Log("API Request", `${gdpsid}* POST /panel/packs/mappacks/delete by ${permission.username}: Deleted pack ${ID} '${packName}'`);
+			res.status(200).json({
+				status: "success",
+				code: 1,
+				server_status: 200,
+				message: "Map pack deleted successfully"
+			});
 		} else {
-			ConsoleApi.Warn(
-				"main",
-				`Panel action: can not delete mappack ${packName} (${ID}): Not Found. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-			);
-			res.status(200).send("-1");
-			return;
+			ConsoleApi.Warn("Panel thread", `${gdpsid}* Map pack ${ID} not found by ${permission.username}`);
+			res.status(404).json({
+				status: "error",
+				code: -2,
+				server_status: 404,
+				message: "Map pack not found"
+			});
 		}
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: mappack deletion error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to delete map pack: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to delete map pack"
+		});
 	}
 });
 
+// POST /gauntlets/create
 router.post("/gauntlets/create", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
-	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-	const query = "INSERT INTO gauntlets (ID, level1, level2, level3, level4, level5) VALUES (?, ?, ?, ?, ?, ?)";
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
 
+	const db = await threadConnection(gdpsid);
 	const { ID, level1, level2, level3, level4, level5 } = req.body;
-	const gauntletName: string[] = [
-		"Fire",
-		"Ice",
-		"Poison",
-		"Shadow",
-		"Lava",
-		"Bonus",
-		"Demon",
-		"Time",
-		"Crystal",
-		"Magic",
-		"Spike",
-		"Monster",
-		"Doom",
-		"Death",
-		"Forest",
-		"Rune",
-		"Force",
-		"Spooky",
-		"Dragon",
-		"Water",
-		"Haunted",
-		"Acid",
-		"Witch",
-		"Power",
-		"Potion",
-		"Snake",
-		"Toxic",
-		"Halloween",
-		"Treasure",
-		"Ghost",
-		"Spider",
-		"Gem",
-		"Inferno",
-		"Portal",
-		"Strange",
-		"Fantasy",
-		"Christmas",
-		"Surprise",
-		"Mystery",
-		"Cursed",
-		"Cyborg",
-		"Castle",
-		"Grave",
-		"Temple",
-		"World",
-		"Galaxy",
-		"Universe",
-		"Discord",
-		"Split",
-		"NCS I",
-		"NCS II",
-		"Unknown 1",
-		"Unknown 2",
-		"Unknown 3",
-		"Unknown 4",
-		"Unknown 5"
-	];
-	// console.log(ID, packName, levels, difficulty, stars, coins, color);
-	const userName = req.cookies[gdpsid + "-username"];
-	const gauntletParsedName = gauntletName[parseInt(ID) - 1];
 
 	try {
+		const query = "INSERT INTO gauntlets (ID, level1, level2, level3, level4, level5) VALUES (?, ?, ?, ?, ?, ?)";
 		await db.execute(query, [ID, level1, level2, level3, level4, level5]);
-		ConsoleApi.Log("main", `Panel action: created gauntlet ${gauntletParsedName}. Executed by: ${userName}`);
-		res.status(200).send("1");
-		return;
+
+		ConsoleApi.Log("API Request", `${gdpsid}* POST /panel/packs/gauntlets/create by ${permission.username}: Created gauntlet ${ID}`);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Gauntlet created successfully"
+		});
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: gauntlet creation error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to create gauntlet: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to create gauntlet"
+		});
 	}
 });
 
+// POST /gauntlets/edit
 router.post("/gauntlets/edit", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
+
 	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-	const query = "UPDATE gauntlets SET level1 = ?, level2 = ?, level3 = ?, level4 = ?, level5 = ? WHERE ID = ?";
-
-	const gauntletName: string[] = [
-		"Fire",
-		"Ice",
-		"Poison",
-		"Shadow",
-		"Lava",
-		"Bonus",
-		"Demon",
-		"Time",
-		"Crystal",
-		"Magic",
-		"Spike",
-		"Monster",
-		"Doom",
-		"Death",
-		"Forest",
-		"Rune",
-		"Force",
-		"Spooky",
-		"Dragon",
-		"Water",
-		"Haunted",
-		"Acid",
-		"Witch",
-		"Power",
-		"Potion",
-		"Snake",
-		"Toxic",
-		"Halloween",
-		"Treasure",
-		"Ghost",
-		"Spider",
-		"Gem",
-		"Inferno",
-		"Portal",
-		"Strange",
-		"Fantasy",
-		"Christmas",
-		"Surprise",
-		"Mystery",
-		"Cursed",
-		"Cyborg",
-		"Castle",
-		"Grave",
-		"Temple",
-		"World",
-		"Galaxy",
-		"Universe",
-		"Discord",
-		"Split",
-		"NCS I",
-		"NCS II",
-		"Unknown 1",
-		"Unknown 2",
-		"Unknown 3",
-		"Unknown 4",
-		"Unknown 5"
-	];
-
 	const { ID, level1, level2, level3, level4, level5 } = req.body;
-	const gauntletParsedName = gauntletName[parseInt(ID) - 1];
-
-	const userName = req.cookies[gdpsid + "-username"];
 
 	try {
+		const query = "UPDATE gauntlets SET level1 = ?, level2 = ?, level3 = ?, level4 = ?, level5 = ? WHERE ID = ?";
 		await db.execute(query, [level1, level2, level3, level4, level5, ID]);
-		ConsoleApi.Log("main", `Panel action: edited gauntlet ${gauntletParsedName} (${ID}). Executed by: ${userName}`);
-		res.status(200).send("1");
-		return;
+
+		ConsoleApi.Log("API Request", `${gdpsid}* POST /panel/packs/gauntlets/edit by ${permission.username}: Edited gauntlet ${ID}`);
+
+		res.status(200).json({
+			status: "success",
+			code: 1,
+			server_status: 200,
+			message: "Gauntlet updated successfully"
+		});
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: mappack deletion error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to edit gauntlet: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to update gauntlet"
+		});
 	}
 });
 
+// POST /gauntlets/delete
 router.post("/gauntlets/delete", async (req: express.Request, res: express.Response) => {
-	const gdpsid: string = req.params.gdpsid.toString();
+	const gdpsid = req.params.gdpsid.toString();
+	const permission = await checkAdminPermissions(req, res);
+	if (!permission.status) res.status(401).json({ ...permission.response });
+
 	const db = await threadConnection(gdpsid);
-	const accountID = await Panel.account(gdpsid, "getID", req.cookies[gdpsid + "-username"]);
-	const { roleName, advancedPanel, adminPanel } = await getRoleInfo(gdpsid, accountID);
-	if (!req.cookies[gdpsid + "-username"] || adminPanel == 0) {
-		res.send("-1");
-		return;
-	}
-
-	const ID: int = parseInt(req.body.ID);
-	const packName: string = req.body.packName;
-	const userName: string = req.body.userName;
-
-	const query = "DELETE FROM gauntlets WHERE ID = ?";
+	const { ID, packName } = req.body;
 
 	try {
+		const query = "DELETE FROM gauntlets WHERE ID = ?";
 		const [result]: [ResultSetHeader, FieldPacket[]] = await db.execute(query, [ID]);
+
 		if (result.affectedRows > 0) {
-			ConsoleApi.Log("main", `Panel action: deleted gauntlet ${packName} (${ID}). Executed by: ${userName}`);
-			res.status(200).send("1");
-			return;
-		} else {
-			ConsoleApi.Warn(
-				"main",
-				`Panel action: can not delete gauntlet ${packName} (${ID}): Not Found. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
+			ConsoleApi.Log(
+				"API Request",
+				`${gdpsid}* POST /panel/packs/gauntlets/delete by ${permission.username}: Deleted gauntlet ${ID} '${packName}'`
 			);
-			res.status(200).send("-1");
-			return;
+			res.status(200).json({
+				status: "success",
+				code: 1,
+				server_status: 200,
+				message: "Gauntlet deleted successfully"
+			});
+		} else {
+			ConsoleApi.Warn("Panel thread", `${gdpsid}* Gauntlet ${ID} not found by ${permission.username}`);
+			res.status(404).json({
+				status: "error",
+				code: -2,
+				server_status: 404,
+				message: "Gauntlet not found"
+			});
 		}
 	} catch (e) {
-		ConsoleApi.Error(
-			"main",
-			`Panel action: gauntlet deletion error: ${e}. Executed by: ${userName} at net.fimastgd.forevercore.routes.panel.packs`
-		);
-		res.status(200).send("-1");
-		return;
+		ConsoleApi.Error("Panel thread", `${gdpsid}* Failed to delete gauntlet: ${e} by ${permission.username}`);
+		res.status(500).json({
+			status: "error",
+			code: -1,
+			server_status: 500,
+			message: "Failed to delete gauntlet"
+		});
 	}
 });
 

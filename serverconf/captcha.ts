@@ -1,7 +1,7 @@
 import * as yaml from "js-yaml";
 import * as fs from "fs";
 import * as path from "path";
-import __root from "@/root";
+import __root from "@/__root";
 
 interface CaptchaConfig {
 	key: string;

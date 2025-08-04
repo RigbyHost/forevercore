@@ -76,22 +76,22 @@ const getChests = async (
 		let chest2diff = currenttime - chest2time;
 
 		// Get chest settings
-		const chest1items = await Chest.getSmallChest(gdpsid).items;
-		const chest2items = await Chest.getBigChest(gdpsid).items;
-		const chest1minOrbs = await Chest.getSmallChest(gdpsid).minOrbs;
-		const chest1maxOrbs = await Chest.getSmallChest(gdpsid).maxOrbs;
-		const chest1minDiamonds = await Chest.getSmallChest(gdpsid).minDiamonds;
-		const chest1maxDiamonds = await Chest.getSmallChest(gdpsid).maxDiamonds;
-		const chest1minKeys = await Chest.getSmallChest(gdpsid).minKeys;
-		const chest1maxKeys = await Chest.getSmallChest(gdpsid).maxKeys;
-		const chest2minOrbs = await Chest.getBigChest(gdpsid).minOrbs;
-		const chest2maxOrbs = await Chest.getBigChest(gdpsid).maxOrbs;
-		const chest2minDiamonds = await Chest.getBigChest(gdpsid).minDiamonds;
-		const chest2maxDiamonds = await Chest.getBigChest(gdpsid).maxDiamonds;
-		const chest2minKeys = await Chest.getBigChest(gdpsid).minKeys;
-		const chest2maxKeys = await Chest.getBigChest(gdpsid).maxKeys;
-		const chest1wait = await Chest.getSmallChest(gdpsid).wait;
-		const chest2wait = await Chest.getBigChest(gdpsid).wait;
+		const chest1items = (await Chest.getSmallChest(gdpsid)).items;
+		const chest2items = (await Chest.getBigChest(gdpsid)).items;
+		const chest1minOrbs = (await Chest.getSmallChest(gdpsid)).minOrbs;
+		const chest1maxOrbs = (await Chest.getSmallChest(gdpsid)).maxOrbs;
+		const chest1minDiamonds = (await Chest.getSmallChest(gdpsid)).minDiamonds;
+		const chest1maxDiamonds = (await Chest.getSmallChest(gdpsid)).maxDiamonds;
+		const chest1minKeys = (await Chest.getSmallChest(gdpsid)).minKeys;
+		const chest1maxKeys = (await Chest.getSmallChest(gdpsid)).maxKeys;
+		const chest2minOrbs = (await Chest.getBigChest(gdpsid)).minOrbs;
+		const chest2maxOrbs = (await Chest.getBigChest(gdpsid)).maxOrbs;
+		const chest2minDiamonds = (await Chest.getBigChest(gdpsid)).minDiamonds;
+		const chest2maxDiamonds = (await Chest.getBigChest(gdpsid)).maxDiamonds;
+		const chest2minKeys = (await Chest.getBigChest(gdpsid)).minKeys;
+		const chest2maxKeys = (await Chest.getBigChest(gdpsid)).maxKeys;
+		const chest1wait = (await Chest.getSmallChest(gdpsid)).wait;
+		const chest2wait = (await Chest.getBigChest(gdpsid)).wait;
 
 		// Generate random rewards
 		const chest1stuff = `${Math.floor(Math.random() * (chest1maxOrbs - chest1minOrbs + 1) + chest1minOrbs)},${Math.floor(

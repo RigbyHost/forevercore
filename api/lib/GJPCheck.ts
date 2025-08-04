@@ -26,7 +26,7 @@ class GJPCheck {
 	static async check(gdpsid: string, gjp: string, accountID: number | string, req: Request): Promise<number> {
 		const db = await threadConnection(gdpsid);
 		// Check session grants to bypass auth
-		if (await getSettings(gdpsid).sessionGrants) {
+		if ((await getSettings(gdpsid)).sessionGrants) {
 			const ip = await FixIp.getIP(req);
 			const [rows] = await db.execute<RowDataPacket[]>(
 				"SELECT count(*) as count FROM actions WHERE type = 16 AND value = ? AND value2 = ? AND timestamp > ?",
@@ -46,7 +46,7 @@ class GJPCheck {
 		const validationResult = await this.isValid(gdpsid, accountID, gjpdecode, req);
 
 		// Store session grant if enabled and auth successful
-		if (validationResult === 1 && await getSettings(gdpsid).sessionGrants) {
+		if (validationResult === 1 && (await getSettings(gdpsid)).sessionGrants) {
 			const ip = await FixIp.getIP(req);
 			await db.execute("INSERT INTO actions (type, value, value2, timestamp) VALUES (16, ?, ?, ?)", [
 				accountID,

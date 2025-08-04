@@ -1,56 +1,60 @@
-'package net.fimastgd.forevercore.panel.roles.roles';
+"package net.fimastgd.forevercore.panel.roles.roles";
 
 type pkg = string;
-
 const getpackage: pkg = "net.fimastgd.forevercore.panel.roles.roles";
-import { RowDataPacket, FieldPacket } from 'mysql2/promise';
+import { RowDataPacket, FieldPacket } from "mysql2/promise";
 import threadConnection from "../../serverconf/db";
 import ConsoleApi from "../../modules/console-api";
 import Panel from "../main";
 
 interface Properties {
-	rolename: string, 
-	color: string, 
-	badge: number
+	rolename: string;
+	color: string;
+	badge: number;
 }
 interface Actions {
-	diffRatePerm: number, 
-	starRatePerm: number, 
-	rateDemonPerm: number, 
-	featuredRatePerm: number, 
-	epicRatePerm: number, 
-	legendaryRatePerm: number, 
-	mythicRatePerm: number, 
-	sendRatePerm: number, 
-	panelType: number, 
-	reqActivating: number,
-	deleteCommentsPerm: number
+	diffRatePerm: number;
+	starRatePerm: number;
+	rateDemonPerm: number;
+	featuredRatePerm: number;
+	epicRatePerm: number;
+	legendaryRatePerm: number;
+	mythicRatePerm: number;
+	sendRatePerm: number;
+	panelType: number;
+	reqActivating: number;
+	deleteCommentsPerm: number;
 }
 interface Commands {
-	CMD_rate: number, 
-	CMD_unrate: number, 
-	CMD_feature: number, 
-	CMD_epic: number, 
-	CMD_unepic: number, 
-	CMD_verifycoins: number, 
-	CMD_daily: number, 
-	CMD_weekly: number, 
-	CMD_delete: number, 
-	CMD_setacc: number, 
-	CMD_rename: number, 
-	CMD_pass: number, 
-	CMD_description: number, 
-	CMD_unlist: number, 
-	CMD_song: number
+	CMD_rate: number;
+	CMD_unrate: number;
+	CMD_feature: number;
+	CMD_epic: number;
+	CMD_unepic: number;
+	CMD_verifycoins: number;
+	CMD_daily: number;
+	CMD_weekly: number;
+	CMD_delete: number;
+	CMD_setacc: number;
+	CMD_rename: number;
+	CMD_pass: number;
+	CMD_description: number;
+	CMD_unlist: number;
+	CMD_song: number;
 }
 
 type UnknownObject = Record<string, undefined>;
 type int = number;
 
 interface GetRole {
-	properties: Properties | UnknownObject,
-	actions: Actions | UnknownObject,
-	commands: Commands | UnknownObject
+	properties: Properties | UnknownObject;
+	actions: Actions | UnknownObject;
+	commands: Commands | UnknownObject;
+}
+
+interface RoleOperationResult {
+	status: number;
+	message: string;
 }
 
 interface RoleInsertRow extends RowDataPacket {
@@ -65,18 +69,24 @@ interface RoleAssignRow extends RowDataPacket {
 export class Roles {
 	private async checkRole(gdpsid: string, roleName: string): Promise<boolean> {
 		const db = await threadConnection(gdpsid);
-		const query = 'SELECT COUNT(*) as count FROM roles WHERE roleName = ?';
+		const query = "SELECT COUNT(*) as count FROM roles WHERE roleName = ?";
 		const [rows]: [RowDataPacket[], FieldPacket[]] = await db.execute(query, [roleName]);
 		const count = rows[0].count as number;
 		return count > 0;
 	}
 
-	public async createRole(gdpsid: string, username: string, properties: Properties, actions: Actions, commands: Commands): Promise<object> {
+	public async createRole(
+		gdpsid: string,
+		username: string,
+		properties: Properties,
+		actions: Actions,
+		commands: Commands
+	): Promise<RoleOperationResult> {
 		const db = await threadConnection(gdpsid);
 		const rolename: string = properties.rolename;
 		const color: string = properties.color;
-		const badge: number = properties.badge
-		
+		const badge: number = properties.badge;
+
 		const diffRatePerm: number = actions.diffRatePerm;
 		const starRatePerm: number = actions.starRatePerm;
 		const rateDemonPerm: number = actions.rateDemonPerm;
@@ -86,9 +96,9 @@ export class Roles {
 		const mythicRatePerm: number = actions.mythicRatePerm;
 		const sendRatePerm: number = actions.sendRatePerm;
 		const panelType: number = actions.panelType;
-		const reqActivating: number = actions.reqActivating; 
+		const reqActivating: number = actions.reqActivating;
 		const deleteCommentsPerm: number = actions.deleteCommentsPerm;
-		
+
 		const CMD_rate: number = commands.CMD_rate;
 		const CMD_unrate: number = commands.CMD_unrate;
 		const CMD_feature: number = commands.CMD_feature;
@@ -115,21 +125,48 @@ export class Roles {
 		} else {
 			panelProp = [0, 0];
 		}
-		
+
 		const query = `INSERT INTO roles (
-			roleName, commandRate, commandUnrate, commandFeature, commandEpic, commandUnepic, commandVerifycoins, commandDaily, commandWeekly, commandDelete, commandSetacc, commandRenameAll, commandDescriptionAll, commandPassAll, commandUnlistAll, commandSongAll,
-			actionRateDemon, actionRateStars, actionRateFeature, actionRateEpic, actionRateLegendary, actionRateMythic, actionRequestMod, actionSuggestRating, actionDeleteComment, actionRateDifficulty,
-			commentColor, modBadgeLevel, advancedPanel, adminPanel
-		) VALUES (
-			?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-		)`;
-		
+            roleName, commandRate, commandUnrate, commandFeature, commandEpic, commandUnepic, commandVerifycoins, commandDaily, commandWeekly, commandDelete, commandSetacc, commandRenameAll, commandDescriptionAll, commandPassAll, commandUnlistAll, commandSongAll,
+            actionRateDemon, actionRateStars, actionRateFeature, actionRateEpic, actionRateLegendary, actionRateMythic, actionRequestMod, actionSuggestRating, actionDeleteComment, actionRateDifficulty,
+            commentColor, modBadgeLevel, advancedPanel, adminPanel
+        ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )`;
+
 		if (!(await this.checkRole(gdpsid, rolename))) {
 			try {
 				await db.execute(query, [
-					rolename, CMD_rate, CMD_unrate, CMD_feature, CMD_epic, CMD_unepic, CMD_verifycoins, CMD_daily, CMD_weekly, CMD_delete, CMD_setacc, CMD_rename, CMD_description, CMD_pass, CMD_unlist, CMD_song,
-					rateDemonPerm, starRatePerm, featuredRatePerm, epicRatePerm, legendaryRatePerm, mythicRatePerm, reqActivating, sendRatePerm, deleteCommentsPerm, diffRatePerm,
-					color, badge, panelProp[0], panelProp[1]
+					rolename,
+					CMD_rate,
+					CMD_unrate,
+					CMD_feature,
+					CMD_epic,
+					CMD_unepic,
+					CMD_verifycoins,
+					CMD_daily,
+					CMD_weekly,
+					CMD_delete,
+					CMD_setacc,
+					CMD_rename,
+					CMD_description,
+					CMD_pass,
+					CMD_unlist,
+					CMD_song,
+					rateDemonPerm,
+					starRatePerm,
+					featuredRatePerm,
+					epicRatePerm,
+					legendaryRatePerm,
+					mythicRatePerm,
+					reqActivating,
+					sendRatePerm,
+					deleteCommentsPerm,
+					diffRatePerm,
+					color,
+					badge,
+					panelProp[0],
+					panelProp[1]
 				]);
 				ConsoleApi.Log("main", `Panel action: created role ${rolename}. Executed by: ${username}`);
 				return {
@@ -150,13 +187,14 @@ export class Roles {
 			};
 		}
 	}
+
 	public async getRoleById(gdpsid: string, username: string, roleId: number): Promise<GetRole> {
 		const db = await threadConnection(gdpsid);
 		const query = `SELECT
 			roleName, commandRate, commandUnrate, commandFeature, commandEpic, commandUnepic, commandVerifycoins, commandDaily, commandWeekly, commandDelete, commandSetacc, commandRenameAll, commandDescriptionAll, commandPassAll, commandUnlistAll, commandSongAll,
 			actionRateDemon, actionRateStars, actionRateFeature, actionRateEpic, actionRateLegendary, actionRateMythic, actionRequestMod, actionSuggestRating, actionDeleteComment, actionRateDifficulty,
 			commentColor, modBadgeLevel, advancedPanel, adminPanel
-		FROM roles WHERE roleID = ?`; 
+		FROM roles WHERE roleID = ?`;
 		const propertiesN: UnknownObject = {
 			rolename: undefined,
 			color: undefined,
@@ -253,7 +291,10 @@ export class Roles {
 				commands: commands
 			};
 		} catch (error) {
-			ConsoleApi.Error("main", `getRoleByIdException => public: Error retrieving role by ID: ${error}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`getRoleByIdException => public: Error retrieving role by ID: ${error}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return {
 				properties: propertiesN,
 				actions: actionsN,
@@ -261,21 +302,55 @@ export class Roles {
 			};
 		}
 	}
-	public async editRole(gdpsid: string, username: string, rid: int, properties: Properties, actions: Actions, commands: Commands): Promise<object> {
+	public async editRole(
+		gdpsid: string,
+		username: string,
+		rid: int,
+		properties: Properties,
+		actions: Actions,
+		commands: Commands
+	): Promise<RoleOperationResult> {
 		const db = await threadConnection(gdpsid);
 		const panelProp: number[] = actions.panelType === 1 ? [0, 0] : actions.panelType === 2 ? [1, 0] : actions.panelType === 3 ? [0, 1] : [0, 0];
 		// console.log('final: ' + JSON.stringify(commands, null, 2));
 		const query = `UPDATE roles SET
-			roleName = ?, commandRate = ?, commandUnrate = ?, commandFeature = ?, commandEpic = ?, commandUnepic = ?, commandVerifycoins = ?, commandDaily = ?, commandWeekly = ?, commandDelete = ?, commandSetacc = ?, commandRenameAll = ?, commandDescriptionAll = ?, commandPassAll = ?, commandUnlistAll = ?, commandSongAll = ?,
-			actionRateDemon = ?, actionRateStars = ?, actionRateFeature = ?, actionRateEpic = ?, actionRateLegendary = ?, actionRateMythic = ?, actionRequestMod = ?, actionSuggestRating = ?, actionDeleteComment = ?, actionRateDifficulty = ?,
-			commentColor = ?, modBadgeLevel = ?, advancedPanel = ?, adminPanel = ?
-			WHERE roleID = ?`;
+            roleName = ?, commandRate = ?, commandUnrate = ?, commandFeature = ?, commandEpic = ?, commandUnepic = ?, commandVerifycoins = ?, commandDaily = ?, commandWeekly = ?, commandDelete = ?, commandSetacc = ?, commandRenameAll = ?, commandDescriptionAll = ?, commandPassAll = ?, commandUnlistAll = ?, commandSongAll = ?,
+            actionRateDemon = ?, actionRateStars = ?, actionRateFeature = ?, actionRateEpic = ?, actionRateLegendary = ?, actionRateMythic = ?, actionRequestMod = ?, actionSuggestRating = ?, actionDeleteComment = ?, actionRateDifficulty = ?,
+            commentColor = ?, modBadgeLevel = ?, advancedPanel = ?, adminPanel = ?
+            WHERE roleID = ?`;
 
 		try {
 			await db.execute(query, [
-				properties.rolename, commands.CMD_rate, commands.CMD_unrate, commands.CMD_feature, commands.CMD_epic, commands.CMD_unepic, commands.CMD_verifycoins, commands.CMD_daily, commands.CMD_weekly, commands.CMD_delete, commands.CMD_setacc, commands.CMD_rename, commands.CMD_description, commands.CMD_pass, commands.CMD_unlist, commands.CMD_song,
-				actions.rateDemonPerm, actions.starRatePerm, actions.featuredRatePerm, actions.epicRatePerm, actions.legendaryRatePerm, actions.mythicRatePerm, actions.reqActivating, actions.sendRatePerm, actions.deleteCommentsPerm, actions.diffRatePerm,
-				properties.color, properties.badge, panelProp[0], panelProp[1],
+				properties.rolename,
+				commands.CMD_rate,
+				commands.CMD_unrate,
+				commands.CMD_feature,
+				commands.CMD_epic,
+				commands.CMD_unepic,
+				commands.CMD_verifycoins,
+				commands.CMD_daily,
+				commands.CMD_weekly,
+				commands.CMD_delete,
+				commands.CMD_setacc,
+				commands.CMD_rename,
+				commands.CMD_description,
+				commands.CMD_pass,
+				commands.CMD_unlist,
+				commands.CMD_song,
+				actions.rateDemonPerm,
+				actions.starRatePerm,
+				actions.featuredRatePerm,
+				actions.epicRatePerm,
+				actions.legendaryRatePerm,
+				actions.mythicRatePerm,
+				actions.reqActivating,
+				actions.sendRatePerm,
+				actions.deleteCommentsPerm,
+				actions.diffRatePerm,
+				properties.color,
+				properties.badge,
+				panelProp[0],
+				panelProp[1],
 				rid
 			]);
 			ConsoleApi.Log("main", `Panel action: updated role ${properties.rolename}. Executed by: ${username}`);
@@ -284,20 +359,24 @@ export class Roles {
 				message: "Role updated"
 			};
 		} catch (error) {
-			ConsoleApi.Error("main", `editRoleException => public: Role update error: ${error}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`editRoleException => public: Role update error: ${error}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return {
 				status: -1,
 				message: `${error}`
 			};
 		}
 	}
+
 	public async getAllRoles(gdpsid: string): Promise<object> {
 		const db = await threadConnection(gdpsid);
-		const [roles]: [RowDataPacket[], FieldPacket[]] = await db.execute('SELECT roleID FROM roles');
+		const [roles]: [RowDataPacket[], FieldPacket[]] = await db.execute("SELECT roleID FROM roles");
 		const allRoles: { [key: number]: object } = {};
 
 		for (const role of roles) {
-			const roleID = role.roleID as int; 
+			const roleID = role.roleID as int;
 			allRoles[roleID] = await this.getRoleContainer(gdpsid, roleID);
 		}
 		// const t = JSON.stringify(allRoles, null, 2);
@@ -307,22 +386,28 @@ export class Roles {
 	public async deleteRole(gdpsid: string, username: string, roleID: number): Promise<boolean> {
 		try {
 			const db = await threadConnection(gdpsid);
-			const [result]: [any, FieldPacket[]] = await db.execute('DELETE FROM roles WHERE roleID = ?', [roleID]);
+			const [result]: [any, FieldPacket[]] = await db.execute("DELETE FROM roles WHERE roleID = ?", [roleID]);
 			if (result.affectedRows === 0) {
 				ConsoleApi.Warn("main", `Panel action: role with ID ${roleID} not found. Executed by: ${username}`);
 				return false;
 			} else {
 				ConsoleApi.Log("main", `Panel action: role with ID ${roleID} successfully deleted. Executed by: ${username}`);
-				const [roleAssignResult]: [any, FieldPacket[]] = await db.execute('DELETE FROM roleassign WHERE roleID = ?', [roleID]);
-				ConsoleApi.Log("main", `Panel action: deleted ${roleAssignResult.affectedRows} assignments with roleID = ${roleID}. Executed by: ${username}`);
+				const [roleAssignResult]: [any, FieldPacket[]] = await db.execute("DELETE FROM roleassign WHERE roleID = ?", [roleID]);
+				ConsoleApi.Log(
+					"main",
+					`Panel action: deleted ${roleAssignResult.affectedRows} assignments with roleID = ${roleID}. Executed by: ${username}`
+				);
 				return true;
 			}
 		} catch (error) {
-			ConsoleApi.Error('main', `deleteRoleException => public: Error while deleting role: ${error.message}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`deleteRoleException => public: Error while deleting role: ${error.message}. Executed by: ${username} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return false;
 		}
 	}
-	
+
 	public async setRole(gdpsid: string, username: string, roleID: int): Promise<boolean> {
 		try {
 			const db = await threadConnection(gdpsid);
@@ -331,14 +416,20 @@ export class Roles {
 			}
 			const accountID: int = await Panel.getIDbyUsername(gdpsid, username);
 			if (!(await this.checkRoleHandled(gdpsid, accountID, roleID))) {
-				const [result]: [any, FieldPacket[]] = await db.execute('INSERT INTO roleassign (roleID, accountID) VALUES (?, ?)', [roleID, accountID]);
+				const [result]: [any, FieldPacket[]] = await db.execute("INSERT INTO roleassign (roleID, accountID) VALUES (?, ?)", [
+					roleID,
+					accountID
+				]);
 				ConsoleApi.Log("main", `Panel action: inserted role with roleID ${roleID} to ${username} (${accountID})`);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (error) {
-			ConsoleApi.Error("main", `setRoleException => public: Error while inserting role: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`setRoleException => public: Error while inserting role: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return false;
 		}
 	}
@@ -351,33 +442,42 @@ export class Roles {
 			const accountID: int = await Panel.getIDbyUsername(gdpsid, username);
 			// ConsoleApi.Debug("main", `rid: ${roleID}`);
 			if (await this.checkRoleHandled(gdpsid, accountID, roleID)) {
-				const [result]: [any, FieldPacket[]] = await db.execute('DELETE FROM roleassign WHERE roleID = ? AND accountID = ?', [roleID, accountID]);
+				const [result]: [any, FieldPacket[]] = await db.execute("DELETE FROM roleassign WHERE roleID = ? AND accountID = ?", [
+					roleID,
+					accountID
+				]);
 				ConsoleApi.Log("main", `Panel action: unsetted role with roleID ${roleID} from ${username} (${accountID})`);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (error) {
-			ConsoleApi.Error("main", `unsetRoleException => public: Error while unsetting role: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`unsetRoleException => public: Error while unsetting role: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return false;
 		}
 	}
-
 
 	private async checkRoleHandled(gdpsid: string, accountID: int, roleID: int) {
 		try {
 			const db = await threadConnection(gdpsid);
 			const [rows]: [RoleAssignRow[], FieldPacket[]] = await db.execute<RoleAssignRow[]>(
-				'SELECT accountID FROM roleassign WHERE accountID = ? AND roleID = ?', 
+				"SELECT accountID FROM roleassign WHERE accountID = ? AND roleID = ?",
 				[accountID, roleID]
 			);
 			return rows.length > 0;
 		} catch (error) {
-			ConsoleApi.Error("main", `checkRoleHandledException => private: Error while checking role assign existence: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`);
+			ConsoleApi.Error(
+				"main",
+				`checkRoleHandledException => private: Error while checking role assign existence: ${error.message} at net.fimastgd.forevercore.panel.roles.roles`
+			);
 			return false;
 		}
 	}
-	private async getRoleContainer(gdpsid: string, roleID: int): Promise<object> { // получение данных роли в объект
+	private async getRoleContainer(gdpsid: string, roleID: int): Promise<object> {
+		// получение данных роли в объект
 		const db = await threadConnection(gdpsid);
 		const roleProp: GetRole = await this.getRoleById(gdpsid, "[System]", roleID);
 		const userList: string = await this.getRoleUsers(gdpsid, roleID);
@@ -391,21 +491,24 @@ export class Roles {
 		// ConsoleApi.Debug('main', t);
 		return roleContainer;
 	}
-	private async getRoleUsers(gdpsid: string, roleID: int): Promise<string> { // получение списка аккаунтов с определённой ролью через запятую
+	private async getRoleUsers(gdpsid: string, roleID: int): Promise<string> {
+		// получение списка аккаунтов с определённой ролью через запятую
 		try {
 			const db = await threadConnection(gdpsid);
-			const [rows]: [RoleAssignRow[], FieldPacket[]] = await db.execute<RoleAssignRow[]>('SELECT accountID FROM roleassign WHERE roleID = ?', [roleID]);
-	
+			const [rows]: [RoleAssignRow[], FieldPacket[]] = await db.execute<RoleAssignRow[]>("SELECT accountID FROM roleassign WHERE roleID = ?", [
+				roleID
+			]);
+
 			if (rows.length === 0) {
-				return ''; // если нет аккаунтов
+				return ""; // если нет аккаунтов
 			}
 			const usernamePromises = rows.map(row => Panel.getUsernameByID(gdpsid, row.accountID));
 			const usernames = await Promise.all(usernamePromises);
 			// ConsoleApi.Debug("main", usernames.join(', '));
-			return usernames.join(', ');
+			return usernames.join(", ");
 		} catch (error) {
-			ConsoleApi.Error('main', `getRoleUsersException => private: Error while fetching role username list: ${error.message} at ${getpackage}`);
-			return '';
+			ConsoleApi.Error("main", `getRoleUsersException => private: Error while fetching role username list: ${error.message} at ${getpackage}`);
+			return "";
 		}
 	}
-} 
+}

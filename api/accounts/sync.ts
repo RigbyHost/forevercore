@@ -16,7 +16,7 @@ interface DatabaseRow {
 }
 
 const syncAccount = async (
-	gdpsid: string | number,
+	gdpsid: string,
 	userNameStr: string,
 	accountIDStr: string,
 	passwordStr: string,
@@ -39,8 +39,8 @@ const syncAccount = async (
 		
 		const password: string = passwordStr || "";
 		let accountID: string = accountIDStr || "";
-		const accountsPath: string = await path.join(__root, "/data/accounts", `backup_${accountIDStr}.dat`);
-		const accountsKeyPath: string = await path.join(__root, "/data/accounts/keys", `${accountIDStr}`);
+		const accountsPath: string = await path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts`, `backup_${accountIDStr}.dat`);
+		const accountsKeyPath: string = await path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts/keys`, `${accountIDStr}`);
 		
 		async function getAccountID(userName: string): Promise<number | null> {
 			const [rows] = await db.execute("SELECT accountID FROM accounts WHERE userName = ?", [userName]) as [DatabaseRow[], any];
