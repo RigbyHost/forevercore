@@ -1,5 +1,5 @@
 "package net.fimastgd.forevercore.api.accounts.updateSettings";
-// сука кто package поудалял
+
 import { Request } from "express";
 import { ResultSetHeader } from "mysql2/promise";
 import threadConnection from "../../serverconf/db";
