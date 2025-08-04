@@ -7,6 +7,7 @@ import threadConnection from "../../serverconf/db";
 import ExploitPatch from "../../api/lib/exploitPatch";
 import GeneratePass from "../../api/lib/generatePass";
 import ConsoleApi from "../../modules/console-api";
+import __root from "@/__root";
 
 interface RequestBody {
 	userName: string;
@@ -51,10 +52,10 @@ const changePassword = async (gdpsid: string, req: Request): Promise<string> => 
 				const [rows] = (await db.query("SELECT accountID FROM accounts WHERE userName=?", [userName])) as [AccountRow[], any];
 				const accountID = rows[0].accountID;
 				const accountIDPS = accountID.toString();
-				const saveDataPath = path.join(__dirname, "../../data/accounts", `${accountIDPS}.dat`);
+				const saveDataPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts`, `backup_${accountIDPS}.dat`);
 				const saveData = await fs.readFile(saveDataPath, "utf8");
 
-				const keyPath = path.join(__dirname, "../../data/accounts/keys", accountIDPS);
+				const keyPath = path.join(__root, `/GDPS_DATA/${gdpsid}/data/accounts/keys`, accountIDPS);
 				const keyExists = await fs
 					.access(keyPath)
 					.then(() => true)
