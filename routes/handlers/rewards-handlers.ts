@@ -22,7 +22,7 @@ export class GetChallengesHandler extends BaseApiHandler {
 
 export class GetChestsHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/getGJChests.php");
+		super("/:gdpsid/getGJRewards.php");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
@@ -40,7 +40,7 @@ export class GetChestsHandler extends BaseApiHandler {
 			);
 			res.status(200).send(result);
 		} catch (error) {
-			ConsoleApi.Error("GetChestsHandler", `Error getting chests: ${error}`);
+			ConsoleApi.Error("GetRewardsHandler", `Error getting chests: ${error}`);
 			res.status(200).send("-1");
 		}
 	}

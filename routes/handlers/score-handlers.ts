@@ -98,7 +98,7 @@ export class GetScoresHandler extends BaseApiHandler {
 
 export class UpdateUserScoreHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/updateGJUserScore.php");
+		super("/:gdpsid/:updateGJUserScore");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
@@ -144,7 +144,13 @@ export class UpdateUserScoreHandler extends BaseApiHandler {
 				req.body.gjp,
 				req
 			);
-			res.status(200).send(result);
+			if (
+				req.params.updateGJUserScore == "updateGJUserScore.php" ||
+				req.params.updateGJUserScore == "updateGJUserScore21.php" ||
+				req.params.updateGJUserScore == "updateGJUserScore22.php"
+			)
+				res.status(200).send(result);
+			else res.status(404);
 		} catch (error) {
 			ConsoleApi.Error("UpdateUserScoreHandler", `Error updating user score: ${error}`);
 			res.status(200).send("-1");

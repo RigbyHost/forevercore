@@ -64,7 +64,7 @@ interface UserStats extends RowDataPacket {
  */
 const updateUserScore = async (
 	gdpsid: string,
-	accountIDStr?: string,
+	accountIDStr?: string | string[],
 	userNameStr?: string,
 	secretStr?: string,
 	starsStr?: string,
@@ -106,7 +106,12 @@ const updateUserScore = async (
 	try {
 		const db = await threadConnection(gdpsid);
 		// Validate required parameters
+		if (Array.isArray(accountIDStr)) {
+			ConsoleApi.Warn("main", `${gdpsid}* Detected array: accountID. Trying to offset array...`);
+			accountIDStr = accountIDStr[0];
+		}
 		if (!userNameStr || !secretStr || !starsStr || !demonsStr || !iconStr || !color1Str || !color2Str) {
+			console.log(accountIDStr); 
 			ConsoleApi.Log("main", `Failed to update user score ${userNameStr} (accountID: ${accountIDStr}): needed params not found`);
 			return "-1";
 		}
@@ -119,7 +124,7 @@ const updateUserScore = async (
 		const icon = await ExploitPatch.remove(iconStr);
 		const color1 = await ExploitPatch.remove(color1Str);
 		const color2 = await ExploitPatch.remove(color2Str);
-
+		
 		// Set defaults for optional parameters
 		const gameVersionW = gameVersionStr || "1";
 		const binaryVersionW = binaryVersionStr || "1";
