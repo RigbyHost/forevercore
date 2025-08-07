@@ -11,7 +11,7 @@ import ConsoleApi from "../../modules/console-api";
 // Обработчики для комментариев к уровням
 export class GetCommentsHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/getGJComments21.php");
+		super("/:gdpsid/getGJComments.php");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
@@ -36,9 +36,90 @@ export class GetCommentsHandler extends BaseApiHandler {
 	}
 }
 
+export class GetComments19Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/getGJComments19.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request for level comments (v19), level ID: ${req.body.levelID}`);
+			const result = await getComments(
+				gdpsid,
+				req.body.binaryVersion,
+				req.body.gameVersion,
+				req.body.mode,
+				req.body.count,
+				req.body.page,
+				req.body.levelID,
+				req.body.userID
+			);
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("GetComments19Handler", `Error getting comments: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
+export class GetComments20Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/getGJComments20.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request for level comments (v20), level ID: ${req.body.levelID}`);
+			const result = await getComments(
+				gdpsid,
+				req.body.binaryVersion,
+				req.body.gameVersion,
+				req.body.mode,
+				req.body.count,
+				req.body.page,
+				req.body.levelID,
+				req.body.userID
+			);
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("GetComments20Handler", `Error getting comments: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
+export class GetComments21Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/getGJComments21.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request for level comments (v21), level ID: ${req.body.levelID}`);
+			const result = await getComments(
+				gdpsid,
+				req.body.binaryVersion,
+				req.body.gameVersion,
+				req.body.mode,
+				req.body.count,
+				req.body.page,
+				req.body.levelID,
+				req.body.userID
+			);
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("GetComments21Handler", `Error getting comments: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
 export class UploadCommentHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/uploadGJComment21.php");
+		super("/:gdpsid/uploadGJComment.php");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
@@ -46,7 +127,6 @@ export class UploadCommentHandler extends BaseApiHandler {
 			const gdpsid: string = req.params.gdpsid.toString();
 			ConsoleApi.Log("Comments", `Processing request to upload comment to level ID: ${req.body.levelID}`);
 
-			// Передаем параметры по одному, а не весь объект req
 			const result = await uploadComment(
 				gdpsid,
 				req.body.userName,
@@ -58,12 +138,108 @@ export class UploadCommentHandler extends BaseApiHandler {
 				req.body.accountID,
 				req.body.gjp2,
 				req.body.gjp,
-				req // Этот последний параметр должен быть объектом Request
+				req
 			);
 
 			res.status(200).send(result);
 		} catch (error) {
 			ConsoleApi.Error("UploadCommentHandler", `Error uploading comment: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
+export class UploadComment19Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/uploadGJComment19.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request to upload comment (v19) to level ID: ${req.body.levelID}`);
+
+			const result = await uploadComment(
+				gdpsid,
+				req.body.userName,
+				req.body.gameVersion,
+				req.body.comment,
+				req.body.levelID,
+				req.body.percent,
+				req.body.udid,
+				req.body.accountID,
+				req.body.gjp2,
+				req.body.gjp,
+				req
+			);
+
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("UploadComment19Handler", `Error uploading comment: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
+export class UploadComment20Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/uploadGJComment20.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request to upload comment (v20) to level ID: ${req.body.levelID}`);
+
+			const result = await uploadComment(
+				gdpsid,
+				req.body.userName,
+				req.body.gameVersion,
+				req.body.comment,
+				req.body.levelID,
+				req.body.percent,
+				req.body.udid,
+				req.body.accountID,
+				req.body.gjp2,
+				req.body.gjp,
+				req
+			);
+
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("UploadComment20Handler", `Error uploading comment: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+}
+
+export class UploadComment21Handler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/uploadGJComment21.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			const gdpsid: string = req.params.gdpsid.toString();
+			ConsoleApi.Log("Comments", `Processing request to upload comment (v21) to level ID: ${req.body.levelID}`);
+
+			const result = await uploadComment(
+				gdpsid,
+				req.body.userName,
+				req.body.gameVersion,
+				req.body.comment,
+				req.body.levelID,
+				req.body.percent,
+				req.body.udid,
+				req.body.accountID,
+				req.body.gjp2,
+				req.body.gjp,
+				req
+			);
+
+			res.status(200).send(result);
+		} catch (error) {
+			ConsoleApi.Error("UploadComment21Handler", `Error uploading comment: ${error}`);
 			res.status(200).send("-1");
 		}
 	}
@@ -152,9 +328,18 @@ export class DeleteAccountCommentHandler extends BaseApiHandler {
 
 export function createCommentHandlers() {
 	return [
+		// Уровневые комментарии
 		new GetCommentsHandler(),
+		new GetComments19Handler(),
+		new GetComments20Handler(),
+		new GetComments21Handler(),
 		new UploadCommentHandler(),
+		new UploadComment19Handler(),
+		new UploadComment20Handler(),
+		new UploadComment21Handler(),
 		new DeleteCommentHandler(),
+
+		// Аккаунтовые комментарии
 		new GetAccountCommentsHandler(),
 		new UploadAccountCommentHandler(),
 		new DeleteAccountCommentHandler()

@@ -9,13 +9,26 @@ import ConsoleApi from "../../modules/console-api";
 
 export class GetCreatorsHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/getGJCreators.php");
+		super("/:gdpsid/:getGJCreators");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
 		try {
-			const result = await getCreators(req.params.gdpsid.toString(), req.body.accountID, req.body.type);
-			res.status(200).send(result);
+			const parseVersion = (version?: number): string => {
+				if (version) {
+					return `getGJCreators${version.toString()}.php`;
+				} else {
+					return "getGJCreators.php";
+				}
+			};
+			const $creators = req.params.getGJCreators;
+
+			if ($creators == parseVersion() || $creators == parseVersion(19)) {
+				const result = await getCreators(req.params.gdpsid.toString(), req.body.accountID, req.body.type);
+				res.status(200).send(result);
+			} else {
+				res.status(404);
+			}
 		} catch (error) {
 			ConsoleApi.Error("GetCreatorsHandler", `Error getting creators: ${error}`);
 			res.status(200).send("-1");
@@ -72,23 +85,35 @@ export class GetLevelScoresPlatHandler extends BaseApiHandler {
 
 export class GetScoresHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/getGJScores.php");
+		super("/:gdpsid/:getGJScores");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
 		try {
-			const result = await getScores(
-				req.params.gdpsid.toString(),
-				req.body.gameVersion,
-				req.body.accountID,
-				req.body.udid,
-				req.body.type,
-				req.body.count,
-				req.body.gjp2,
-				req.body.gjp,
-				req
-			);
-			res.status(200).send(result);
+			const parseVersion = (version?: number): string => {
+				if (version) {
+					return `getGJScores${version.toString()}.php`;
+				} else {
+					return "getGJScores.php";
+				}
+			};
+			const $scores = req.params.getGJScores;
+			if ($scores == parseVersion() || $scores == parseVersion(19) || $scores == parseVersion(20)) {
+				const result = await getScores(
+					req.params.gdpsid.toString(),
+					req.body.gameVersion,
+					req.body.accountID,
+					req.body.udid,
+					req.body.type,
+					req.body.count,
+					req.body.gjp2,
+					req.body.gjp,
+					req
+				);
+				res.status(200).send(result);
+			} else {
+				res.status(404);
+			}
 		} catch (error) {
 			ConsoleApi.Error("GetScoresHandler", `Error getting scores: ${error}`);
 			res.status(200).send("-1");
@@ -146,6 +171,8 @@ export class UpdateUserScoreHandler extends BaseApiHandler {
 			);
 			if (
 				req.params.updateGJUserScore == "updateGJUserScore.php" ||
+				req.params.updateGJUserScore == "updateGJUserScore19.php" ||
+				req.params.updateGJUserScore == "updateGJUserScore20.php" ||
 				req.params.updateGJUserScore == "updateGJUserScore21.php" ||
 				req.params.updateGJUserScore == "updateGJUserScore22.php"
 			)
