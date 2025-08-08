@@ -6,7 +6,7 @@ import ConsoleApi from "../../modules/console-api";
 
 export class DeleteListHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/deleteGJList.php");
+		super("/:gdpsid/deleteGJLevelList.php");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
@@ -22,7 +22,7 @@ export class DeleteListHandler extends BaseApiHandler {
 
 export class UploadListHandler extends BaseApiHandler {
 	constructor() {
-		super("/:gdpsid/uploadGJList.php");
+		super("/:gdpsid/uploadGJLevelList.php");
 	}
 
 	async handle(req: Request, res: Response): Promise<void> {
