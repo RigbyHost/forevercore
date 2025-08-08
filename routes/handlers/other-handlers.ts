@@ -70,6 +70,21 @@ export class TopArtistsHandler extends BaseApiHandler {
 	}
 }
 
+export class GetCustomContentURLHandler extends BaseApiHandler {
+	constructor() {
+		super("/:gdpsid/getCustomContentURL.php");
+	}
+
+	async handle(req: Request, res: Response): Promise<void> {
+		try {
+			res.status(200).send("https://geometrydashfiles.b-cdn.net");
+		} catch (error) {
+			ConsoleApi.Error("GetCustomContentURLHandler", `Error getting custom content url: ${error}`);
+			res.status(200).send("-1");
+		}
+	}
+} 
+
 export function createOtherHandlers() {
-	return [new GetSongInfoHandler(), new LikeItemHandler(), new TopArtistsHandler()];
+	return [new GetSongInfoHandler(), new LikeItemHandler(), new TopArtistsHandler(), new GetCustomContentURLHandler(),];
 }
