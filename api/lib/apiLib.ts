@@ -1,9 +1,9 @@
 "package net.fimastgd.forevercore.api.lib.apiLib";
 
 import { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import threadConnection from "../../serverconf/db";
+import threadConnection from "@/serverconf/db";
 import ExploitPatch from "./exploitPatch";
-import { getSettings } from "../../serverconf/settings";
+import { getSettings } from "@/serverconf/settings";
 import XORCipher from "./XORCipher";
 import FixIp from "./fixIp";
 import crypto from "crypto";
@@ -200,6 +200,25 @@ class ApiLib {
 			ConsoleApi.Error("main", `checkPermissionException: ${error} at net.fimastgd.forevercore.api.lib.apiLib`);
 			return false;
 		}
+	}
+
+	public static async checkModIPPermission(gdpsid: string, permission: string, req: Request = {} as Request) {
+		const db = await threadConnection(gdpsid);
+		const ip = await FixIp.getIP(req);
+		const [categoryRows] = await db.execute<RowDataPacket[]>("SELECT modipCategory FROM modips WHERE IP = ?", [ip]);
+		const categoryID = categoryRows[0]?.modipCategory;
+		if (!categoryID) {
+			return false;
+		}
+		const [permRows] = await db.execute<RowDataPacket[]>(`SELECT ${permission} FROM modipperms WHERE categoryID = ?`, [categoryID]);
+		const permState = permRows[0]?.[permission];
+		if (permState == 1) {
+			return true;
+		}
+		if (permState == 2) {
+			return false;
+		}
+		return false;
 	}
 
 	/**

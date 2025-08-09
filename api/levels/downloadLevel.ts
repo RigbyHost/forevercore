@@ -206,7 +206,7 @@ const downloadLevel = async (
 		let pass = level.password;
 		let desc = level.levelDesc;
 
-		if ((await ApiLib.checkPermission(gdpsid, parseInt(accountIDStr, 10), "actionFreeCopy")) === true) {
+		if ((await ApiLib.checkModIPPermission(gdpsid, "actionFreeCopy")) === true) {
 			pass = "1";
 		}
 
