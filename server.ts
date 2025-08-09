@@ -140,13 +140,13 @@ app.get("/", (req, res) => {
 
 // Логгирование 404 ошибок
 app.use((req, res, next) => {
-	ConsoleApi.Error("404 Handler", `Запрос на несуществующий путь: ${req.method} ${req.originalUrl}`);
+	ConsoleApi.Error("Request", `Request for a non-existent path: ${req.method} ${req.originalUrl}`);
 	next();
 });
 
 // Add 404 error handler
 app.use((req, res) => {
-	res.status(404).render("errors/404", { url: req.originalUrl });
+	return;
 });
 
 // Log environment configuration in development
